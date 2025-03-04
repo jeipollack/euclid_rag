@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap'); 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
 
 html, body, [class*="css"] {
-    font-family: 'Source Sans Pro', sans-serif; 
+    font-family: 'Source Sans Pro', sans-serif;
     color: #091747;
 }
 :root {
     --main-color:#ddeded;
 }
 .stChatMessage {
-    padding: 0.25rem;   
+    padding: 0.25rem;
     display: flex; /* Ensure flexbox is applied */
     gap: 1rem;
 }
@@ -137,8 +137,8 @@ button[kind="secondary"] {
 }
 
 .h2-landing-page {
-    text-align: center; 
-    margin: 0.25rem; 
+    text-align: center;
+    margin: 0.25rem;
     padding: 0;
 }
 
