@@ -1,3 +1,4 @@
+requests==2.32.3
 pinecone-client==2.2.2
 python-dotenv==1.0.0
 tiktoken==0.7.0

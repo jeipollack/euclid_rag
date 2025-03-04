@@ -21,7 +21,24 @@ classifiers = [
     "Typing :: Typed",
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "requests==2.32.3",
+    "pinecone-client==2.2.2",
+    "python-dotenv==1.0.0",
+    "tiktoken==0.7.0",
+    "streamlit==1.38.0",
+    "weaviate-client==4.8.1",
+    "atlassian-python-api==3.41.3",
+    "pytesseract==0.3.10",
+    "Pillow==10.4.0",
+    "reportlab==4.0.5",
+    "svglib==1.5.1",
+    "langchain==0.3.1",
+    "openai==1.50.0",
+    "langchain-openai==0.2.1",  # For ChatOpenAI and OpenAIEmbeddings
+    "langchain-weaviate==0.0.3",  # For WeaviateVectorStore
+    "langchain-community==0.3.1"
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
