@@ -60,6 +60,52 @@ jobs:
           tox-envs: "py,typing"
           tox-plugins: tox-uv
 
+  build:
+    permissions:
+        contents: read
+        packages: write  # <-- This is where you set the GITHUB_TOKEN permissions
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    if: >
+      github.event_name != 'merge_group'
+      && (startsWith(github.ref, 'refs/heads/main'))
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Define the Docker tag
+        id: vars
+        run: echo "tag=$(scripts/docker-tag.sh)" >> $GITHUB_OUTPUT
+
+      - name: Print the tag
+        id: print
+        run: echo ${{ steps.vars.outputs.tag }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/lsst-dm/rubin_rag:tickets/SP-1928
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
   docs:
 
     runs-on: ubuntu-latest

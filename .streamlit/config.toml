@@ -1,0 +1,13 @@
+[theme]
+primaryColor="#058B8C"
+backgroundColor="#FFFFFF"
+secondaryBackgroundColor="#ddeded"
+textColor="#31333F"
+infoColor="#ddeded"
+
+[client]
+toolbarMode = "viewer"
+
+[server]
+enableStaticServing = true
+baseUrlPath = "/gai-helpers"
