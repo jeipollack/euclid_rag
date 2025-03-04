@@ -59,7 +59,7 @@ jobs:
           python-version: ${{ matrix.python }}
           tox-envs: "py,typing"
           tox-plugins: tox-uv
-  
+
   build:
     permissions:
         contents: read
@@ -172,4 +172,3 @@ jobs:
         uses: lsst-sqre/build-and-publish-to-pypi@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-  
