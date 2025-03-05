@@ -101,7 +101,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/lsst-dm/rubin_rag:tickets/SP-1928
+            ghcr.io/lsst-dm/rubin_rag
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
