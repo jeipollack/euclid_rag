@@ -49,11 +49,11 @@ load_dotenv()
 
 # Set page configuration and design
 st.set_page_config(
-    page_title="Vera - Rubin Observatory Bot",
+    page_title="Rubin Observatory Bot",
     initial_sidebar_state="collapsed",
-    page_icon="../../../static/rubin_avatar_color.png",
+    page_icon="../../../static/rubin_telescope.png",
 )
-st.logo("../../../static/logo.png")
+st.logo("../../../static/rubin_telescope.png")
 
 # Load the CSS file
 file_path = Path("../../../static/style.css")

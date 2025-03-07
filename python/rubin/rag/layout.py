@@ -55,23 +55,20 @@ def setup_landing_page() -> None:
         with col2:
             # Add logo (Make sure the logo is in your
             # working directory or provide the full path)
-            st.image(
-                "../../../static/rubin_avatar_bw.png", clamp=True, width=400
+            st.image("../../../static/rubin_telescope.png", clamp=True)
+
+            # Centered title and message
+            st.markdown(
+                "<h2 class='h2-landing-page'>Hello!</h2>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<h4 class='h2-landing-page'>I am the "
+                "Rubin AI Assistant.</h4>",
+                unsafe_allow_html=True,
             )
         with col3:
             st.write(" ")
-        # Centered title and message
-        st.markdown(
-            "<h2 class='h2-landing-page'>Hello, I'm Vera!</h2>",
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            (
-                "<h4 class='h4-landing-page'>Your dedicated "
-                "Rubin Observatory bot.</h4>"
-            ),
-            unsafe_allow_html=True,
-        )
 
 
 def setup_header_and_footer(msgs: StreamlitChatMessageHistory) -> None:
@@ -85,8 +82,8 @@ def setup_header_and_footer(msgs: StreamlitChatMessageHistory) -> None:
     st.button(":material/edit_square:", on_click=clear_text)
     st.markdown(
         (
-            "<footer class='footer-fixed'>Vera aims for clarity, "
-            "but can make mistakes.</footer>"
+            "<footer class='footer-fixed'>Rubin AI Assistant aims for "
+            "accuracy, but can make mistakes.</footer>"
         ),
         unsafe_allow_html=True,
     )

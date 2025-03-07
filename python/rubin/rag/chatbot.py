@@ -103,7 +103,7 @@ def create_qa_chain(
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
 
     # Define the system message template
-    system_template = """You are VERA, a helpful assistant at
+    system_template = """You are Rubin AI Assistant, a helpful assistant at
     Vera C Rubin Observatory.
     Do your best to answer the questions in as much detail as possible.
     Do not attempt to provide an answer if you do not know the answer.
@@ -141,7 +141,7 @@ def handle_user_input(
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
         "human": "../../../static/user_avatar.png",
-        "ai": "../../../static/rubin_avatar_bw.png",
+        "ai": "../../../static/rubin_telescope.png",
     }
 
     for msg in msgs.messages:
@@ -151,7 +151,7 @@ def handle_user_input(
 
     # Handle new user input
     if user_query := st.chat_input(
-        placeholder="Message Vera", on_submit=submit_text
+        placeholder="Message Rubin AI", on_submit=submit_text
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
             st.write(user_query)
