@@ -1,16 +1,16 @@
 requests==2.32.3
-pinecone-client==2.2.2
-python-dotenv==1.0.0
-tiktoken==0.7.0
-streamlit==1.38.0
-weaviate-client==4.8.1
-atlassian-python-api==3.41.3
-pytesseract==0.3.10
-Pillow==9.5.0
-reportlab==4.0.5
+pinecone==6.0.1
+python-dotenv==1.0.1
+tiktoken==0.9.0
+streamlit==1.43.0
+weaviate-client==4.11.1
+atlassian-python-api==3.41.19
+pytesseract==0.3.13
+pillow==11.1.0
+reportlab==4.3.1
 svglib==1.5.1
-langchain==0.3.1
-openai==1.50.0
-langchain-openai==0.2.1  # For ChatOpenAI and OpenAIEmbeddings
-langchain-weaviate==0.0.3  # For WeaviateVectorStore
-langchain-community==0.3.1
+langchain==0.3.20
+openai==1.65.4
+langchain-openai==0.3.7
+langchain-weaviate==0.0.4
+langchain-community==0.3.19

@@ -28,7 +28,6 @@ import os
 
 import streamlit as st
 import weaviate
-from custom_weaviate_vector_store import CustomWeaviateVectorStore
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts.chat import (
@@ -40,9 +39,12 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from streamlit_callback import get_streamlit_cb
 from weaviate.classes.init import Auth
+
+from .custom_weaviate_vector_store import CustomWeaviateVectorStore
+from .streamlit_callback import get_streamlit_cb
 
 
 def submit_text() -> None:
@@ -51,7 +53,7 @@ def submit_text() -> None:
 
 
 @st.cache_resource(ttl="1h")
-def configure_retriever() -> CustomWeaviateVectorStore:
+def configure_retriever() -> VectorStoreRetriever:
     """Configure the Weaviate retriever."""
     openai_api_key = os.getenv("OPENAI_API_KEY")
     weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
@@ -94,14 +96,14 @@ def configure_retriever() -> CustomWeaviateVectorStore:
 
 
 def create_qa_chain(
-    retriever: CustomWeaviateVectorStore,
+    retriever: VectorStoreRetriever,
 ) -> ChatPromptTemplate:
     """Create a QA chain for the chatbot."""
     # Setup ChatOpenAI (Language Model)
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
 
     # Define the system message template
-    system_template = """You are VERA, a helpful assistant at
+    system_template = """You are Rubin AI Assistant, a helpful assistant at
     Vera C Rubin Observatory.
     Do your best to answer the questions in as much detail as possible.
     Do not attempt to provide an answer if you do not know the answer.
@@ -138,8 +140,8 @@ def handle_user_input(
     # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
-        "human": "./static/user_avatar.png",
-        "ai": "./static/rubin_avatar_bw.png",
+        "human": "../../../static/user_avatar.png",
+        "ai": "../../../static/rubin_telescope.png",
     }
 
     for msg in msgs.messages:
@@ -149,7 +151,7 @@ def handle_user_input(
 
     # Handle new user input
     if user_query := st.chat_input(
-        placeholder="Message Vera", on_submit=submit_text
+        placeholder="Message Rubin AI", on_submit=submit_text
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
             st.write(user_query)
