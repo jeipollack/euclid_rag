@@ -1,4 +1,4 @@
-:og:description: Learn how to use rubin_rag.
+:og:description: Learn how to use euclid_rag.
 
 ##########
 User guide

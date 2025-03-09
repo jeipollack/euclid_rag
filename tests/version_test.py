@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from rubin.rag import __version__
+from euclid.rag import __version__
 
 
 def test_version() -> None:
