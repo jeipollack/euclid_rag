@@ -6,7 +6,7 @@ Euclid RAG is an open-source Retrieval-Augmented Generation (RAG) system designe
 
 ## Origin & Development  
 
-This project was initially **forked from the Rubin Observatory RAG** system, developed at [Rubin Observatory](https://github.com/jeipollack/rubin_rag). While we are working in consultation and knowledge-sharing with Rubin developers, **Euclid RAG is evolving in a different direction** to meet the specific needs of the Euclid collaboration. Key differences will include:  
+This project was initially **forked from the Rubin Observatory RAG** system, developed at [Rubin Observatory](https://github.com/lsst-dm/rubin_rag). While we are working in consultation and knowledge-sharing with Rubin developers, **Euclid RAG is evolving in a different direction** to meet the specific needs of the Euclid collaboration. Key differences will include:  
 
 - **A focus on local deployment** without API-based LLM dependencies.  
 - **Different document retrieval strategies** tailored to Euclid's scientific workflows.  
