@@ -1,12 +1,11 @@
 [project]
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
-name = "rubin_rag"
-description = "Rubin RAG-basd LLM Application"
+name = "euclid_rag"
+description = "Euclid RAG LLM Application"
 license = {file = "LICENSE"}
 readme= "README.md"
 keywords = [
-    "rubin",
-    "lsst",
+    "euclid",
 ]
 # https://pypi.org/classifiers/
 classifiers = [
@@ -54,8 +53,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://rubin_rag.lsst.io"
-Source = "https://github.com/lsst-dm/rubin_rag"
+Source = "https://github.com/jeipollack/euclid_rag"
 
 [build-system]
 requires = [
@@ -70,7 +68,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 # https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 where = ["python"]
-include = ["rubin"]
+include = ["euclid"]
 
 [tool.black]
 line-length = 79
@@ -79,7 +77,7 @@ target-version = ["py312"]
 [tool.coverage.run]
 parallel = true
 branch = true
-source = ["rubin"]
+source = ["euclid"]
 
 [tool.coverage.paths]
 source = ["python", ".tox/*/site-packages"]
@@ -133,7 +131,7 @@ python_files = ["tests/*.py", "tests/*/*.py"]
 extend = "ruff-shared.toml"
 
 [tool.ruff.lint.isort]
-known-first-party = ["rubin.rag", "tests"]
+known-first-party = ["euclid.rag", "tests"]
 split-on-trailing-comma = false
 
 [tool.scriv]
