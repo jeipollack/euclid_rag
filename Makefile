@@ -1,6 +1,6 @@
 .PHONY: help
 help:
-	@echo "Make targets for rubin_rag:"
+	@echo "Make targets for euclid_rag:"
 	@echo "make clean - Remove generated files"
 	@echo "make init - Set up dev environment (install pre-commit hooks)"
 	@echo "make linkcheck - Check for broken links in documentation"

@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8501
 
 # Run the application when the container launches
-CMD ["streamlit", "run", "python/rubin/rag/app.py"]
+CMD ["streamlit", "run", "python/euclid/rag/app.py"]
