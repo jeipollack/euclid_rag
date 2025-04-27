@@ -5,17 +5,19 @@
 # This product includes software developed by the LSST Project (https://www.lsst.org).
 #
 # Originally licensed under the MIT License.
-# Modifications for the Euclid RAG application were made by members of the Euclid Science Ground Segment.
+# Modifications for the Euclid RAG application were made by members of the
+# Euclid Science Ground Segment.
 #
-# This program is now licensed under the GNU Lesser General Public License (LGPL) v3.0,
-# as published by the Free Software Foundation.
+# This program is now licensed under the GNU Lesser General Public License
+# (LGPL) v3.0, as published by the Free Software Foundation.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License along with this program.
-# If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 
 
@@ -102,8 +104,8 @@ def create_qa_chain(
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
 
     # Define the system message template
-    system_template = """You are Rubin AI Assistant, a helpful assistant at
-    Vera C Rubin Observatory.
+    system_template = """You are Euclid AI Assistant, a helpful assistant
+    within the Euclid Consortium Science Ground Segment.
     Do your best to answer the questions in as much detail as possible.
     Do not attempt to provide an answer if you do not know the answer.
     In your response, do not recommend reading elsewhere.
@@ -150,7 +152,7 @@ def handle_user_input(
 
     # Handle new user input
     if user_query := st.chat_input(
-        placeholder="Message Rubin AI", on_submit=submit_text
+        placeholder="Message Euclid AI", on_submit=submit_text
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
             st.write(user_query)

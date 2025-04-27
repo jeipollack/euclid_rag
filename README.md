@@ -1,18 +1,18 @@
-# euclid_rag  
+# euclid_rag
 
-**Euclid RAG: A Local RAG System for Scientific Research**  
+**Euclid RAG: A Local RAG System for Scientific Research**
 
-Euclid RAG is an open-source Retrieval-Augmented Generation (RAG) system designed to provide **efficient document retrieval and knowledge augmentation** for the Euclid scientific community. The project aims to integrate local Large Language Models (LLMs) with a vector database to **retrieve, process, and generate** relevant scientific information.  
+Euclid RAG is an open-source Retrieval-Augmented Generation (RAG) system designed to provide **efficient document retrieval and knowledge augmentation** for the Euclid scientific community. The project aims to integrate local Large Language Models (LLMs) with a vector database to **retrieve, process, and generate** relevant scientific information.
 
-## Origin & Development  
+## Origin & Development
 
-This project was initially forked from the [**Rubin Observatory's Rubin RAG system**](https://github.com/lsst-dm/rubin_rag). While we are working in consultation and knowledge-sharing with Rubin developers, **Euclid RAG is evolving in a different direction** to meet the specific needs of the Euclid collaboration. Key differences will include:  
+This project was initially forked from the [**Rubin Observatory's Rubin RAG system**](https://github.com/lsst-dm/rubin_rag). While we are working in consultation and knowledge-sharing with Rubin developers, **Euclid RAG is evolving in a different direction** to meet the specific needs of the Euclid collaboration. Key differences will include:
 
-- **A focus on local deployment** without API-based LLM dependencies.  
-- **Different document retrieval strategies** tailored to Euclid's scientific workflows.  
-- **Potential agentic capabilities** to enhance automated knowledge retrieval and processing.  
+- **A focus on local deployment** without API-based LLM dependencies.
+- **Different document retrieval strategies** tailored to Euclid's scientific workflows.
+- **Potential agentic capabilities** to enhance automated knowledge retrieval and processing.
 
-## Installation 
+## Installation
 
 Install from PyPI:
 

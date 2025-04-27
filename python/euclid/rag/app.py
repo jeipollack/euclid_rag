@@ -5,17 +5,19 @@
 # This product includes software developed by the LSST Project (https://www.lsst.org).
 #
 # Originally licensed under the MIT License.
-# Modifications for the Euclid RAG application were made by members of the Euclid Science Ground Segment.
+# Modifications for the Euclid RAG application were made by members of the
+# Euclid Science Ground Segment.
 #
-# This program is now licensed under the GNU Lesser General Public License (LGPL) v3.0,
-# as published by the Free Software Foundation.
+# This program is now licensed under the GNU Lesser General Public License
+# (LGPL) v3.0, as published by the Free Software Foundation.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License along with this program.
-# If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 
 
@@ -32,12 +34,12 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 
-from rubin.rag.chatbot import (
+from euclid.rag.chatbot import (
     configure_retriever,
     create_qa_chain,
     handle_user_input,
 )
-from rubin.rag.layout import (
+from euclid.rag.layout import (
     setup_header_and_footer,
     setup_landing_page,
     setup_sidebar,
