@@ -43,3 +43,7 @@ update-deps:
 	pip install --upgrade uv
 	uv pip install --upgrade pre-commit
 	pre-commit autoupdate
+
+.PHONY: html
+html:
+	sphinx-build -b html docs _build/html
