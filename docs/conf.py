@@ -1,5 +1,9 @@
 import os
 import sys
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 # At top of conf.py, after imports:
 rst_epilog = open(
@@ -24,7 +28,8 @@ extensions = [
     "sphinx.ext.autodoc",  # for Python docstring extraction
     "sphinx.ext.napoleon",  # for Google/NumPy style docstrings
     "sphinx.ext.intersphinx",  # to link out to Python, NumPy, etc.
-    "myst_parser",  # if you want Markdown support
+    "myst_parser",  # if you want Markdown support,
+    "sphinx_automodapi.automodapi",  # for module-level docstrings
 ]
 
 # ——————————————————————————————

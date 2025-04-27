@@ -1,8 +1,8 @@
-:og:description: Comprehensive API documentation for rubin.rag.
+:og:description: Comprehensive API documentation for euclid.rag.
 
 ####################
 Python API reference
 ####################
 
-.. automodapi:: rubin.rag
+.. automodapi:: euclid.rag
    :include-all-objects:

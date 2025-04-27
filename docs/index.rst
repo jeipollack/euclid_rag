@@ -1,19 +1,19 @@
-:og:description: Rubin RAG-basd LLM Application
+:og:description: Euclid RAG LLM Application
 :html_theme.sidebar_secondary.remove:
 
-#########
-rubin_rag
-#########
+##########
+euclid_rag
+##########
 
-Rubin RAG-basd LLM Application
+Euclid RAG LLM Application
 
-Install rubin_rag from PyPI:
+Install euclid_rag from PyPI:
 
 .. code-block:: bash
 
-   pip install rubin_rag
+   pip install euclid_rag
 
-rubin_rag is developed on GitHub at https://github.com/lsst-dm/rubin_rag.
+euclid_rag is developed on GitHub at https://github.com/jeipollack/euclid_rag.
 
 .. toctree::
    :hidden:
@@ -22,3 +22,4 @@ rubin_rag is developed on GitHub at https://github.com/lsst-dm/rubin_rag.
    API <api>
    Change log <changelog>
    Contributing <developer-guide/index>
+
