@@ -41,7 +41,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "_rst_epilog.rst"]
 
 html_static_path = ["_static"]  # create this folder (even if empty)
 html_css_files = []  # add any custom.css here
-# html_js_files = ["custom.js"]  # add any custom.js here
 
 # ——————————————————————————————
 # HTML output settings
