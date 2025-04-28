@@ -50,7 +50,7 @@ jobs:
           tox-plugins: tox-uv
 
   build:
-    if: false  # 🛑 Disabled for now (enable when ready to push docker images)
+    if: false  # Disabled for now (enable when ready to push docker images)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -106,7 +106,7 @@ jobs:
           upload: false
 
   pypi:
-    if: false  # 🛑 Disable PyPI release for now
+    if: false  # Disable PyPI release for now
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     timeout-minutes: 10
