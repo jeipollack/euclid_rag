@@ -13,6 +13,7 @@ env:
       - "renovate/**"
   release:
     types: [published]
+  workflow_dispatch: {}
 
 jobs:
   lint:
