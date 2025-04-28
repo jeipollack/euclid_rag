@@ -1,8 +1,5 @@
 import os
 import sys
-import warnings
-
-warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 # At top of conf.py, after imports:
