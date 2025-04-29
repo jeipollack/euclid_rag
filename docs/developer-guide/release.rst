@@ -2,102 +2,88 @@
 Release procedure
 #################
 
-This page gives an overview of how rubin_rag releases are made.
-This information is only useful for maintainers.
+This page provides an overview of how `euclid_rag <https://github.com/jeipollack/euclid_rag>`_ releases are made.
+This information is primarily useful for maintainers.
 
-rubin_rag's releases are largely automated through GitHub Actions (see the `ci.yaml`_ workflow file for details).
-When a semantic version tag is pushed to GitHub, `rubin_rag is released to PyPI`_ with that version.
-Similarly, documentation is built and pushed for each version (see https://rubin_rag.lsst.io/v).
+Releases are largely automated through GitHub Actions (see the `ci.yaml`_ workflow file for details).
+When a semantic version tag is pushed to GitHub, ``euclid_rag`` is automatically `released to PyPI`_ (coming soon) with that version.
+Documentation is built and published for each version (see `Euclid RAG Documentation`_.).
 
-.. _`rubin_rag is released to PyPI`: https://pypi.org/project/rubin_rag/
-.. _`ci.yaml`: https://github.com/lsst-dm/rubin_rag/blob/main/.github/workflows/ci.yaml
+.. _`Euclid RAG Documentation`: https://github.io/jeipollack/euclid_rag/
+.. _`released to PyPI`: https://pypi.org/
+.. _`ci.yaml`: https://github.com/jeipollack/euclid_rag/blob/main/.github/workflows/ci.yaml
 
 .. _regular-release:
 
 Regular releases
 ================
 
-Regular releases happen from the ``main`` branch after changes have been merged.
-From the ``main`` branch you can release a new major version (``X.0.0``), a new minor version of the current major version (``X.Y.0``), or a new patch of the current major-minor version (``X.Y.Z``).
-See :ref:`backport-release` to patch an earlier major-minor version.
+Releases are made from the ``main`` branch after changes are merged.
+You can release a new major version (``X.0.0``), a new minor version (``X.Y.0``), or a new patch version (``X.Y.Z``).
+To patch an earlier version, see :ref:`backport-release`.
 
-Release tags are semantic version identifiers following the :pep:`440` specification.
+Release tags use semantic versioning according to the :pep:`440` spec.
 
 1. Change log and documentation
 -------------------------------
 
-Change log messages for each release are accumulated using scriv_.
-See :ref:`dev-change-log` in the *Developer guide* for more details.
+Changelog messages are collected using scriv_.
+See :ref:`dev-change-log` in the *Developer Guide* for more.
 
-When it comes time to make the release, there should be a collection of change log fragments in :file:`changelog.d`.
-Those fragments will make up the change log for the new release.
+Before release, gather the changelog fragments in :file:`changelog.d` by running:
 
-Review those fragments to determine the version number of the next release.
-Safir follows semver_, so follow its rules to pick the next version:
+.. code-block:: bash
 
-.. rst-class:: compact
+   scriv collect --version X.Y.Z
 
-- If there are any backward-incompatible changes, incremeent the major version number and set the other numbers to 0.
-- If there are any new features, increment the minor version number and set the patch version to 0.
-- Otherwise, increment the patch version number.
+This creates a full changelog entry in :file:`CHANGELOG.md` and removes the fragments.
 
-Then, run ``scriv collect --version <version>`` specifying the version number you decided on.
-This will delete the fragment files and collect them into :file:`CHANGELOG.md` under an entry for the new release.
-Review that entry and edit it as needed (proofread, change the order to put more important things first, etc.).
-scriv will put blank lines between entries from different files.
-You may wish to remove those blank lines to ensure consistent formatting by various Markdown parsers.
-
-Finally, create a PR from those changes and merge it before continuing with the release process.
+Review, edit, and commit the updated changelog.
+Create a PR, get it merged, and then proceed to tagging the release.
 
 2. GitHub release and tag
 -------------------------
 
-Use `GitHub's Release feature <https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository>`__ to create releases and their corresponding Git tags.
+Use [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) to publish the new version.
 
-1. Specify a tag from the appropriate branch (typically ``main``).
-   This tag's name is :pep:`440` and is usually formatted at ``X.Y.Z`` (without a ``v`` prefix).
+- Tag from the correct branch (usually ``main``).
+- Use semantic versioning like ``X.Y.Z`` (no ``v`` prefix).
+- Set the release name to the version string.
+- Use the changelog content in the release notes.
 
-2. For the release name, repeat the version string.
+Tags **must** follow :pep:`440`, since version metadata is derived using setuptools_scm_.
 
-3. Fill in the release notes, copied from the release notes.
-   You can use GitHub's change log feature to additionally generate a list of PRs included in the release.
+Once tagged, the GitHub Actions workflow will publish the package to PyPI and update the documentation site.
 
-The tag **must** follow the :pep:`440` specification since rubin_rag uses setuptools_scm_ to set version metadata based on Git tags.
-In particular, **don't** prefix the tag with ``v``.
-
-.. _setuptools_scm: https://github.com/pypa/setuptools_scm
-
-The `ci.yaml`_ GitHub Actions workflow uploads the new release to PyPI and documentation to https://rubin_rag.lsst.io.
+.. _setuptools_scm: https://github.com/pypa/setuptools-scm
 
 .. _backport-release:
 
 Backport releases
 =================
 
-The regular release procedure works from the main line of development on the ``master`` Git branch.
-To create a release that patches an earlier major or minor version, you need to release from a **release branch.**
+To patch older major/minor versions, use a **release branch** named after the ``X.Y`` version.
 
 Creating a release branch
 -------------------------
 
-Release branches are named after the major and minor components of the version string: ``X.Y``.
-If the release branch doesn't already exist, check out the latest patch for that major-minor version:
+If a release branch does not yet exist:
 
-.. code-block:: sh
+.. code-block:: bash
 
    git checkout X.Y.Z
    git checkout -b X.Y
-   git push -u
+   git push -u origin X.Y
 
 Developing on a release branch
 ------------------------------
 
-Once a release branch exists, it becomes the "main" branch for patches of that major-minor version.
-Pull requests should be based on, and merged into, the release branch.
-
-If the development on the release branch is a backport of commits on the ``main`` branch, use ``git cherry-pick`` to copy those commits into a new pull request against the release branch.
+Use the release branch for all patch-level updates.
+Backport changes from ``main`` using ``git cherry-pick`` if needed.
 
 Releasing from a release branch
 -------------------------------
 
-Releases from a release branch are equivalent to :ref:`regular releases <regular-release>`, except that the release branch takes the role of the ``main`` branch.
+Follow the same process as a regular release, but tag from the release branch instead of ``main``.
+``ci.yaml`` will still handle publishing to PyPI and updating the documentation.
+

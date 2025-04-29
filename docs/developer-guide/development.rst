@@ -1,82 +1,78 @@
-#################
+##################
 Development guide
-#################
+##################
 
-This page provides procedures and guidelines for developing and contributing to rubin_rag.
+This page provides procedures and guidelines for developing and contributing to **euclid_rag**.
 
 Scope of contributions
 ======================
 
-rubin_rag is an open source package, meaning that you can contribute to rubin_rag itself, or fork rubin_rag for your own purposes.
+**euclid_rag** is an open-source package. You may contribute to `euclid_rag <https://github.com/jeipollack/euclid_rag>`_ itself, or fork it for your own purposes.
 
-Since rubin_rag is intended for internal use by Rubin Observatory, community contributions can only be accepted if they align with Rubin Observatory's aims.
-For that reason, it's a good idea to propose changes with a new `GitHub issue`_ before investing time in making a pull request.
+If you plan to submit improvements or changes, it's a good idea to propose them in a `GitHub issue`_ before investing time in a pull request.
 
-rubin_rag is developed by the Rubin Observatory SQuaRE team.
-
-.. _GitHub issue: https://github.com/lsst-dm/rubin_rag/issues/new
+.. _GitHub issue: https://github.com/jeipollack/euclid_rag/issues
 
 .. _dev-environment:
 
 Setting up a local development environment
 ==========================================
 
-To develop rubin_rag, create a virtual environment with your method of choice (like virtualenvwrapper) and then clone or fork, and install:
+To develop ``euclid_rag``, create a virtual environment with your method of choice (e.g. ``venv``, ``virtualenvwrapper``), then clone and install:
 
 .. code-block:: sh
 
-   git clone https://github.com/lsst-dm/rubin_rag.git
-   cd rubin_rag
+   git clone https://github.com/jeipollack/euclid_rag.git
+   cd euclid_rag
    make init
 
-This init step does three things:
+This ``init`` step does three things:
 
-1. Installs rubin_rag in an editable mode with its "dev" extra that includes test and documentation dependencies.
-2. Installs pre-commit and tox.
+1. Installs ``euclid_rag`` in editable mode with the "dev" extra that includes test and documentation dependencies.
+2. Installs ``pre-commit`` and ``tox``.
 3. Installs the pre-commit hooks.
 
-You must have Docker installed and configured so that your user can start Docker containers in order to run the test suite.
+You should have Docker installed and configured to run the test suite in full, if needed.
 
 .. _pre-commit-hooks:
 
 Pre-commit hooks
 ================
 
-The pre-commit hooks, which are automatically installed by running the :command:`make init` command on :ref:`set up <dev-environment>`, ensure that files are valid and properly formatted.
-Some pre-commit hooks automatically reformat code:
+The pre-commit hooks, installed via the ``make init`` command, ensure files are valid and formatted.
+
+Some hooks automatically reformat code:
 
 ``ruff``
-    Automatically formats Python code and applies safe fixes to lint issues.
+    Formats Python code and applies safe lint fixes.
 
 ``blacken-docs``
-    Automatically formats Python code in reStructuredText documentation and docstrings.
+    Formats Python code within reStructuredText documentation and docstrings.
 
-When these hooks fail, your Git commit will be aborted.
-To proceed, stage the new modifications and proceed with your Git commit.
+If a hook fails, your Git commit will be aborted. Fix the issues, stage the changes, and retry your commit.
 
 .. _dev-run-tests:
 
 Running tests
 =============
 
-To test the library, run tox_, which tests the library the same way that the CI workflow does:
+To run the full test suite, use ``tox``, which mirrors how CI runs tests:
 
 .. code-block:: sh
 
    tox run
 
-To see a listing of test environments, run:
+To see available environments:
 
 .. code-block:: sh
 
    tox list
 
-To run a specific test or list of tests, you can add test file names (and any other pytest_ options) after ``--`` when executing the ``py`` tox environment.
-For example:
+To run specific tests via ``pytest``, use:
 
 .. code-block:: sh
 
-   tox run -e py -- tests/database_test.py
+   tox run -e py -- tests/example_test.py
 
 .. _dev-build-docs:
 
@@ -91,47 +87,44 @@ Documentation is built with Sphinx_:
 
    tox run -e docs
 
-The built documentation is located in the :file:`docs/_build/html` directory.
+Output will be in the ``docs/_build/html`` directory.
 
 Updating pre-commit
 ===================
 
-To update the versions of the pre-commit hooks, run:
+To update versions of hooks:
 
 .. code-block:: sh
 
    pre-commit autoupdate
 
-You may wish to do this at the start of a development cycle so that you're using the latest versions of the linters.
+This is useful at the start of a new development cycle.
 
 .. _dev-change-log:
 
 Updating the change log
 =======================
 
-rubin_rag uses scriv_ to maintain its change log.
+**euclid_rag** uses `scriv`_ to manage its change log.
 
-When preparing a pull request, run :command:`scriv create`.
-This will create a change log fragment in :file:`changelog.d`.
-Edit that fragment, removing the sections that do not apply and adding entries fo this pull request.
-You can pass the ``--edit`` flag to :command:`scriv create` to open the created fragment automatically in an editor.
+To create a new entry:
 
-Change log entries use the following sections:
+.. code-block:: sh
+
+   scriv create --edit
+
+This generates a fragment in ``changelog.d/``. Remove unused sections and summarize your changes.
+
+Use these section headers:
 
 .. rst-class:: compact
 
 - **Backward-incompatible changes**
 - **New features**
 - **Bug fixes**
-- **Other changes** (for minor, patch-level changes that are not bug fixes, such as logging formatting changes or updates to the documentation)
+- **Other changes**
 
-These entries will eventually be cut and pasted into the release description for the next release, so the Markdown for the change descriptions should be compatible with GitHub's Markdown conventions for the release description.
-Specifically:
-
-- Each bullet point should be entirely on one line, even if it contains multiple sentences.
-  This is an exception to the normal documentation convention of a newline after each sentence.
-  Unfortunately, GitHub interprets those newlines as hard line breaks, so they would result in an ugly release description.
-- Avoid using too much complex markup, such as nested bullet lists, since the formatting in the GitHub release description may not be what you expect and manually editing it is tedious.
+Keep bullet points on one line each to format well on GitHub.
 
 .. _style-guide:
 
@@ -141,25 +134,15 @@ Style guide
 Code
 ----
 
-- The code style follows :pep:`8`, though in practice lean on Black and isort to format the code for you.
-
+- Follow :pep:`8`. Use ``black`` and ``isort`` via pre-commit.
 - Use :pep:`484` type annotations.
-  The ``tox run -e typing`` test environment, which runs mypy_, ensures that the project's types are consistent.
-
-- Write tests for Pytest_.
+- Write tests using ``pytest``.
 
 Documentation
 -------------
 
-- Follow the `LSST DM User Documentation Style Guide`_, which is primarily based on the `Google Developer Style Guide`_.
+- Follow the `Google Developer Style Guide`_ for user-facing docs.
+- Use ``numpydoc``-formatted docstrings.
+- Write one sentence per line in reStructuredText.
 
-- Document the Python API with numpydoc-formatted docstrings.
-  See the `LSST DM Docstring Style Guide`_.
-
-- Follow the `LSST DM ReStructuredTextStyle Guide`_.
-  In particular, ensure that prose is written **one-sentence-per-line** for better Git diffs.
-
-.. _`LSST DM User Documentation Style Guide`: https://developer.lsst.io/user-docs/index.html
-.. _`Google Developer Style Guide`: https://developers.google.com/style/
-.. _`LSST DM Docstring Style Guide`: https://developer.lsst.io/python/style.html
-.. _`LSST DM ReStructuredTextStyle Guide`: https://developer.lsst.io/restructuredtext/style.html
+.. _Google Developer Style Guide: https://developers.google.com/style/

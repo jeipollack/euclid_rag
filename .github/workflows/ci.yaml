@@ -1,9 +1,6 @@
 name: Python CI
 
 env:
-  # Default Python version used for all jobs other than test, which uses a
-  # matrix of supported versions. Quote the version to avoid interpretation as
-  # a floating point number.
   PYTHON_VERSION: "3.12"
 
 "on":
@@ -11,21 +8,15 @@ env:
   pull_request: {}
   push:
     branches-ignore:
-      # These should always correspond to pull requests, so ignore them for
-      # the push trigger and let them be triggered by the pull_request
-      # trigger, avoiding running the workflow twice.  This is a minor
-      # optimization so there's no need to ensure this is comprehensive.
       - "dependabot/**"
       - "gh-readonly-queue/**"
       - "renovate/**"
-      # - "tickets/**"
-      # - "u/**"
   release:
     types: [published]
+  workflow_dispatch: {}
 
 jobs:
   lint:
-
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -41,7 +32,6 @@ jobs:
         uses: pre-commit/action@v3.0.1
 
   test:
-
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -61,60 +51,33 @@ jobs:
           tox-plugins: tox-uv
 
   build:
-    permissions:
-        contents: read
-        packages: write  # <-- This is where you set the GITHUB_TOKEN permissions
-
+    if: false  # Disabled for now (enable when ready to push docker images)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    if: >
-      github.event_name != 'merge_group'
-      && (startsWith(github.ref, 'refs/heads/main'))
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Define the Docker tag
-        id: vars
-        run: echo "tag=$(scripts/docker-tag.sh)" >> $GITHUB_OUTPUT
-
-      - name: Print the tag
-        id: print
-        run: echo ${{ steps.vars.outputs.tag }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
+      - name: Build (no push)
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
-          tags: |
-            ghcr.io/lsst-dm/rubin_rag
+          tags: my-local/dev-image
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
   docs:
-
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # full history for setuptools_scm
+          fetch-depth: 0
 
       - name: Install Graphviz
         run: sudo apt-get install graphviz
@@ -124,12 +87,9 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           tox-envs: "docs"
-          # Add docs-linkcheck when the docs and PyPI package are published
-          # tox-envs: "docs,docs-linkcheck"
           tox-plugins: tox-uv
 
   test-packaging:
-
     name: Test packaging
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -138,35 +98,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # full history for setuptools_scm
+          fetch-depth: 0
 
-      - name: Build and publish
+      - name: Build and test packaging (no upload)
         uses: lsst-sqre/build-and-publish-to-pypi@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           upload: false
 
   pypi:
-
-    # This job requires set up:
-    # 1. Set up a trusted publisher for PyPI
-    # 2. Set up a "pypi" environment in the repository
-    # See https://github.com/lsst-sqre/build-and-publish-to-pypi
+    if: false  # Disable PyPI release for now
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [lint, test, docs, test-packaging]
     environment:
       name: pypi
-      url: https://pypi.org/p/rubin_rag
+      url: https://pypi.org/p/euclid_rag
     permissions:
       id-token: write
-    if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # full history for setuptools_scm
+          fetch-depth: 0
 
       - name: Build and publish
         uses: lsst-sqre/build-and-publish-to-pypi@v2

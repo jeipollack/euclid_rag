@@ -1,7 +1,7 @@
 # Change log
 
-rubin_rag is versioned with [semver](https://semver.org/).
+`euclid_rag` is versioned according to [Semantic Versioning](https://semver.org/).
 
-Find changes for the upcoming release in the project's [changelog.d directory](https://github.com/lsst-dm/rubin_rag/tree/main/changelog.d/).
+Planned and unreleased changes are tracked via individual changelog fragment files located in the [`changelog.d` directory](https://github.com/jeipollack/euclid_rag/tree/main/changelog.d/).
 
 <!-- scriv-insert-here -->
