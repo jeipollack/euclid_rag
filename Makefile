@@ -18,6 +18,7 @@ init:
 	pip install --upgrade uv
 	uv pip install --upgrade pre-commit tox tox-uv
 	uv pip install --upgrade -e ".[dev]"
+	$(MAKE) pull-models
 	pre-commit install
 	rm -rf .tox
 
@@ -40,10 +41,15 @@ update: update-deps init
 
 .PHONY: update-deps
 update-deps:
-	pip install --upgrade uv
+	pip  install --upgrade uv
 	uv pip install --upgrade pre-commit
 	pre-commit autoupdate
 
 .PHONY: html
 html:
 	sphinx-build -b html docs _build/html
+.PHONY: pull-models
+pull-models:
+	@command -v ollama >/dev/null 2>&1 || { \
+	  echo "Ollama is not installed. See https://ollama.com/download"; exit 1; }
+	ollama pull Gemma3:12B
