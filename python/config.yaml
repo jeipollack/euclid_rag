@@ -1,0 +1,11 @@
+pdf_path: "Euclid. I. Overview of the Euclid mission.pdf"
+index_dir: "faiss_index"
+embedder_class: "E5MpsEmbedder"
+embedder_kwargs:
+  model_name: "intfloat/e5-small-v2"
+  batch_size: 16
+llm_kwargs:
+  model: "gemma3:12b"
+  temperature: 0
+chunk_size: 800
+chunk_overlap: 100
