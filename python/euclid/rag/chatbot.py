@@ -23,7 +23,6 @@
 
 """Set up of base chatbot based on settings in app_config.yaml file."""
 
-import subprocess
 from pathlib import Path
 
 import streamlit as st
@@ -40,8 +39,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.runnables import Runnable
@@ -52,19 +49,10 @@ from transformers import AutoModel, AutoTokenizer
 from .streamlit_callback import get_streamlit_cb
 
 
-def start_ollama_server(model: str) -> None:
-    """Ensure the Ollama server is running with the specified model."""
-    subprocess.Popen(["ollama", "run", model])
-
-
 @st.cache_resource
-def load_cfg(config_path: str | None = None) -> dict:
-    """Load chatbot configuration from app_config.yaml."""
-    cfg_path = (
-        Path(config_path)
-        if config_path
-        else Path(__file__).resolve().parent / "app_config.yaml"
-    )
+def load_cfg() -> dict:
+    """Load chatbot configuration from config.yaml."""
+    cfg_path = Path(__file__).resolve().parents[2] / "config.yaml"
     with cfg_path.open() as fh:
         return yaml.safe_load(fh)
 
