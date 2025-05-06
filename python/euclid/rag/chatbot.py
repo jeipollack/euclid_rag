@@ -25,10 +25,12 @@
 GPT-4o-mini for answering user queries.
 """
 
-import os
+from pathlib import Path
 
 import streamlit as st
+import torch
 import weaviate
+import yaml
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts.chat import (
@@ -39,13 +41,22 @@ from langchain.prompts.chat import (
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
+from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.vectorstores.base import VectorStoreRetriever
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from weaviate.classes.init import Auth
+from langchain_ollama import OllamaLLM
+from transformers import AutoModel, AutoTokenizer
 
 from .custom_weaviate_vector_store import CustomWeaviateVectorStore
 from .streamlit_callback import get_streamlit_cb
+
+
+@st.cache_resource
+def load_cfg() -> dict:
+    """Load chatbot configuration from config.yaml."""
+    cfg_path = Path(__file__).resolve().parents[2] / "config.yaml"
+    with cfg_path.open() as fh:
+        return yaml.safe_load(fh)
 
 
 def submit_text() -> None:
@@ -56,39 +67,16 @@ def submit_text() -> None:
 @st.cache_resource(ttl="1h")
 def configure_retriever() -> VectorStoreRetriever:
     """Configure the Weaviate retriever."""
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
-    http_host = os.getenv("HTTP_HOST")
-    grpc_host = os.getenv("GRPC_HOST")
-
-    if openai_api_key is None:
-        raise ValueError("OPENAI_API_KEY environment variable is not set")
-    if weaviate_api_key is None:
-        raise ValueError("WEAVIATE_API_KEY environment variable is not set")
-    if http_host is None:
-        raise ValueError("HTTP_HOST environment variable is not set")
-    if grpc_host is None:
-        raise ValueError("GRPC_HOST environment variable is not set")
-
-    client = weaviate.connect_to_custom(
-        http_host=http_host,  # Hostname for the HTTP API connection
-        http_port=80,  # Default is 80, WCD uses 443
-        http_secure=False,  # Whether to use https (secure) for HTTP
-        grpc_host=grpc_host,  # Hostname for the gRPC API connection
-        grpc_port=50051,  # Default is 50051, WCD uses 443
-        grpc_secure=False,  # Whether to use a secure channel for gRPC
-        auth_credentials=Auth.api_key(
-            weaviate_api_key
-        ),  # The API key to use for authentication
-        headers={"X-OpenAI-Api-Key": openai_api_key},
-        skip_init_checks=True,
+    client = weaviate.connect_to_embedded(
+        persistence_data_path="./.weaviate",
+        port=8977,
     )
 
     return CustomWeaviateVectorStore(
         client=client,
         index_name="LangChain_9787ec4b92d3438a8de3ff04ead7ead6",
         text_key="text",
-        embedding=OpenAIEmbeddings(),
+        embedding=E5MpsEmbedder(**load_cfg()["embedder_kwargs"]),
         attributes=["source", "source_key"],
     ).as_retriever(
         search_type="similarity",
@@ -96,12 +84,68 @@ def configure_retriever() -> VectorStoreRetriever:
     )
 
 
+# Embeddings
+def get_device() -> str:
+    """Return the best available device: 'cuda', 'mps', or 'cpu'."""
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+
+
+class E5MpsEmbedder(Embeddings):
+    """E5 embedding model running on GPU, MPS or CPU."""
+
+    def __init__(
+        self, model_name: str = "intfloat/e5-small-v2", batch_size: int = 16
+    ) -> None:
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        device = get_device()
+        self.model = AutoModel.from_pretrained(model_name).to(device)
+        self.device = device
+        self.batch_size = batch_size
+
+    def _embed(self, texts: list[str]) -> list[list[float]]:
+        """Embed a list of texts into vector representations."""
+        out: list[list[float]] = []
+        for i in range(0, len(texts), self.batch_size):
+            toks = self.tokenizer(
+                texts[i : i + self.batch_size],
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=512,
+            ).to(self.device)
+            with torch.no_grad():
+                out.extend(
+                    self.model(**toks)
+                    .last_hidden_state[:, 0, :]
+                    .cpu()
+                    .numpy()
+                    .tolist()
+                )
+        return out
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """Embed a list of documents."""
+        return self._embed(texts)
+
+    def embed_query(self, text: str) -> list[float]:
+        """Embed a single query string."""
+        return self._embed([text])[0]
+
+
 def create_qa_chain(
     retriever: VectorStoreRetriever,
 ) -> ChatPromptTemplate:
     """Create a QA chain for the chatbot."""
-    # Setup ChatOpenAI (Language Model)
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
+    cfg = load_cfg()
+    llm = OllamaLLM(
+        **cfg["llm_kwargs"],
+        streaming=True,
+    )
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
@@ -111,6 +155,12 @@ def create_qa_chain(
     In your response, do not recommend reading elsewhere.
     Use the following pieces of context to answer the user's
     question at the end.
+    You must only use the provided CONTEXT.
+    Never guess, elaborate, or use prior knowledge.
+    If the answer is in CONTEXT, quote it directly or summarize precisely.
+    Cite PDF file names like [paper.pdf].
+    If the answer is not in CONTEXT, reply exactly: I don't have that info.
+
     ----------------
     {context}
     ----------------"""
