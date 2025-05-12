@@ -252,7 +252,7 @@ def handle_user_input(
                 {"callbacks": [stream_handler]},
             )
 
-            msgs.add_ai_message(result["answer"])  # type: ignore[index]
+            msgs.add_ai_message(result.content)
 
             # Display source documents in an expander
             with st.expander("See sources"):
