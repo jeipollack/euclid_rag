@@ -25,6 +25,7 @@
 
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import streamlit as st
 import torch
@@ -250,17 +251,16 @@ def handle_user_input(
             stream_handler = get_streamlit_cb(st.empty())
 
             # Invoke retriever logic
-            result = qa_chain.invoke(
+            result: dict[str, Any] = qa_chain.invoke(
                 {
                     "input": user_query,
                     "chat_history": msgs.messages,
                 },
                 {"callbacks": [stream_handler]},
             )
-            answer = result["answer"]
-            msgs.add_ai_message(answer)
+            msgs.add_ai_message(result["answer"])
 
-            # Optional: Display source documents to user
+            # Display source documents in an expander
             with st.expander("See sources"):
                 scores = [
                     chunk.metadata["score"]
