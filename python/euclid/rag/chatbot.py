@@ -76,14 +76,21 @@ def configure_retriever() -> VectorStoreRetriever:
     """Load FAISS retriever based on config.yaml."""
     cfg = load_cfg()
 
-    embedder = E5MpsEmbedder(**cfg["embedder_kwargs"])
-    index_dir = Path(cfg["index_dir"])
+    embedder = E5MpsEmbedder(
+        model_name=cfg["embeddings"]["model_name"],
+        batch_size=cfg["embeddings"]["batch_size"],
+    )
+    index_dir = Path(cfg["vector_store"]["index_dir"])
+
     if index_dir.exists():
         vectorstore = FAISS.load_local(
             index_dir, embedder, allow_dangerous_deserialization=True
         )
     else:
-        pdf_path = Path(__file__).resolve().parents[1] / cfg["pdf_path"]
+        pdf_path = (
+            Path(__file__).resolve().parents[1] / cfg["data"]["pdf_path"]
+        )
+
         loader = PyMuPDFLoader(str(pdf_path))
         docs = loader.load()
 
@@ -92,7 +99,8 @@ def configure_retriever() -> VectorStoreRetriever:
             d.metadata["source_key"] = pdf_path.name
 
         splitter = RecursiveCharacterTextSplitter(
-            chunk_size=cfg["chunk_size"], chunk_overlap=cfg["chunk_overlap"]
+            chunk_size=cfg["data"]["chunk_size"],
+            chunk_overlap=cfg["data"]["chunk_overlap"],
         )
         chunks = splitter.split_documents(docs)
 
@@ -163,8 +171,8 @@ def create_qa_chain(
 ) -> ChatPromptTemplate:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    run_ollama(cfg["llm_kwargs"]["model"])
-    llm = OllamaLLM(**cfg["llm_kwargs"], streaming=True)
+    run_ollama(cfg["llm"]["model"])
+    llm = OllamaLLM(**cfg["llm"], streaming=True)
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
