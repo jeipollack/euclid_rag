@@ -23,6 +23,7 @@
 
 """Set up of base chatbot based on settings in app_config.yaml file."""
 
+import subprocess
 from pathlib import Path
 
 import streamlit as st
@@ -39,6 +40,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.runnables import Runnable
@@ -47,6 +50,11 @@ from langchain_ollama import OllamaLLM
 from transformers import AutoModel, AutoTokenizer
 
 from .streamlit_callback import get_streamlit_cb
+
+
+def run_ollama(model: str) -> None:
+    """Set up the Ollama model."""
+    subprocess.Popen(["ollama", "run", model])
 
 
 @st.cache_resource
@@ -171,8 +179,8 @@ def create_qa_chain(
 ) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    start_ollama_server(cfg["llm"]["model"])
-    llm = OllamaLLM(**cfg["llm"], streaming=True)
+    run_ollama(cfg["llm_kwargs"]["model"])
+    llm = OllamaLLM(**cfg["llm_kwargs"], streaming=True)
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
