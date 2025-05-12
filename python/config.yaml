@@ -1,11 +1,18 @@
-pdf_path: "papers/Euclid_I_Overview_of_the_Euclid_mission.pdf"
-index_dir: "faiss_index"
-embedder_class: "E5MpsEmbedder"
-embedder_kwargs:
-  model_name: "intfloat/e5-small-v2"
-  batch_size: 16
-llm_kwargs:
+llm:
   model: "gemma3:4b"
   temperature: 0
-chunk_size: 800
-chunk_overlap: 100
+
+embeddings:
+  class: "E5MpsEmbedder"
+  kwargs:
+    model_name: "intfloat/e5-small-v2"
+    batch_size: 16
+
+vector_store:
+  type: "faiss"
+  index_dir: "faiss_index"
+
+data:
+  pdf_path: "papers/Euclid_I_Overview_of_the_Euclid_mission.pdf"
+  chunk_size: 800
+  chunk_overlap: 100
