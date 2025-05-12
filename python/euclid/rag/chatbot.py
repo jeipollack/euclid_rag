@@ -75,7 +75,6 @@ def configure_retriever() -> VectorStoreRetriever:
     """Load retriever based on config.yaml."""
     cfg = load_cfg()
 
-    # Initialize embedding model
     embedder = E5MpsEmbedder(
         model_name=cfg["embeddings"]["model_name"],
         batch_size=cfg["embeddings"]["batch_size"],
@@ -88,7 +87,6 @@ def configure_retriever() -> VectorStoreRetriever:
             str(index_dir), embedder, allow_dangerous_deserialization=True
         )
     else:
-        # Load PDF and build FAISS vectorstore from scratch
         pdf_path = (
             Path(__file__).resolve().parents[1] / cfg["data"]["pdf_path"]
         )
@@ -179,8 +177,8 @@ def create_qa_chain(
 ) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    run_ollama(cfg["llm_kwargs"]["model"])
-    llm = OllamaLLM(**cfg["llm_kwargs"], streaming=True)
+    run_ollama(cfg["llm"]["model"])
+    llm = OllamaLLM(**cfg["llm"], streaming=True)
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant

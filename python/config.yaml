@@ -4,9 +4,8 @@ llm:
 
 embeddings:
   class: "E5MpsEmbedder"
-  kwargs:
-    model_name: "intfloat/e5-small-v2"
-    batch_size: 16
+  model_name: "intfloat/e5-small-v2"
+  batch_size: 16
 
 vector_store:
   type: "faiss"
