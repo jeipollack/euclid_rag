@@ -46,6 +46,7 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.runnables import Runnable
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 from transformers import AutoModel, AutoTokenizer
@@ -168,7 +169,7 @@ class E5MpsEmbedder(Embeddings):
 
 def create_qa_chain(
     retriever: VectorStoreRetriever,
-) -> ChatPromptTemplate:
+) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
     run_ollama(cfg["llm"]["model"])
@@ -208,7 +209,7 @@ def create_qa_chain(
 
 
 def handle_user_input(
-    qa_chain: ChatPromptTemplate, msgs: StreamlitChatMessageHistory
+    qa_chain: Runnable, msgs: StreamlitChatMessageHistory
 ) -> None:
     """Handle user input and chat history."""
     # Check if the message history is empty or the user
@@ -251,7 +252,7 @@ def handle_user_input(
                 },
                 {"callbacks": [stream_handler]},
             )
-            answer = result.content
+            answer = result["answer"]
             msgs.add_ai_message(answer)
 
             # Display source documents in an expander
