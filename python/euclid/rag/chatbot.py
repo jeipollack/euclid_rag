@@ -84,7 +84,7 @@ def configure_retriever() -> VectorStoreRetriever:
 
     if index_dir.exists():
         vectorstore = FAISS.load_local(
-            index_dir, embedder, allow_dangerous_deserialization=True
+            str(index_dir), embedder, allow_dangerous_deserialization=True
         )
     else:
         pdf_path = (
@@ -105,7 +105,7 @@ def configure_retriever() -> VectorStoreRetriever:
         chunks = splitter.split_documents(docs)
 
         vectorstore = FAISS.from_documents(chunks, embedder)
-        vectorstore.save_local(index_dir)
+        vectorstore.save_local(str(index_dir))
 
     return vectorstore.as_retriever(
         search_type="similarity",
