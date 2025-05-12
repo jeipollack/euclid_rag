@@ -49,15 +49,18 @@ from euclid.rag.layout import (
 load_dotenv()
 
 # Set page configuration and design
+icon_path = str(
+    Path(__file__).resolve().parents[3] / "static" / "rubin_telescope.png"
+)
 st.set_page_config(
     page_title="Euclid Bot",
     initial_sidebar_state="collapsed",
-    page_icon="../../../static/rubin_telescope.png",
+    page_icon=icon_path,
 )
-st.logo("../../../static/rubin_telescope.png")
 
 # Load the CSS file
-file_path = Path("../../../static/style.css")
+file_path = Path(__file__).resolve().parents[3] / "static" / "style.css"
+
 with Path.open(file_path) as css:
     st.markdown(f"<style>{css.read()}</style>", unsafe_allow_html=True)
 
