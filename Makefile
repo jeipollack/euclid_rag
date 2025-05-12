@@ -49,7 +49,3 @@ update-deps:
 html:
 	sphinx-build -b html docs _build/html
 .PHONY: pull-models
-pull-models:
-	@command -v ollama >/dev/null 2>&1 || { \
-	  echo "Ollama is not installed. See https://ollama.com/download"; exit 1; }
-	ollama pull Gemma3:12B
