@@ -25,11 +25,11 @@
 GPT-4o-mini for answering user queries.
 """
 
+import subprocess
 from pathlib import Path
 
 import streamlit as st
 import torch
-import weaviate
 import yaml
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -38,17 +38,24 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 from transformers import AutoModel, AutoTokenizer
 
-from .custom_weaviate_vector_store import CustomWeaviateVectorStore
 from .streamlit_callback import get_streamlit_cb
+
+
+def run_ollama(model: str) -> None:
+    """Set up the Ollama model."""
+    subprocess.Popen(["ollama", "run", model])
 
 
 @st.cache_resource
@@ -66,19 +73,33 @@ def submit_text() -> None:
 
 @st.cache_resource(ttl="1h")
 def configure_retriever() -> VectorStoreRetriever:
-    """Configure the Weaviate retriever."""
-    client = weaviate.connect_to_embedded(
-        persistence_data_path="./.weaviate",
-        port=8977,
-    )
+    """Load FAISS retriever based on config.yaml."""
+    cfg = load_cfg()
 
-    return CustomWeaviateVectorStore(
-        client=client,
-        index_name="LangChain_9787ec4b92d3438a8de3ff04ead7ead6",
-        text_key="text",
-        embedding=E5MpsEmbedder(**load_cfg()["embedder_kwargs"]),
-        attributes=["source", "source_key"],
-    ).as_retriever(
+    embedder = E5MpsEmbedder(**cfg["embedder_kwargs"])
+    index_dir = Path(cfg["index_dir"])
+    if index_dir.exists():
+        vectorstore = FAISS.load_local(
+            index_dir, embedder, allow_dangerous_deserialization=True
+        )
+    else:
+        pdf_path = Path(__file__).resolve().parents[1] / cfg["pdf_path"]
+        loader = PyMuPDFLoader(str(pdf_path))
+        docs = loader.load()
+
+        for d in docs:
+            d.metadata["source"] = pdf_path.name
+            d.metadata["source_key"] = pdf_path.name
+
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=cfg["chunk_size"], chunk_overlap=cfg["chunk_overlap"]
+        )
+        chunks = splitter.split_documents(docs)
+
+        vectorstore = FAISS.from_documents(chunks, embedder)
+        vectorstore.save_local(index_dir)
+
+    return vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 6, "return_metadata": ["score"]},
     )
@@ -142,10 +163,8 @@ def create_qa_chain(
 ) -> ChatPromptTemplate:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    llm = OllamaLLM(
-        **cfg["llm_kwargs"],
-        streaming=True,
-    )
+    run_ollama(cfg["llm_kwargs"]["model"])
+    llm = OllamaLLM(**cfg["llm_kwargs"], streaming=True)
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
@@ -166,12 +185,13 @@ def create_qa_chain(
     ----------------"""
 
     # Create a ChatPromptTemplate for the QA conversation
-    qa_prompt = ChatPromptTemplate.from_messages(
-        [
+    qa_prompt = ChatPromptTemplate(
+        messages=[
             SystemMessagePromptTemplate.from_template(system_template),
             MessagesPlaceholder("chat_history"),
             HumanMessagePromptTemplate.from_template("Question:```{input}```"),
-        ]
+        ],
+        input_variables=["input", "chat_history", "context"],
     )
 
     # Create the QA chain
@@ -191,8 +211,12 @@ def handle_user_input(
     # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
-        "human": "../../../static/user_avatar.png",
-        "ai": "../../../static/rubin_telescope.png",
+        "human": Path(__file__).resolve().parents[3]
+        / "static"
+        / "user_avatar.png",
+        "ai": Path(__file__).resolve().parents[3]
+        / "static"
+        / "rubin_telescope.png",
     }
 
     for msg in msgs.messages:
@@ -211,38 +235,23 @@ def handle_user_input(
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
             stream_handler = get_streamlit_cb(st.empty())
 
-            filters = [
-                source.lower()
-                for source in st.session_state["required_sources"]
-            ]
-            where_filter = {
-                "operator": "Or",
-                "operands": [
-                    {
-                        "path": ["source_key"],
-                        "operator": "Equal",
-                        "valueText": source,
-                    }
-                    for source in filters
-                ],
-            }
-
             # Invoke retriever logic
             result = qa_chain.invoke(
                 {
                     "input": user_query,
                     "chat_history": msgs.messages,
-                    "filter": where_filter,
                 },
                 {"callbacks": [stream_handler]},
             )
+
             msgs.add_ai_message(result["answer"])  # type: ignore[index]
 
             # Display source documents in an expander
             with st.expander("See sources"):
                 scores = [
                     chunk.metadata["score"]
-                    for chunk in result["context"]  # type: ignore[index]
+                    for chunk in result["context"]
+                    if "score" in chunk.metadata
                 ]
 
                 if scores:
@@ -252,7 +261,7 @@ def handle_user_input(
                     )  # Set threshold to 90% of the highest score
 
                     for chunk in result["context"]:  # type: ignore[index]
-                        score = chunk.metadata["score"]
+                        score = chunk.metadata.get("score", 0)
 
                         # Only show sources with scores
                         # significantly higher (above the threshold)
