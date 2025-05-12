@@ -269,7 +269,7 @@ def handle_user_input(
                         max_score * 0.9
                     )  # Set threshold to 90% of the highest score
 
-                    for chunk in result["context"]:  # type: ignore[index]
+                    for chunk in result["context"]:
                         score = chunk.metadata.get("score", 0)
 
                         # Only show sources with scores
