@@ -58,9 +58,13 @@ def start_ollama_server(model: str) -> None:
 
 
 @st.cache_resource
-def load_cfg() -> dict:
-    """Load chatbot configuration from config.yaml."""
-    cfg_path = Path(__file__).resolve().parents[2] / "config.yaml"
+def load_cfg(config_path: str | None = None) -> dict:
+    """Load chatbot configuration from app_config.yaml."""
+    cfg_path = (
+        Path(config_path)
+        if config_path
+        else Path(__file__).resolve().parent / "app_config.yaml"
+    )
     with cfg_path.open() as fh:
         return yaml.safe_load(fh)
 
