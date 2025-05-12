@@ -25,6 +25,8 @@
 app that interacts with the chatbot.
 """
 
+from pathlib import Path
+
 import streamlit as st
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
@@ -56,7 +58,12 @@ def setup_landing_page() -> None:
         with col2:
             # Add logo (Make sure the logo is in your
             # working directory or provide the full path)
-            st.image("../../../static/rubin_telescope.png", clamp=True)
+            logo_path = (
+                Path(__file__).resolve().parents[3]
+                / "static"
+                / "rubin_telescope.png"
+            )
+            st.image(str(logo_path), clamp=True)
 
             # Centered title and message
             st.markdown(
@@ -65,7 +72,7 @@ def setup_landing_page() -> None:
             )
             st.markdown(
                 "<h4 class='h2-landing-page'>I am the "
-                "Rubin AI Assistant.</h4>",
+                "Euclid AI Assistant.</h4>",
                 unsafe_allow_html=True,
             )
         with col3:
@@ -83,7 +90,7 @@ def setup_header_and_footer(msgs: StreamlitChatMessageHistory) -> None:
     st.button(":material/edit_square:", on_click=clear_text)
     st.markdown(
         (
-            "<footer class='footer-fixed'>Rubin AI Assistant aims for "
+            "<footer class='footer-fixed'>Euclid AI Assistant aims for "
             "accuracy, but can make mistakes.</footer>"
         ),
         unsafe_allow_html=True,
