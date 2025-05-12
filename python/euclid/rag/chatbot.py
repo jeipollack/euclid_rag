@@ -257,7 +257,7 @@ def handle_user_input(
                 },
                 {"callbacks": [stream_handler]},
             )
-            answer = result.content
+            answer = result["answer"]
             msgs.add_ai_message(answer)
 
             # Display source documents in an expander
