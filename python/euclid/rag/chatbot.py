@@ -54,8 +54,8 @@ from transformers import AutoModel, AutoTokenizer
 from .streamlit_callback import get_streamlit_cb
 
 
-def run_ollama(model: str) -> None:
-    """Set up the Ollama model."""
+def start_ollama_server(model: str) -> None:
+    """Ensure the Ollama server is running with the specified model."""
     subprocess.Popen(["ollama", "run", model])
 
 
@@ -172,7 +172,7 @@ def create_qa_chain(
 ) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    run_ollama(cfg["llm"]["model"])
+    start_ollama_server(cfg["llm"]["model"])
     llm = OllamaLLM(**cfg["llm"], streaming=True)
 
     # Define the system message template
