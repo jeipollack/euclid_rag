@@ -18,7 +18,6 @@ init:
 	pip install --upgrade uv
 	uv pip install --upgrade pre-commit tox tox-uv
 	uv pip install --upgrade -e ".[dev]"
-	$(MAKE) pull-models
 	pre-commit install
 	rm -rf .tox
 
@@ -41,7 +40,7 @@ update: update-deps init
 
 .PHONY: update-deps
 update-deps:
-	pip  install --upgrade uv
+	pip install --upgrade uv
 	uv pip install --upgrade pre-commit
 	pre-commit autoupdate
 
