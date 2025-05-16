@@ -33,7 +33,12 @@ The best way to start contributing to rubin_rag is by cloning this repository, c
 ```sh
 git clone https://github.com/jeipollack/euclid_rag
 cd euclid_rag
+
+python3 -m venv .venv
+source .venv/bin/activate
+
 make init
+
 ```
 
 ### Run the chatbot:
