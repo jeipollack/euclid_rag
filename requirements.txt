@@ -14,3 +14,6 @@ openai==1.65.4
 langchain-openai==0.3.7
 langchain-weaviate==0.0.4
 langchain-community==0.3.19
+torch==2.6.0
+transformers==4.49.0
+langchain-ollama==0.3.2
