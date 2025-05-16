@@ -107,6 +107,11 @@ strict_equality = true
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
 # Uncomment and add the "pydantic.mypy" plugin if using Pydantic. Add the
 # "sqlalchemy.ext.mypy.plugin" if using SQL Alchemy.
 # plugins = []

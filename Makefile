@@ -47,3 +47,4 @@ update-deps:
 .PHONY: html
 html:
 	sphinx-build -b html docs _build/html
+.PHONY: pull-models
