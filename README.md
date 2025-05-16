@@ -47,12 +47,6 @@ cd python/euclid
 streamlit run rag/app.py
 ```
 
-### Run the chatbot:
-```sh
-cd python/euclid
-streamlit run rag/app.py
-```
-
 You can run tests and build documentation with [tox](https://tox.wiki/en/latest/):
 
 ```sh
