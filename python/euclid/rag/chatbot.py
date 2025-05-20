@@ -79,6 +79,7 @@ def configure_retriever() -> VectorStoreRetriever:
     """Load retriever based on config.yaml."""
     cfg = load_cfg()
 
+    # Initialize embedding model
     embedder = E5MpsEmbedder(
         model_name=cfg["embeddings"]["model_name"],
         batch_size=cfg["embeddings"]["batch_size"],
@@ -91,6 +92,7 @@ def configure_retriever() -> VectorStoreRetriever:
             str(index_dir), embedder, allow_dangerous_deserialization=True
         )
     else:
+        # Load PDF and build FAISS vectorstore from scratch
         pdf_path = (
             Path(__file__).resolve().parents[1] / cfg["data"]["pdf_path"]
         )
@@ -264,7 +266,7 @@ def handle_user_input(
             answer = result["answer"]
             msgs.add_ai_message(answer)
 
-            # Display source documents in an expander
+            # Optional: Display source documents to user
             with st.expander("See sources"):
                 scores = [
                     chunk.metadata["score"]
