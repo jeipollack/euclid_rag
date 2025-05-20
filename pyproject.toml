@@ -46,7 +46,7 @@ dev = [
     # Testing
     "coverage[toml]",
     "pytest",
-    "pytest-cove",
+    "pytest-cov",
     "pytest-asyncio",
     "mypy",
     # Documentation
@@ -82,7 +82,7 @@ branch = true
 source = ["euclid"]
 
 [tool.coverage.paths]
-source = ["python", ".tox/*/site-packages"]
+source = ["src", ".tox/py*/**/site-packages"]
 
 [tool.coverage.report]
 show_missing = true
