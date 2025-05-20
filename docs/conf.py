@@ -34,9 +34,6 @@ extensions = [
 # ——————————————————————————————
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "_rst_epilog.rst"]
-
-
-html_static_path = ["_static"]  # create this folder (even if empty)
 html_css_files = []  # add any custom.css here
 
 # ——————————————————————————————
@@ -47,22 +44,6 @@ html_title = project
 html_short_title = project
 html_logo = None
 html_favicon = None
-
-html_theme_options = {
-    "external_links": [],
-    "icon_links": [],
-    "pygment_light_style": "friendly",
-    "pygment_dark_style": "monokai",
-    "logo": {
-        "text": project,
-        "alt_text": project,
-        "image_light": "_static/logo-light.png",
-        "image_dark": "_static/logo-dark.png",
-        "image_class": "logo",
-        "image_style": "default",
-    },
-}
-
 
 # Disable the “Edit on GitHub” button entirely
 html_context = {"show_github_edit_link": False, "default_mode": "auto"}
