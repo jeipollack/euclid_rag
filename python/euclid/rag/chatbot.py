@@ -78,9 +78,10 @@ def submit_text() -> None:
 
 @st.cache_resource(ttl="1h")
 def configure_retriever() -> VectorStoreRetriever:
-    """Load FAISS retriever based on config.yaml."""
+    """Load retriever based on config.yaml."""
     cfg = load_cfg()
 
+    # Initialize embedding model
     embedder = E5MpsEmbedder(
         model_name=cfg["embeddings"]["model_name"],
         batch_size=cfg["embeddings"]["batch_size"],
@@ -88,10 +89,12 @@ def configure_retriever() -> VectorStoreRetriever:
     index_dir = Path(cfg["vector_store"]["index_dir"])
 
     if index_dir.exists():
+        # Load prebuilt FAISS vectorstore
         vectorstore = FAISS.load_local(
             str(index_dir), embedder, allow_dangerous_deserialization=True
         )
     else:
+        # Load PDF and build FAISS vectorstore from scratch
         pdf_path = (
             Path(__file__).resolve().parents[1] / cfg["data"]["pdf_path"]
         )
@@ -99,26 +102,30 @@ def configure_retriever() -> VectorStoreRetriever:
         loader = PyMuPDFLoader(str(pdf_path))
         docs = loader.load()
 
+        # Add metadata for source tracking
         for d in docs:
             d.metadata["source"] = pdf_path.name
             d.metadata["source_key"] = pdf_path.name
 
+        # Split data into chunks with overlap
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=cfg["data"]["chunk_size"],
             chunk_overlap=cfg["data"]["chunk_overlap"],
         )
         chunks = splitter.split_documents(docs)
 
+        # Load local vectorstore
         vectorstore = FAISS.from_documents(chunks, embedder)
         vectorstore.save_local(str(index_dir))
 
+    # Return a retriever for similarity-based search (top k most similar docs)
     return vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 6, "return_metadata": ["score"]},
     )
 
 
-# Embeddings
+# Device detection helper
 def get_device() -> str:
     """Return the best available device: 'cuda', 'mps', or 'cpu'."""
     if torch.cuda.is_available():
@@ -129,6 +136,7 @@ def get_device() -> str:
         return "cpu"
 
 
+# Embedding 'generator' using E5 from HuggingFace
 class E5MpsEmbedder(Embeddings):
     """E5 embedding model running on GPU, MPS or CPU."""
 
@@ -153,6 +161,7 @@ class E5MpsEmbedder(Embeddings):
                 max_length=512,
             ).to(self.device)
             with torch.no_grad():
+                # Extract CLS (summary) token -> transformer specific
                 out.extend(
                     self.model(**toks)
                     .last_hidden_state[:, 0, :]
@@ -259,7 +268,7 @@ def handle_user_input(
             answer = result["answer"]
             msgs.add_ai_message(answer)
 
-            # Display source documents in an expander
+            # Optional: Display source documents to user
             with st.expander("See sources"):
                 scores = [
                     chunk.metadata["score"]
@@ -276,7 +285,6 @@ def handle_user_input(
                     for chunk in result["context"]:
                         score = chunk.metadata.get("score", 0)
 
-                        # Only show sources with scores
-                        # significantly higher (above the threshold)
+                        # Only show sources with scores above threshold
                         if score >= threshold:
                             st.info(f"Source: {chunk.metadata['source']}")
