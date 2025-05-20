@@ -21,9 +21,7 @@
 #
 
 
-"""Set up a Streamlit-based chatbot using Weaviate for vector search and
-GPT-4o-mini for answering user queries.
-"""
+"""Set up of base chatbot based on settings in app_config.yaml file."""
 
 import subprocess
 from pathlib import Path
