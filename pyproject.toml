@@ -36,7 +36,8 @@ dependencies = [
     "openai==1.65.4",
     "langchain-openai==0.3.7",
     "langchain-weaviate==0.0.4",
-    "langchain-community==0.3.19"
+    "langchain-community==0.3.19",
+    "faiss-cpu==1.9.0.post1"
 ]
 dynamic = ["version"]
 
