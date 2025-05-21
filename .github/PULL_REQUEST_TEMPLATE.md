@@ -6,8 +6,8 @@
      commits if your PR already received reviews or comments.
 
      Before submitting a Pull Request, please ensure you've done the following:
-     - 📖 Read the EUCLID RAG Contributing Guide: TBD
-     - 📖 Read the EUCLID RAG Code of Conduct: TBD
+     - 📖 Read the [EUCLID RAG Contributing Guide](CONTRIBUTING.md)
+     - 📖 Read the [EUCLID RAG Code of Conduct](CODE_OF_CONDUCT.md)
      - 👷‍♀️ Create small PRs. In most cases this will be possible.
      - ✅ Provide tests for your changes.
      - 📝 Use descriptive commit messages.
