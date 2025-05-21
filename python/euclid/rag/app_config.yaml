@@ -1,0 +1,17 @@
+llm:
+  model: "gemma3:4b"
+  temperature: 0
+
+embeddings:
+  class: "E5MpsEmbedder"
+  model_name: "intfloat/e5-small-v2"
+  batch_size: 16
+
+vector_store:
+  type: "faiss"
+  index_dir: "faiss_index"
+
+data:
+  pdf_path: "papers/Euclid_I_Overview_of_the_Euclid_mission.pdf"
+  chunk_size: 800
+  chunk_overlap: 100

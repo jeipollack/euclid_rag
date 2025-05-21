@@ -36,7 +36,8 @@ dependencies = [
     "openai==1.65.4",
     "langchain-openai==0.3.7",
     "langchain-weaviate==0.0.4",
-    "langchain-community==0.3.19"
+    "langchain-community==0.3.19",
+    "faiss-cpu==1.9.0.post1"
 ]
 dynamic = ["version"]
 
@@ -107,6 +108,11 @@ strict_equality = true
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
 # Uncomment and add the "pydantic.mypy" plugin if using Pydantic. Add the
 # "sqlalchemy.ext.mypy.plugin" if using SQL Alchemy.
 # plugins = []

@@ -21,14 +21,14 @@
 #
 
 
-"""Set up a Streamlit-based chatbot using Weaviate for vector search and
-GPT-4o-mini for answering user queries.
-"""
+"""Set up of base chatbot based on settings in app_config.yaml file."""
 
-import os
+import subprocess
+from pathlib import Path
 
 import streamlit as st
-import weaviate
+import torch
+import yaml
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts.chat import (
@@ -36,16 +36,37 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.vectorstores import FAISS
+from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.runnables import Runnable
 from langchain_core.vectorstores.base import VectorStoreRetriever
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from weaviate.classes.init import Auth
+from langchain_ollama import OllamaLLM
+from transformers import AutoModel, AutoTokenizer
 
-from .custom_weaviate_vector_store import CustomWeaviateVectorStore
 from .streamlit_callback import get_streamlit_cb
+
+
+def start_ollama_server(model: str) -> None:
+    """Ensure the Ollama server is running with the specified model."""
+    subprocess.Popen(["ollama", "run", model])
+
+
+@st.cache_resource
+def load_cfg(config_path: str | None = None) -> dict:
+    """Load chatbot configuration from app_config.yaml."""
+    cfg_path = (
+        Path(config_path)
+        if config_path
+        else Path(__file__).resolve().parent / "app_config.yaml"
+    )
+    with cfg_path.open() as fh:
+        return yaml.safe_load(fh)
 
 
 def submit_text() -> None:
@@ -55,53 +76,115 @@ def submit_text() -> None:
 
 @st.cache_resource(ttl="1h")
 def configure_retriever() -> VectorStoreRetriever:
-    """Configure the Weaviate retriever."""
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
-    http_host = os.getenv("HTTP_HOST")
-    grpc_host = os.getenv("GRPC_HOST")
+    """Load retriever based on config.yaml."""
+    cfg = load_cfg()
 
-    if openai_api_key is None:
-        raise ValueError("OPENAI_API_KEY environment variable is not set")
-    if weaviate_api_key is None:
-        raise ValueError("WEAVIATE_API_KEY environment variable is not set")
-    if http_host is None:
-        raise ValueError("HTTP_HOST environment variable is not set")
-    if grpc_host is None:
-        raise ValueError("GRPC_HOST environment variable is not set")
-
-    client = weaviate.connect_to_custom(
-        http_host=http_host,  # Hostname for the HTTP API connection
-        http_port=80,  # Default is 80, WCD uses 443
-        http_secure=False,  # Whether to use https (secure) for HTTP
-        grpc_host=grpc_host,  # Hostname for the gRPC API connection
-        grpc_port=50051,  # Default is 50051, WCD uses 443
-        grpc_secure=False,  # Whether to use a secure channel for gRPC
-        auth_credentials=Auth.api_key(
-            weaviate_api_key
-        ),  # The API key to use for authentication
-        headers={"X-OpenAI-Api-Key": openai_api_key},
-        skip_init_checks=True,
+    # Initialize embedding model
+    embedder = E5MpsEmbedder(
+        model_name=cfg["embeddings"]["model_name"],
+        batch_size=cfg["embeddings"]["batch_size"],
     )
+    index_dir = Path(cfg["vector_store"]["index_dir"])
 
-    return CustomWeaviateVectorStore(
-        client=client,
-        index_name="LangChain_9787ec4b92d3438a8de3ff04ead7ead6",
-        text_key="text",
-        embedding=OpenAIEmbeddings(),
-        attributes=["source", "source_key"],
-    ).as_retriever(
+    if index_dir.exists():
+        # Load prebuilt FAISS vectorstore
+        vectorstore = FAISS.load_local(
+            str(index_dir), embedder, allow_dangerous_deserialization=True
+        )
+    else:
+        # Load PDF and build FAISS vectorstore from scratch
+        pdf_path = (
+            Path(__file__).resolve().parents[1] / cfg["data"]["pdf_path"]
+        )
+
+        loader = PyMuPDFLoader(str(pdf_path))
+        docs = loader.load()
+
+        # Add metadata for source tracking
+        for d in docs:
+            d.metadata["source"] = pdf_path.name
+            d.metadata["source_key"] = pdf_path.name
+
+        # Split data into chunks with overlap
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=cfg["data"]["chunk_size"],
+            chunk_overlap=cfg["data"]["chunk_overlap"],
+        )
+        chunks = splitter.split_documents(docs)
+
+        # Load local vectorstore
+        vectorstore = FAISS.from_documents(chunks, embedder)
+        vectorstore.save_local(str(index_dir))
+
+    # Return a retriever for similarity-based search (top k most similar docs)
+    return vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 6, "return_metadata": ["score"]},
     )
 
 
+# Device detection helper
+def get_device() -> str:
+    """Return the best available device: 'cuda', 'mps', or 'cpu'."""
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+
+
+# Embedding 'generator' using E5 from HuggingFace
+class E5MpsEmbedder(Embeddings):
+    """E5 embedding model running on GPU, MPS or CPU."""
+
+    def __init__(
+        self, model_name: str = "intfloat/e5-small-v2", batch_size: int = 16
+    ) -> None:
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        device = get_device()
+        self.model = AutoModel.from_pretrained(model_name).to(device)
+        self.device = device
+        self.batch_size = batch_size
+
+    def _embed(self, texts: list[str]) -> list[list[float]]:
+        """Embed a list of texts into vector representations."""
+        out: list[list[float]] = []
+        for i in range(0, len(texts), self.batch_size):
+            toks = self.tokenizer(
+                texts[i : i + self.batch_size],
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=512,
+            ).to(self.device)
+            with torch.no_grad():
+                # Extract CLS (summary) token -> transformer specific
+                out.extend(
+                    self.model(**toks)
+                    .last_hidden_state[:, 0, :]
+                    .cpu()
+                    .numpy()
+                    .tolist()
+                )
+        return out
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """Embed a list of documents."""
+        return self._embed(texts)
+
+    def embed_query(self, text: str) -> list[float]:
+        """Embed a single query string."""
+        return self._embed([text])[0]
+
+
 def create_qa_chain(
     retriever: VectorStoreRetriever,
-) -> ChatPromptTemplate:
+) -> Runnable:
     """Create a QA chain for the chatbot."""
-    # Setup ChatOpenAI (Language Model)
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
+    cfg = load_cfg()
+    start_ollama_server(cfg["llm"]["model"])
+    llm = OllamaLLM(**cfg["llm"], streaming=True)
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
@@ -111,17 +194,24 @@ def create_qa_chain(
     In your response, do not recommend reading elsewhere.
     Use the following pieces of context to answer the user's
     question at the end.
+    You must only use the provided CONTEXT.
+    Never guess, elaborate, or use prior knowledge.
+    If the answer is in CONTEXT, quote it directly or summarize precisely.
+    Cite PDF file names like [paper.pdf].
+    If the answer is not in CONTEXT, reply exactly: I don't have that info.
+
     ----------------
     {context}
     ----------------"""
 
     # Create a ChatPromptTemplate for the QA conversation
-    qa_prompt = ChatPromptTemplate.from_messages(
-        [
+    qa_prompt = ChatPromptTemplate(
+        messages=[
             SystemMessagePromptTemplate.from_template(system_template),
             MessagesPlaceholder("chat_history"),
             HumanMessagePromptTemplate.from_template("Question:```{input}```"),
-        ]
+        ],
+        input_variables=["input", "chat_history", "context"],
     )
 
     # Create the QA chain
@@ -130,7 +220,7 @@ def create_qa_chain(
 
 
 def handle_user_input(
-    qa_chain: ChatPromptTemplate, msgs: StreamlitChatMessageHistory
+    qa_chain: Runnable, msgs: StreamlitChatMessageHistory
 ) -> None:
     """Handle user input and chat history."""
     # Check if the message history is empty or the user
@@ -141,8 +231,12 @@ def handle_user_input(
     # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
-        "human": "../../../static/user_avatar.png",
-        "ai": "../../../static/rubin_telescope.png",
+        "human": Path(__file__).resolve().parents[3]
+        / "static"
+        / "user_avatar.png",
+        "ai": Path(__file__).resolve().parents[3]
+        / "static"
+        / "rubin_telescope.png",
     }
 
     for msg in msgs.messages:
@@ -161,38 +255,23 @@ def handle_user_input(
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
             stream_handler = get_streamlit_cb(st.empty())
 
-            filters = [
-                source.lower()
-                for source in st.session_state["required_sources"]
-            ]
-            where_filter = {
-                "operator": "Or",
-                "operands": [
-                    {
-                        "path": ["source_key"],
-                        "operator": "Equal",
-                        "valueText": source,
-                    }
-                    for source in filters
-                ],
-            }
-
             # Invoke retriever logic
             result = qa_chain.invoke(
                 {
                     "input": user_query,
                     "chat_history": msgs.messages,
-                    "filter": where_filter,
                 },
                 {"callbacks": [stream_handler]},
             )
-            msgs.add_ai_message(result["answer"])  # type: ignore[index]
+            answer = result["answer"]
+            msgs.add_ai_message(answer)
 
-            # Display source documents in an expander
+            # Optional: Display source documents to user
             with st.expander("See sources"):
                 scores = [
                     chunk.metadata["score"]
-                    for chunk in result["context"]  # type: ignore[index]
+                    for chunk in result["context"]
+                    if "score" in chunk.metadata
                 ]
 
                 if scores:
@@ -201,10 +280,9 @@ def handle_user_input(
                         max_score * 0.9
                     )  # Set threshold to 90% of the highest score
 
-                    for chunk in result["context"]:  # type: ignore[index]
-                        score = chunk.metadata["score"]
+                    for chunk in result["context"]:
+                        score = chunk.metadata.get("score", 0)
 
-                        # Only show sources with scores
-                        # significantly higher (above the threshold)
+                        # Only show sources with scores above threshold
                         if score >= threshold:
                             st.info(f"Source: {chunk.metadata['source']}")
