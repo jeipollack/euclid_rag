@@ -49,7 +49,7 @@ from langchain_core.runnables import Runnable
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from .FAISS_vectorstore.VectorstoreEmbedder import E5MpsEmbedder
+from .FAISS_vectorstore.vectorstore_embedder import E5MpsEmbedder
 from .streamlit_callback import get_streamlit_cb
 
 

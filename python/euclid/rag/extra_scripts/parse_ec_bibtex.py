@@ -18,7 +18,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 
-from euclid.rag.FAISS_vectorstore.VectorstoreEmbedder import (
+from euclid.rag.FAISS_vectorstore.vectorstore_embedder import (
     E5MpsEmbedder,
     load_or_create_vectorstore,
 )
