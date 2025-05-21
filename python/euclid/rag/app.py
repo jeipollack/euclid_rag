@@ -19,13 +19,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
+# Copyright (C) 2025 Euclid Science Ground Segment
+# Licensed under the GNU LGPL v3.0.
+# See <https://www.gnu.org/licenses/>.
 
 
 """Set up the Streamlit interface for the chatbot, configuring the
-retriever, QA chain, session state, UI elements, and handling user of
-interactions.
+retriever, QA chain, session state, UI elements, handling user of
+interactions, and scheduled ingestion of data.
 """
 
+import threading
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -40,6 +45,7 @@ from euclid.rag.chatbot import (
     create_qa_chain,
     handle_user_input,
 )
+from euclid.rag.extra_scripts.parse_EC_BibTeX import run_bibtex_ingestion
 from euclid.rag.layout import (
     setup_header_and_footer,
     setup_landing_page,
@@ -48,6 +54,11 @@ from euclid.rag.layout import (
 
 # Load environment variables from .env file
 load_dotenv()
+STATIC_DIR = Path(__file__).resolve().parents[3] / "static"
+
+# Automated data ingestion (for now: BibTeX only)
+threading.Thread(target=run_bibtex_ingestion, daemon=True).start()
+
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "rubin_telescope.png")
 st.set_page_config(
@@ -66,7 +77,14 @@ with Path.open(file_path) as css:
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
-# Configure the Retriever and QA chain
+
+vectorstore_path = Path("rag/FAISS_vectorstore/index.faiss")
+while not vectorstore_path.exists():
+    with st.spinner("Preparing Euclid knowledge base..."):
+        while not vectorstore_path.exists():
+            time.sleep(1)
+
+# Configure the vectorstore retriever and QA chain
 retriever = configure_retriever()
 qa_chain = create_qa_chain(retriever)
 
