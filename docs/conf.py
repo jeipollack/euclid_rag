@@ -1,8 +1,7 @@
 from pathlib import Path
-import os
 import sys
 
-repo_path = Path("/home/roryclaydon/Work/Projects/LLMs/euclid_rag")
+repo_path = Path(__file__).parents[1]
 docs_path = repo_path / "docs"
 src_path = repo_path / "python"
 static_path = repo_path / "static"
