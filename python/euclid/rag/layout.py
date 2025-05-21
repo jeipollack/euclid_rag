@@ -37,35 +37,28 @@ def setup_sidebar() -> None:
     """Set up the sidebar for the Streamlit app."""
     st.sidebar.markdown("Select sources to search:")
     st.session_state["required_sources"] = []
-    if st.sidebar.checkbox("Confluence", value=True):
-        st.session_state["required_sources"].append("confluence")
-    if st.sidebar.checkbox("Jira", value=True):
-        st.session_state["required_sources"].append("jira")
-    if st.sidebar.checkbox("LSST Forum Docs", value=True):
-        st.session_state["required_sources"].append("lsstforum")
-    if st.sidebar.checkbox("Local Docs", value=True):
-        st.session_state["required_sources"].append("localdocs")
+    if st.sidebar.checkbox("Redmine", value=True):
+        st.session_state["required_sources"].append("redmine")
+    if st.sidebar.checkbox("Data Products Descriptions", value=True):
+        st.session_state["required_sources"].append("dpdd")
+    if st.sidebar.checkbox("Euclid SGS Developers", value=True):
+        st.session_state["required_sources"].append("sgsdev")
 
 
 def setup_landing_page() -> None:
     """Set up the landing page for the Streamlit app."""
-    # Display the landing page until the first message is sent
     if not st.session_state.message_sent:
-        # Create three columns to center image
         col1, col2, col3 = st.columns([1, 2, 1])
         with col1:
             st.write(" ")
         with col2:
-            # Add logo (Make sure the logo is in your
-            # working directory or provide the full path)
             logo_path = (
                 Path(__file__).resolve().parents[3]
                 / "static"
-                / "rubin_telescope.png"
+                / "euclid_cartoon.png"
             )
-            st.image(str(logo_path), clamp=True)
+            st.image(str(logo_path))
 
-            # Centered title and message
             st.markdown(
                 "<h2 class='h2-landing-page'>Hello!</h2>",
                 unsafe_allow_html=True,
