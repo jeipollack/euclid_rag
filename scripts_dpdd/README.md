@@ -2,18 +2,15 @@
 
 We put here some scripts to scrap DPDD data and ingest it into some VectorStore.
 
-There are 3 csv files here :
-* **topic2get.csv** : list of first level topics with links to get information from (it makes first content filtering) ;
-* **h1_sections.csv** and **other_sections.csv** : list of second level sections that we shoudl/could use for our RAG.
+We still need a csv file **topic2get.csv** with the list of URLs that we want to proceed on DPDD site.
 
-Actually we get all H1 level sections.  
-And do some arbitrary filtering of for other sections (H2, H3). 
+Inside of **dpdd_ingestion_config** directory we have dpdd_config.yaml file with some configs. For the moment there is a list of sections what we want to ingest into VectorStore. These section will be ommited during ingestion.
 
-Obvious these csv files were not created manually, but it was some handy-dirty scripting so I don't put such scripts here.
+The main file is _populate_dpdd_vector_store.py_. It will populate FAISS indexes in **VectorStore_indexes**.
+It's rewritten to follow the same structure (and logic) as ingestion scripts for pdfs.
+It could be used with existing Vector Stores : normally it will just add data there.
 
-So two python script here are : get_data.py and populate_vector_store.py
+But for the moment I still keep it here.
+TODO : move this script to python/rag/extra_scripts
 
-- _get_data.py_ : has two function to parse DDPD pages and scrap the data.
-- _populate_vector_store.py_ : call function from get_data and should populate some vector store.
-
-  I add **requirements.txt** as well. Normally it should be pretty the same as for main project, but it allow to use these scripts as some autonomus project.
+I add **requirements.txt** as well. Normally it should be pretty the same as for main project, but it allow to use these scripts as some autonomus project.
