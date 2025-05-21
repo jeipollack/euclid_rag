@@ -19,6 +19,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
+from langchain_core.documents import Document
 from sklearn.preprocessing import normalize
 from transformers import AutoModel, AutoTokenizer
 
