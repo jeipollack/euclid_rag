@@ -8,6 +8,7 @@ Embedding and vectorstore management utilities for Euclid document ingestion.
 This module provides:
 - An E5 embedding class with support for MPS/CUDA/CPU.
 - A function to load or create a FAISS vectorstore from PDFs.
+- A function to load or create a FAISS vectorstore from Redmine pre-cleaned (as a list of dic)
 """
 
 import logging
@@ -103,6 +104,38 @@ def load_or_create_vectorstore(
         chunk_size=800, chunk_overlap=100
     )
     chunks = splitter.split_documents(docs)
+    vectorstore = FAISS.from_documents(chunks, embedder)
+    vectorstore.save_local(str(index_dir))
+    return vectorstore
+
+
+def load_or_create_redmine_vectorstore(
+    index_dir: Path, embedder: Embeddings, redmine_docs: list[dict]
+) -> FAISS:
+    """
+    Load a FAISS vectorstore from disk or build it from pre-cleaned Redmine documents.
+
+    Args:
+        index_dir: Directory where the FAISS index is stored or will be saved.
+        embedder: An instance of an Embeddings model (e.g., E5MpsEmbedder).
+        redmine_docs: List of cleaned documents with 'content' and 'metadata'.
+
+    Returns:
+        A FAISS vectorstore containing the embedded Redmine documents.
+    """
+    if index_dir.exists():
+        return FAISS.load_local(
+            str(index_dir), embedder, allow_dangerous_deserialization=True
+        )
+
+    documents = [
+        Document(page_content=doc["content"], metadata=doc["metadata"])
+        for doc in redmine_docs
+    ]
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    chunks = splitter.split_documents(documents)
+
     vectorstore = FAISS.from_documents(chunks, embedder)
     vectorstore.save_local(str(index_dir))
     return vectorstore
