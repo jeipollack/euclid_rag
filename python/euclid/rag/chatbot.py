@@ -19,14 +19,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
+# Copyright (C) 2025 Euclid Science Ground Segment
+# Licensed under the GNU LGPL v3.0.
+# See <https://www.gnu.org/licenses/>.
 
-
-"""Set up of base chatbot based on settings in app_config.yaml file."""
+"""
+Streamlit chatbot interface for the Euclid AI Assistant.
+Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
+"""
 
 from pathlib import Path
 
 import streamlit as st
-import torch
 import yaml
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -35,18 +39,14 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
-from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
-from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.runnables import Runnable
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
-from transformers import AutoModel, AutoTokenizer
 
 from euclid import STATIC_DIR
 
@@ -65,142 +65,45 @@ def load_cfg(config_path: str | None = None) -> dict:
         return yaml.safe_load(fh)
 
 
-def submit_text() -> None:
-    """Submit the user input."""
-    st.session_state.message_sent = True
-
-
 @st.cache_resource(ttl="1h")
 def configure_retriever() -> VectorStoreRetriever:
     """Load retriever based on config.yaml."""
     cfg = load_cfg()
 
-    # Initialize embedding model
     embedder = E5MpsEmbedder(
         model_name=cfg["embeddings"]["model_name"],
         batch_size=cfg["embeddings"]["batch_size"],
     )
     index_dir = Path(cfg["vector_store"]["index_dir"])
-    vector_store = index_dir / "index.faiss"
+    vectorstore = FAISS.load_local(
+        str(index_dir), embedder, allow_dangerous_deserialization=True
+    )
 
-    if vector_store.exists():
-        # Load prebuilt FAISS vectorstore
-        vectorstore = FAISS.load_local(
-            str(index_dir), embedder, allow_dangerous_deserialization=True
-        )
-    else:
-        # Load PDF and build FAISS vectorstore from scratch
-        pdf_path = (
-            Path(__file__).resolve().parents[1] / cfg["data"]["pdf_path"]
-        )
-
-        loader = PyMuPDFLoader(str(pdf_path))
-        docs = loader.load()
-
-        # Add metadata for source tracking
-        for d in docs:
-            d.metadata["source"] = pdf_path.name
-            d.metadata["source_key"] = pdf_path.name
-
-        # Split data into chunks with overlap
-        splitter = RecursiveCharacterTextSplitter(
-            chunk_size=cfg["data"]["chunk_size"],
-            chunk_overlap=cfg["data"]["chunk_overlap"],
-        )
-        chunks = splitter.split_documents(docs)
-
-        # Load local vectorstore
-        vectorstore = FAISS.from_documents(chunks, embedder)
-        vectorstore.save_local(str(index_dir))
-
-    # Return a retriever for similarity-based search (top k most similar docs)
     return vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 6, "return_metadata": ["score"]},
     )
 
 
-# Device detection helper
-def get_device() -> str:
-    """Return the best available device: 'cuda', 'mps', or 'cpu'."""
-    if torch.cuda.is_available():
-        return "cuda"
-    elif torch.backends.mps.is_available():
-        return "mps"
-    else:
-        return "cpu"
+def submit_text() -> None:
+    """Submit the user input."""
+    st.session_state.message_sent = True
 
 
-# Embedding 'generator' using E5 from HuggingFace
-class E5MpsEmbedder(Embeddings):
-    """E5 embedding model running on GPU, MPS or CPU."""
-
-    def __init__(
-        self, model_name: str = "intfloat/e5-small-v2", batch_size: int = 16
-    ) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        device = get_device()
-        self.model = AutoModel.from_pretrained(model_name).to(device)
-        self.device = device
-        self.batch_size = batch_size
-
-    def _embed(self, texts: list[str]) -> list[list[float]]:
-        """Embed a list of texts into vector representations."""
-        out: list[list[float]] = []
-        for i in range(0, len(texts), self.batch_size):
-            toks = self.tokenizer(
-                texts[i : i + self.batch_size],
-                return_tensors="pt",
-                padding=True,
-                truncation=True,
-                max_length=512,
-            ).to(self.device)
-            with torch.no_grad():
-                # Extract CLS (summary) token -> transformer specific
-                out.extend(
-                    self.model(**toks)
-                    .last_hidden_state[:, 0, :]
-                    .cpu()
-                    .numpy()
-                    .tolist()
-                )
-        return out
-
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        """Embed a list of documents."""
-        return self._embed(texts)
-
-    def embed_query(self, text: str) -> list[float]:
-        """Embed a single query string."""
-        return self._embed([text])[0]
-
-
-def create_qa_chain(
-    retriever: VectorStoreRetriever,
-) -> Runnable:
+def create_qa_chain(retriever: VectorStoreRetriever) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
     llm = OllamaLLM(**cfg["llm"])
 
-    # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
     within the Euclid Consortium Science Ground Segment.
-    Do your best to answer the questions in as much detail as possible.
-    Do not attempt to provide an answer if you do not know the answer.
-    In your response, do not recommend reading elsewhere.
-    Use the following pieces of context to answer the user's
-    question at the end.
-    You must only use the provided CONTEXT.
-    Never guess, elaborate, or use prior knowledge.
-    If the answer is in CONTEXT, quote it directly or summarize precisely.
-    Cite PDF file names like [paper.pdf].
-    If the answer is not in CONTEXT, reply exactly: I don't have that info.
+    Use only the provided CONTEXT to answer questions.
+    If the answer is not in CONTEXT, reply: I don't have that info.
 
     ----------------
     {context}
     ----------------"""
 
-    # Create a ChatPromptTemplate for the QA conversation
     qa_prompt = ChatPromptTemplate(
         messages=[
             SystemMessagePromptTemplate.from_template(system_template),
@@ -210,7 +113,6 @@ def create_qa_chain(
         input_variables=["input", "chat_history", "context"],
     )
 
-    # Create the QA chain
     question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
     return create_retrieval_chain(retriever, question_answer_chain)
 
@@ -218,13 +120,10 @@ def create_qa_chain(
 def handle_user_input(
     qa_chain: Runnable, msgs: StreamlitChatMessageHistory
 ) -> None:
-    """Handle user input and chat history."""
-    # Check if the message history is empty or the user
-    # clicked the "Clear message history" button
+    """Manage input from user."""
     if len(msgs.messages) == 0:
         msgs.clear()
 
-    # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
         "human": STATIC_DIR / "user_avatar.png",
@@ -236,7 +135,6 @@ def handle_user_input(
             avatars[msg.type], avatar=avatar_images[msg.type]
         ).write(msg.content)
 
-    # Handle new user input
     if user_query := st.chat_input(
         placeholder="Message Euclid AI", on_submit=submit_text
     ):
@@ -246,8 +144,6 @@ def handle_user_input(
 
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
             stream_handler = get_streamlit_cb(st.empty())
-
-            # Invoke retriever logic
             result = qa_chain.invoke(
                 {
                     "input": user_query,
@@ -258,23 +154,16 @@ def handle_user_input(
             answer = result["answer"]
             msgs.add_ai_message(answer)
 
-            # Optional: Display source documents to user
             with st.expander("See sources"):
                 scores = [
                     chunk.metadata["score"]
                     for chunk in result["context"]
                     if "score" in chunk.metadata
                 ]
-
                 if scores:
                     max_score = max(scores)
-                    threshold = (
-                        max_score * 0.9
-                    )  # Set threshold to 90% of the highest score
-
+                    threshold = max_score * 0.9
                     for chunk in result["context"]:
                         score = chunk.metadata.get("score", 0)
-
-                        # Only show sources with scores above threshold
                         if score >= threshold:
                             st.info(f"Source: {chunk.metadata['source']}")
