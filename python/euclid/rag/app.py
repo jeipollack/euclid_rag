@@ -45,7 +45,7 @@ from euclid.rag.chatbot import (
     create_qa_chain,
     handle_user_input,
 )
-from euclid.rag.extra_scripts.parse_EC_BibTeX import run_bibtex_ingestion
+from euclid.rag.extra_scripts.parse_ec_bibtex import run_bibtex_ingestion
 from euclid.rag.layout import (
     setup_header_and_footer,
     setup_landing_page,
