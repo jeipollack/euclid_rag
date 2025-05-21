@@ -10,6 +10,7 @@ This module provides:
 - A function to load or create a FAISS vectorstore from PDFs.
 """
 
+import logging
 from pathlib import Path
 
 import torch
@@ -17,7 +18,10 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
+from sklearn.preprocessing import normalize
 from transformers import AutoModel, AutoTokenizer
+
+logger = logging.getLogger(__name__)
 
 
 def _get_device() -> torch.device:
@@ -52,7 +56,10 @@ class E5MpsEmbedder(Embeddings):
             ).to(self._device)
             with torch.no_grad():
                 output = self._model(**tokens).last_hidden_state[:, 0, :]
-            results.extend(output.cpu().numpy().tolist())
+            vectors = output.cpu().numpy()
+            # L2 normalize for cosine similarity
+            vectors = normalize(vectors, axis=1)
+            results.extend(vectors.tolist())
         return results
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
@@ -73,10 +80,16 @@ def load_or_create_vectorstore(
     index_dir: Path, embedder: Embeddings, pdf_paths: list[Path]
 ) -> FAISS:
     """Load a FAISS vectorstore from disk or build it from the given data."""
-    if index_dir.exists():
-        return FAISS.load_local(
-            str(index_dir), embedder, allow_dangerous_deserialization=True
-        )
+    index_file = index_dir / "index.faiss"
+    if index_file.exists():
+        try:
+            return FAISS.load_local(
+                str(index_dir),
+                embedder,
+                allow_dangerous_deserialization=False,
+            )
+        except Exception as e:
+            logger.warning("Failed to load vectorstore, rebuilding: %s", e)
 
     docs = []
     for pdf_path in pdf_paths:
