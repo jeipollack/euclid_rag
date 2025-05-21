@@ -29,6 +29,8 @@ retriever, QA chain, session state, UI elements, handling user of
 interactions, and scheduled ingestion of data.
 """
 
+import threading
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -45,6 +47,9 @@ load_dotenv()
 
 # Load configuration file
 CONFIG = load_config(Path("python/euclid/rag/app_config.yaml"))
+
+# Automated data ingestion (for now: BibTeX only)
+threading.Thread(target=run_bibtex_ingestion, daemon=True).start()
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "euclid_cartoon.png")
@@ -63,7 +68,6 @@ with Path.open(file_path) as css:
 # Set up the session state
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
-
 
 # Enable dynamic filtering based on user input
 setup_sidebar()
