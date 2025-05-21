@@ -67,7 +67,7 @@ with Path.open(file_path) as css:
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
-# Configure the Weaviate retriever and QA chain
+# Configure the Retriever and QA chain
 retriever = configure_retriever()
 qa_chain = create_qa_chain(retriever)
 

@@ -236,7 +236,7 @@ def handle_user_input(
         / "user_avatar.png",
         "ai": Path(__file__).resolve().parents[3]
         / "static"
-        / "rubin_telescope.png",
+        / "euclid_cartoon.png",
     }
 
     for msg in msgs.messages:
