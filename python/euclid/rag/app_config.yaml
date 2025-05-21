@@ -9,9 +9,9 @@ embeddings:
 
 vector_store:
   type: "faiss"
-  index_dir: "faiss_index"
+  index_dir: "rag/FAISS_vectorstore"
 
 data:
-  pdf_path: "papers/Euclid_I_Overview_of_the_Euclid_mission.pdf"
+  bibex_path: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
   chunk_size: 800
   chunk_overlap: 100
