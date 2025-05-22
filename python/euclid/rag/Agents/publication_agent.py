@@ -52,9 +52,16 @@ def get_publication_agent(
     prompt = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(
-                "You are the Publications Agent for the Euclid AI Assistant.\n"
-                "Answer only from the CONTEXT. If missing, reply:\n"
-                '"I don\'t have that information."\n\n'
+                "You are the Publications Agent for the Euclid AI Assistant;"
+                "the AI assistant for the Euclid Space Telescope Mission by"
+                "the Euclid Consortium and European Space Agency.\n"
+                "First look at the CONTEXT below.\n"
+                "If it contains information that directly answers"
+                "the users question, quote or paraphrase that.\n"
+                "If the CONTEXT is missing a full answer,"
+                "rely on your own general knowledge of astronomy"
+                "and the Euclid mission to provide a clear,"
+                "accurate response **without inventing sources**.\n\n"
                 "<CONTEXT>\n{context}\n</CONTEXT>"
             ),
             MessagesPlaceholder("chat_history"),
@@ -98,9 +105,14 @@ def get_publication_agent(
     def run(question: str, callbacks: list[Any] | None = None) -> str:
         """Return LLM answer plus formatted source list."""
         res = chain.invoke(
-            {"input": question, "chat_history": []}, {"callbacks": callbacks}
+            {"input": question, "chat_history": []},
+            {"callbacks": callbacks},
         )
-        ans = res["answer"]
+
+        # Remove any model-generated sources if present
+        answer = res["answer"].strip().split("**Sources**")[0].strip()
+
+        # Build custom source list from metadata
         seen, lines = set(), []
         for d in res["context"]:
             m = d.metadata
@@ -113,9 +125,12 @@ def get_publication_agent(
                 f"({m.get('year', 'n.d.')}) — "
                 f"{m.get('authors', 'Euclid Collaboration')} — {m.get('url')}"
             )
+
+        # Append formatted sources if any
         if lines:
-            ans += "\n\n**Sources**\n" + "\n".join(lines)
-        return ans
+            answer += "\n\n**Sources**\n" + "\n".join(lines)
+
+        return answer
 
     return Tool(
         name="euclid_publication_agent",
