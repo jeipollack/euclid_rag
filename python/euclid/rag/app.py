@@ -26,7 +26,7 @@
 
 """Set up the Streamlit interface for the chatbot, configuring the
 retriever, QA chain, session state, UI elements, handling user of
-interactions, and scheduled ingestion of data.
+interactions.
 """
 
 import threading
