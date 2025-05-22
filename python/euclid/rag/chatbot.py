@@ -35,7 +35,6 @@ from typing import Any
 
 import streamlit as st
 import yaml
-from langchain.agents.agent import AgentExecutor
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
@@ -121,7 +120,7 @@ def create_agent() -> Callable[[dict], dict]:
 
 
 def handle_user_input(
-    agent: AgentExecutor, msgs: StreamlitChatMessageHistory
+    agent: Callable[[dict], dict], msgs: StreamlitChatMessageHistory
 ) -> None:
     """Manage input from user."""
     if len(msgs.messages) == 0:
