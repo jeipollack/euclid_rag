@@ -140,34 +140,27 @@ def handle_user_input(
     for msg in msgs.messages:
         st.chat_message(
             avatars[msg.type], avatar=avatar_images[msg.type]
-        ).write(msg.content)
+        ).markdown(msg.content)
 
     if user_query := st.chat_input(
-        placeholder="Message Euclid AI", on_submit=submit_text
+        placeholder="Message Euclid AI",
+        key="euclid_chat_input",
+        on_submit=submit_text,
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
-            st.write(user_query)
+            st.markdown(user_query)
         msgs.add_user_message(user_query)
 
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
-            stream_handler = get_streamlit_cb(st.empty())
+            placeholder = st.empty()
+            stream_handler = get_streamlit_cb(placeholder)
+
             result = agent(
                 {"input": user_query, "chat_history": msgs.messages},
                 callbacks=[stream_handler],
             )
-            answer = result["answer"]
-            msgs.add_ai_message(answer)
 
-            with st.expander("See sources"):
-                scores = [
-                    chunk.metadata["score"]
-                    for chunk in result["context"]
-                    if "score" in chunk.metadata
-                ]
-                if scores:
-                    max_score = max(scores)
-                    threshold = max_score * 0.9
-                    for chunk in result["context"]:
-                        score = chunk.metadata.get("score", 0)
-                        if score >= threshold:
-                            st.info(f"Source: {chunk.metadata['source']}")
+            answer = result["answer"]
+            placeholder.markdown(answer, unsafe_allow_html=False)
+
+        msgs.add_ai_message(answer)
