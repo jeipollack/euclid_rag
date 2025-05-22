@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import string
-from typing import Any
+from typing import Any, cast
 
 import torch
 from langchain.agents import Tool
@@ -18,6 +18,7 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain_community.vectorstores import FAISS
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.retrievers import BaseRetriever
@@ -98,7 +99,7 @@ def get_publication_agent(
     doc_chain = create_stuff_documents_chain(llm, prompt)
 
     deduper = DeduplicationFilter(
-        vectorstore=retriever.vectorstore,
+        vectorstore=cast("FAISS", retriever.vectorstore),
         config={
             "similarity_threshold": 0.8,
             "rerank_threshold": 0.85,
