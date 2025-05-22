@@ -1,5 +1,6 @@
 llm:
-  model: "gemma3:4b"
+  # Available models at https://ollama.com/library
+  model: "mistral:latest"
   temperature: 0
 
 embeddings:
