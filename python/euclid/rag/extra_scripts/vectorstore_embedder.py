@@ -82,17 +82,7 @@ def load_or_create_vectorstore(
     index_dir: Path, embedder: Embeddings, pdf_paths: list[Path]
 ) -> FAISS:
     """Load a FAISS vectorstore from disk or build it from the given data."""
-    index_file = index_dir / "index.faiss"
-    if index_file.exists():
-        try:
-            return FAISS.load_local(
-                str(index_dir),
-                embedder,
-                allow_dangerous_deserialization=False,
-            )
-        except Exception as e:
-            logger.warning("Failed to load vectorstore, rebuilding: %s", e)
-
+    index_dir.mkdir(parents=True, exist_ok=True)
     docs = []
     for pdf_path in pdf_paths:
         loader = PyMuPDFLoader(str(pdf_path))
@@ -105,6 +95,22 @@ def load_or_create_vectorstore(
         chunk_size=800, chunk_overlap=100
     )
     chunks = splitter.split_documents(docs)
+
+    index_file = index_dir / "index.faiss"
+    if index_file.exists():
+        try:
+            vectorstore = FAISS.load_local(
+                str(index_dir),
+                embedder,
+                allow_dangerous_deserialization=False,
+            )
+        except Exception as exc:
+            raise RuntimeError("Failed to load existing vectorstore") from exc
+        if chunks:
+            vectorstore.add_documents(chunks)
+            vectorstore.save_local(str(index_dir))
+        return vectorstore
+
     vectorstore = FAISS.from_documents(chunks, embedder)
     vectorstore.save_local(str(index_dir))
     return vectorstore

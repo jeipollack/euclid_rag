@@ -26,7 +26,7 @@
 
 """Set up the Streamlit interface for the chatbot, configuring the
 retriever, QA chain, session state, UI elements, handling user of
-interactions, and scheduled ingestion of data.
+interactions.
 """
 
 import threading
@@ -40,14 +40,12 @@ from langchain_community.chat_message_histories import (
 )
 
 from euclid.rag.chatbot import create_agent, handle_user_input
-from euclid.rag.config_utils import RAGConfig
 from euclid.rag.extra_scripts.parse_ec_bibtex import run_bibtex_ingestion
 from euclid.rag.layout import (
     setup_header_and_footer,
     setup_landing_page,
     setup_sidebar,
 )
-from euclid.rag.retriever_utils import configure_retrievers
 
 # Load environment variables from .env file
 load_dotenv()
@@ -73,12 +71,6 @@ with Path.open(file_path) as css:
 # Set up the session state
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
-
-# Load configuration from YAML file
-config = RAGConfig("config/app_config.yaml")
-# Configure the retrievers
-retrievers = configure_retrievers(_config=config)
-
 
 vectorstore_path = Path("rag/FAISS_vectorstore/index.faiss")
 while not vectorstore_path.exists():

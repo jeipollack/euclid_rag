@@ -1,5 +1,4 @@
 llm:
-  # Available models at https://ollama.com/library
   model: "mistral:latest"
   temperature: 0
 

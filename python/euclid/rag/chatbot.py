@@ -19,30 +19,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
+# Copyright (C) 2025 Euclid Science Ground Segment
+# Licensed under the GNU LGPL v3.0.
+# See <https://www.gnu.org/licenses/>.
 
-
-"""Set up of base chatbot based on settings in app_config.yaml file."""
+"""
+Streamlit chatbot interface for the Euclid AI Assistant.
+Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
+"""
 
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import streamlit as st
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+import yaml
+from langchain.agents.agent import AgentExecutor
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
-from langchain_core.prompts import MessagesPlaceholder
-from langchain_core.runnables import Runnable
+from langchain_community.vectorstores import FAISS
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from .config_utils import RAGConfig
+from .Agents.publication_agent import get_publication_agent
+from .extra_scripts.vectorstore_embedder import E5MpsEmbedder
 from .streamlit_callback import get_streamlit_cb
 
 
@@ -51,62 +53,80 @@ def start_ollama_server(model: str) -> None:
     subprocess.Popen(["ollama", "run", model])
 
 
+@st.cache_resource
+def load_cfg(config_path: str | None = None) -> dict:
+    """Load chatbot configuration from app_config.yaml."""
+    cfg_path = (
+        Path(config_path)
+        if config_path
+        else Path(__file__).resolve().parent / "app_config.yaml"
+    )
+    with cfg_path.open() as fh:
+        return yaml.safe_load(fh)
+
+
+@st.cache_resource(ttl="1h")
+def configure_retriever() -> VectorStoreRetriever:
+    """Load retriever based on config.yaml."""
+    cfg = load_cfg()
+
+    embedder = E5MpsEmbedder(
+        model_name=cfg["embeddings"]["model_name"],
+        batch_size=cfg["embeddings"]["batch_size"],
+    )
+    index_dir = Path(cfg["vector_store"]["index_dir"])
+    vectorstore = FAISS.load_local(
+        str(index_dir), embedder, allow_dangerous_deserialization=True
+    )
+
+    return vectorstore.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 6, "return_metadata": ["score"]},
+    )
+
+
 def submit_text() -> None:
     """Submit the user input."""
     st.session_state.message_sent = True
 
 
-def create_qa_chain(
-    config: RAGConfig,
-    retriever: VectorStoreRetriever,
-) -> Runnable:
-    """Create a QA chain for the chatbot."""
-    start_ollama_server(config.llm.get("model"))
-    llm = OllamaLLM(**config.llm, streaming=True)
+def create_agent() -> Callable[[dict], dict]:
+    """Return Euclid-AI that **always** delegates to at least one sub-agent."""
+    cfg = load_cfg()
+    start_ollama_server(cfg["llm"]["model"])
+    llm = OllamaLLM(**cfg["llm"], streaming=True)
 
-    # Define the system message template
-    system_template = """You are Euclid AI Assistant, a helpful assistant
-    within the Euclid Consortium Science Ground Segment.
-    Do your best to answer the questions in as much detail as possible.
-    Do not attempt to provide an answer if you do not know the answer.
-    In your response, do not recommend reading elsewhere.
-    Use the following pieces of context to answer the user's
-    question at the end.
-    You must only use the provided CONTEXT.
-    Never guess, elaborate, or use prior knowledge.
-    If the answer is in CONTEXT, quote it directly or summarize precisely.
-    Cite PDF file names like [paper.pdf].
-    If the answer is not in CONTEXT, reply exactly: I don't have that info.
+    retriever = configure_retriever()
 
-    ----------------
-    {context}
-    ----------------"""
+    # Sub-agents: later add get_dpdd_agent(), get_redmine_agent(), etc ..
+    agents = [
+        get_publication_agent(llm, retriever),
+    ]
 
-    # Create a ChatPromptTemplate for the QA conversation
-    qa_prompt = ChatPromptTemplate(
-        messages=[
-            SystemMessagePromptTemplate.from_template(system_template),
-            MessagesPlaceholder("chat_history"),
-            HumanMessagePromptTemplate.from_template("Question:```{input}```"),
-        ],
-        input_variables=["input", "chat_history", "context"],
-    )
+    def euclid_ai(inputs: dict, callbacks: list[Any] | None = None) -> dict:
+        """
+        Loop through sub-agents until one gives a non-empty answer.
+        Ensures at least one agent is always used.
+        """
+        question = inputs["input"]
+        for ag in agents:
+            answer = ag.run(question, callbacks=callbacks)
+            if not answer.lower().startswith("i don't have"):
+                return {"answer": answer, "context": []}
 
-    # Create the QA chain
-    question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-    return create_retrieval_chain(retriever, question_answer_chain)
+        # Nothing found in any agent
+        return {"answer": "I don't have that information yet.", "context": []}
+
+    return euclid_ai
 
 
 def handle_user_input(
-    qa_chain: Runnable, msgs: StreamlitChatMessageHistory
+    agent: AgentExecutor, msgs: StreamlitChatMessageHistory
 ) -> None:
-    """Handle user input and chat history."""
-    # Check if the message history is empty or the user
-    # clicked the "Clear message history" button
+    """Manage input from user."""
     if len(msgs.messages) == 0:
         msgs.clear()
 
-    # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
         "human": Path(__file__).resolve().parents[3]
@@ -120,47 +140,27 @@ def handle_user_input(
     for msg in msgs.messages:
         st.chat_message(
             avatars[msg.type], avatar=avatar_images[msg.type]
-        ).write(msg.content)
+        ).markdown(msg.content)
 
-    # Handle new user input
     if user_query := st.chat_input(
-        placeholder="Message Euclid AI", on_submit=submit_text
+        placeholder="Message Euclid AI",
+        key="euclid_chat_input",
+        on_submit=submit_text,
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
-            st.write(user_query)
+            st.markdown(user_query)
         msgs.add_user_message(user_query)
 
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
-            stream_handler = get_streamlit_cb(st.empty())
+            placeholder = st.empty()
+            stream_handler = get_streamlit_cb(placeholder)
 
-            # Invoke retriever logic
-            result = qa_chain.invoke(
-                {
-                    "input": user_query,
-                    "chat_history": msgs.messages,
-                },
-                {"callbacks": [stream_handler]},
+            result = agent(
+                {"input": user_query, "chat_history": msgs.messages},
+                callbacks=[stream_handler],
             )
+
             answer = result["answer"]
-            msgs.add_ai_message(answer)
+            placeholder.markdown(answer, unsafe_allow_html=False)
 
-            # Optional: Display source documents to user
-            with st.expander("See sources"):
-                scores = [
-                    chunk.metadata["score"]
-                    for chunk in result["context"]
-                    if "score" in chunk.metadata
-                ]
-
-                if scores:
-                    max_score = max(scores)
-                    threshold = (
-                        max_score * 0.9
-                    )  # Set threshold to 90% of the highest score
-
-                    for chunk in result["context"]:
-                        score = chunk.metadata.get("score", 0)
-
-                        # Only show sources with scores above threshold
-                        if score >= threshold:
-                            st.info(f"Source: {chunk.metadata['source']}")
+        msgs.add_ai_message(answer)
