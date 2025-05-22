@@ -12,7 +12,8 @@ vector_store:
   index_dir: "rag/FAISS_vectorstore"
 
 data:
-  bibex_path: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
+  bibtex_url: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
+  arxiv_pdf_base_url: "https://arxiv.org/pdf/"
   chunk_size: 800
   chunk_overlap: 100
 
