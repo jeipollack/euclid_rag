@@ -30,9 +30,6 @@ class DeduplicationFilter:
         self.similarity_threshold = config.get("similarity_threshold")
         self.rerank_threshold = config.get("rerank_threshold")
         self.k_candidates = config.get("k_candidates")
-        self._max_embedding_logs = config.get("max_embedding_logs")
-        self.__debug_mode = config.get("debug_mode", True)
-        self._embedding_duplicate_count = 0
 
         self._seen_hashes: set[str] = set()
         self._seen_texts: dict[str, str] = {}
@@ -46,6 +43,9 @@ class DeduplicationFilter:
 
     def is_duplicate(self, text: str) -> bool:
         h = self._hash_text(text)
+
+        if h in self._seen_hashes:
+            return True
 
         if self._is_semantic_duplicate(text):
             return True
@@ -75,12 +75,6 @@ class DeduplicationFilter:
 
         for _, score in enumerate(scores):
             if score >= self.rerank_threshold:
-                if (
-                    self.__debug_mode
-                    and self._embedding_duplicate_count
-                    < self._max_embedding_logs
-                ):
-                    self._embedding_duplicate_count += 1
                 return True
 
         return False
@@ -105,5 +99,5 @@ class DeduplicationFilter:
         cluster_map = {}
         for i, label in enumerate(labels):
             if label not in cluster_map:
-                cluster_map[label] = i  # Keep first item seen
+                cluster_map[label] = i
         return [texts[i] for i in sorted(cluster_map.values())]
