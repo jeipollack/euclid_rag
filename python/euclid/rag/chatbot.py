@@ -31,7 +31,6 @@ Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 
 import streamlit as st
 import yaml
@@ -39,6 +38,7 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 from langchain_community.vectorstores import FAISS
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
@@ -89,7 +89,7 @@ def submit_text() -> None:
     st.session_state.message_sent = True
 
 
-def create_agent() -> Callable[[dict], dict]:
+def create_agent() -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
     """Return Euclid-AI that **always** delegates to at least one sub-agent."""
     cfg = load_cfg()
     start_ollama_server(cfg["llm"]["model"])
@@ -102,7 +102,9 @@ def create_agent() -> Callable[[dict], dict]:
         get_publication_agent(llm, retriever),
     ]
 
-    def euclid_ai(inputs: dict, callbacks: list[Any] | None = None) -> dict:
+    def euclid_ai(
+        inputs: dict, callbacks: list[BaseCallbackHandler] | None = None
+    ) -> dict:
         """
         Loop through sub-agents until one gives a non-empty answer.
         Ensures at least one agent is always used.
@@ -120,7 +122,8 @@ def create_agent() -> Callable[[dict], dict]:
 
 
 def handle_user_input(
-    agent: Callable[[dict], dict], msgs: StreamlitChatMessageHistory
+    agent: Callable[[dict, list[BaseCallbackHandler] | None], dict],
+    msgs: StreamlitChatMessageHistory,
 ) -> None:
     """Manage input from user."""
     if len(msgs.messages) == 0:

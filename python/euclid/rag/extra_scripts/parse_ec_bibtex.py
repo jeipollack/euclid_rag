@@ -170,6 +170,8 @@ class EuclidBibIngestor:
         )
 
     def _log_sampled_chunks(self, filename: str) -> None:
+        if self._vectorstore is None:
+            return
         store = self._vectorstore.docstore
         shown = 0
         if hasattr(store, "_dict"):
@@ -177,7 +179,7 @@ class EuclidBibIngestor:
                 for doc in store.search(doc_id):
                     if (
                         isinstance(doc, Document)
-                        and doc.metadata.get("source") is not None
+                        and isinstance(doc.metadata.get("source"), str)
                         and doc.metadata.get("source") == filename
                     ):
                         shown += 1
