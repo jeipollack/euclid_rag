@@ -15,3 +15,11 @@ data:
   bibex_path: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
   chunk_size: 800
   chunk_overlap: 100
+
+deduplication:
+  similarity_threshold: 0.97
+  rerank_threshold: 0.85
+  reranker_model: "cross-encoder/stsb-roberta-base"
+  k_candidates: 5
+  max_embedding_logs: 3
+  debug_mode: true
