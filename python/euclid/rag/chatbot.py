@@ -28,27 +28,23 @@ Streamlit chatbot interface for the Euclid AI Assistant.
 Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
 """
 
+import subprocess
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import streamlit as st
 import yaml
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.agents.agent import AgentExecutor
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import MessagesPlaceholder
-from langchain_core.runnables import Runnable
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from .FAISS_vectorstore.vectorstore_embedder import E5MpsEmbedder
+from .Agents.publication_agent import get_publication_agent
+from .extra_scripts.vectorstore_embedder import E5MpsEmbedder
 from .streamlit_callback import get_streamlit_cb
 
 
@@ -89,35 +85,37 @@ def submit_text() -> None:
     st.session_state.message_sent = True
 
 
-def create_qa_chain(retriever: VectorStoreRetriever) -> Runnable:
-    """Create a QA chain for the chatbot."""
+def create_agent() -> Callable[[dict], dict]:
+    """Return Euclid-AI that **always** delegates to at least one sub-agent."""
     cfg = load_cfg()
     llm = OllamaLLM(**cfg["llm"])
 
-    system_template = """You are Euclid AI Assistant, a helpful assistant
-    within the Euclid Consortium Science Ground Segment.
-    Use only the provided CONTEXT to answer questions.
-    If the answer is not in CONTEXT, reply: I don't have that info.
+    retriever = configure_retriever()
 
-    ----------------
-    {context}
-    ----------------"""
+    # Sub-agents: later add get_dpdd_agent(), get_redmine_agent(), etc ..
+    agents = [
+        get_publication_agent(llm, retriever),
+    ]
 
-    qa_prompt = ChatPromptTemplate(
-        messages=[
-            SystemMessagePromptTemplate.from_template(system_template),
-            MessagesPlaceholder("chat_history"),
-            HumanMessagePromptTemplate.from_template("Question:```{input}```"),
-        ],
-        input_variables=["input", "chat_history", "context"],
-    )
+    def euclid_ai(inputs: dict, callbacks: list[Any] | None = None) -> dict:
+        """
+        Loop through sub-agents until one gives a non-empty answer.
+        Ensures at least one agent is always used.
+        """
+        question = inputs["input"]
+        for ag in agents:
+            answer = ag.run(question, callbacks=callbacks)
+            if not answer.lower().startswith("i don't have"):
+                return {"answer": answer, "context": []}
 
-    question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-    return create_retrieval_chain(retriever, question_answer_chain)
+        # Nothing found in any agent
+        return {"answer": "I don't have that information yet.", "context": []}
+
+    return euclid_ai
 
 
 def handle_user_input(
-    qa_chain: Runnable, msgs: StreamlitChatMessageHistory
+    agent: AgentExecutor, msgs: StreamlitChatMessageHistory
 ) -> None:
     """Manage input from user."""
     if len(msgs.messages) == 0:
@@ -143,12 +141,9 @@ def handle_user_input(
 
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
             stream_handler = get_streamlit_cb(st.empty())
-            result = qa_chain.invoke(
-                {
-                    "input": user_query,
-                    "chat_history": msgs.messages,
-                },
-                {"callbacks": [stream_handler]},
+            result = agent(
+                {"input": user_query, "chat_history": msgs.messages},
+                callbacks=[stream_handler],
             )
             answer = result["answer"]
             msgs.add_ai_message(answer)
