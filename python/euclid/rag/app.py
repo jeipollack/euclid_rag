@@ -19,13 +19,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
+# Copyright (C) 2025 Euclid Science Ground Segment
+# Licensed under the GNU LGPL v3.0.
+# See <https://www.gnu.org/licenses/>.
 
 
 """Set up the Streamlit interface for the chatbot, configuring the
-retriever, QA chain, session state, UI elements, and handling user of
+retriever, QA chain, session state, UI elements, handling user of
 interactions.
 """
 
+import threading
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -34,11 +39,8 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 
-from euclid.rag.chatbot import (
-    configure_retriever,
-    create_qa_chain,
-    handle_user_input,
-)
+from euclid.rag.chatbot import create_agent, handle_user_input
+from euclid.rag.extra_scripts.parse_ec_bibtex import run_bibtex_ingestion
 from euclid.rag.layout import (
     setup_header_and_footer,
     setup_landing_page,
@@ -48,6 +50,9 @@ from euclid.rag.layout import (
 # Load environment variables from .env file
 load_dotenv()
 STATIC_DIR = Path(__file__).resolve().parents[3] / "static"
+
+# Automated data ingestion (for now: BibTeX only)
+threading.Thread(target=run_bibtex_ingestion, daemon=True).start()
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "rubin_telescope.png")
@@ -67,9 +72,15 @@ with Path.open(file_path) as css:
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
-# Configure the Weaviate retriever and QA chain
-retriever = configure_retriever()
-qa_chain = create_qa_chain(retriever)
+
+vectorstore_path = Path("rag/FAISS_vectorstore/index.faiss")
+while not vectorstore_path.exists():
+    with st.spinner("Preparing Euclid knowledge base..."):
+        while not vectorstore_path.exists():
+            time.sleep(1)
+
+# Configure the vectorstore retriever and QA chain
+agent = create_agent()
 
 # Enable dynamic filtering based on user input
 setup_sidebar()
@@ -84,4 +95,4 @@ msgs = StreamlitChatMessageHistory()
 setup_header_and_footer(msgs)
 
 # Handle user input and chat history
-handle_user_input(qa_chain, msgs)
+handle_user_input(agent, msgs)
