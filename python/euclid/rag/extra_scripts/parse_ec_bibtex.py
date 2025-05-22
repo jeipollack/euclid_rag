@@ -10,7 +10,6 @@ Includes a weekly ingestion scheduler using APScheduler.
 
 import re
 from pathlib import Path
-from typing import cast
 
 import requests
 import yaml
@@ -114,10 +113,8 @@ class EuclidBibIngestor:
     def _get_existing_sources(self) -> set[str]:
         existing_sources: set[str] = set()
         if self._vectorstore is not None:
-            store = cast("FAISS", self._vectorstore).docstore
-            for doc_id in cast(
-                "FAISS", self._vectorstore
-            ).index_to_docstore_id.values():
+            store = self._vectorstore.docstore
+            for doc_id in self._vectorstore.index_to_docstore_id.values():
                 for doc in store.search(doc_id):
                     if isinstance(doc, Document):
                         source = doc.metadata.get("source")
