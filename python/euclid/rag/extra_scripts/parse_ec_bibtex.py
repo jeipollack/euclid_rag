@@ -177,6 +177,7 @@ class EuclidBibIngestor:
                 for doc in store.search(doc_id):
                     if (
                         isinstance(doc, Document)
+                        and doc.metadata.get("source") is not None
                         and doc.metadata.get("source") == filename
                     ):
                         shown += 1
