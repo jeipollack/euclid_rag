@@ -39,11 +39,7 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 
-from euclid.rag.chatbot import (
-    configure_retriever,
-    create_qa_chain,
-    handle_user_input,
-)
+from euclid.rag.chatbot import create_agent, handle_user_input
 from euclid.rag.extra_scripts.parse_ec_bibtex import run_bibtex_ingestion
 from euclid.rag.layout import (
     setup_header_and_footer,
@@ -84,8 +80,7 @@ while not vectorstore_path.exists():
             time.sleep(1)
 
 # Configure the vectorstore retriever and QA chain
-retriever = configure_retriever()
-qa_chain = create_qa_chain(retriever)
+agent = create_agent()
 
 # Enable dynamic filtering based on user input
 setup_sidebar()
@@ -100,4 +95,4 @@ msgs = StreamlitChatMessageHistory()
 setup_header_and_footer(msgs)
 
 # Handle user input and chat history
-handle_user_input(qa_chain, msgs)
+handle_user_input(agent, msgs)
