@@ -59,9 +59,13 @@ class DeduplicationFilter:
             return False
 
         results = self.vectorstore.similarity_search_with_score(
-            text, k=self.k_candidates
+            text, k=self.k_candidates or 5
         )
+
         if not results:
+            return False
+
+        if self.similarity_threshold is None:
             return False
 
         top_docs = [
