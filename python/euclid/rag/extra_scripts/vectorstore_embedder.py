@@ -13,6 +13,7 @@ This module provides:
 import logging
 from pathlib import Path
 
+import numpy as np
 import torch
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -57,6 +58,7 @@ class E5MpsEmbedder(Embeddings):
             with torch.no_grad():
                 output = self._model(**tokens).last_hidden_state[:, 0, :]
             vectors = output.cpu().numpy()
+            vectors = np.nan_to_num(vectors, nan=0.0, posinf=0.0, neginf=0.0)
             # L2 normalize for cosine similarity
             vectors = normalize(vectors, axis=1)
             results.extend(vectors.tolist())
