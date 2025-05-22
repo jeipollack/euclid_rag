@@ -172,19 +172,26 @@ class EuclidBibIngestor:
     def _log_sampled_chunks(self, filename: str) -> None:
         if self._vectorstore is None:
             return
+
         store = self._vectorstore.docstore
         shown = 0
-        if hasattr(store, "_dict"):
-            for doc_id in self._vectorstore.index_to_docstore_id.values():
-                for doc in store.search(doc_id):
-                    if (
-                        isinstance(doc, Document)
-                        and isinstance(doc.metadata.get("source"), str)
-                        and doc.metadata.get("source") == filename
-                    ):
-                        shown += 1
-                        if shown >= 3:
-                            return
+
+        if not hasattr(store, "search"):
+            return
+
+        index_ids = getattr(self._vectorstore, "index_to_docstore_id", {})
+        if not isinstance(index_ids, dict):
+            return
+
+        for doc_id in index_ids.values():
+            for doc in store.search(doc_id):
+                if not isinstance(doc, Document):
+                    continue
+                source = doc.metadata.get("source")
+                if isinstance(source, str) and source == filename:
+                    shown += 1
+                    if shown >= 3:
+                        return
 
     def _fetch_bibtex_entries(self) -> list[dict]:
         """Fetch BibTeX entries."""
