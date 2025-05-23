@@ -1,15 +1,17 @@
-import os
+from pathlib import Path
 import sys
 
+repo_path = Path(__file__).parents[1]
+docs_path = repo_path / "docs"
+src_path = repo_path / "python"
+static_path = repo_path / "static"
 
 # At top of conf.py, after imports:
-rst_epilog = open(
-    os.path.join(os.path.dirname(__file__), "_rst_epilog.rst"),
-    encoding="utf-8",
-).read()
+with open(docs_path / "_rst_epilog.rst", encoding="utf-8") as f:
+    rst_epilog = f.read()
 
 # Make sure Sphinx can import your package under python/euclid/rag
-sys.path.insert(0, os.path.abspath("../python"))
+sys.path.insert(0, str(src_path))
 
 # ——————————————————————————————
 # Project information
@@ -36,7 +38,7 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "_rst_epilog.rst"]
 
 
-html_static_path = ["_static"]  # create this folder (even if empty)
+html_static_path = [str(static_path)]  # create this folder (even if empty)
 html_css_files = []  # add any custom.css here
 
 # ——————————————————————————————
@@ -56,8 +58,8 @@ html_theme_options = {
     "logo": {
         "text": project,
         "alt_text": project,
-        "image_light": "_static/logo-light.png",
-        "image_dark": "_static/logo-dark.png",
+        "image_light": "static/logo.png",
+        "image_dark": "static/logo.png",
         "image_class": "logo",
         "image_style": "default",
     },
