@@ -43,16 +43,17 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    # Testing
     "coverage[toml]",
     "pytest",
+    "pytest-cov",
     "pytest-asyncio",
     "mypy",
-    # Documentation
+]
+docs = [
     "documenteer[guide]<2",
     "scriv",
-]
-
+    "sphinx"
+    ]
 [project.urls]
 Source = "https://github.com/jeipollack/euclid_rag"
 
@@ -81,7 +82,7 @@ branch = true
 source = ["euclid"]
 
 [tool.coverage.paths]
-source = ["python", ".tox/*/site-packages"]
+source = ["python", ".tox/py*/**/site-packages"]
 
 [tool.coverage.report]
 show_missing = true
@@ -96,6 +97,7 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:"
 ]
+fail_under = 2
 
 [tool.mypy]
 disallow_untyped_defs = true
