@@ -20,7 +20,7 @@ See [README](../README.md).
 We actively welcome your pull requests. Linking to an existing issue is preferred.
 
 1. Fork the repo and create your branch from `main` or the designated default branch.
-2. Use descriptive branch names like `feature/add-new-thing`.
+2. Use descriptive branch names like `feature/{issue-number}-add-new-thing`
 3. Add tests for new code where applicable.
 4. Update documentation for API changes.
 5. Include screenshots for visual changes.
