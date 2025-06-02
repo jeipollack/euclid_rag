@@ -131,9 +131,7 @@ def extract_parent_issue(jira_data: dict) -> dict:
     return {}
 
 
-def safe_get(
-    dictionary: dict[str, Any], keys: list, default: Any | None = None
-) -> Any:
+def safe_get(dictionary: dict[str, Any], keys: list, default: str) -> Any:
     """Safely extract information from nested dictionaries."""
     return reduce(
         lambda d, key: d.get(key, default) if isinstance(d, dict) else default,

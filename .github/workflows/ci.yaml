@@ -39,6 +39,7 @@ jobs:
       matrix:
         python:
           - "3.12"
+          - "3.13"
 
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +48,7 @@ jobs:
         uses: lsst-sqre/run-tox@v1
         with:
           python-version: ${{ matrix.python }}
-          tox-envs: "py,typing"
+          tox-envs: "py312,py313,typing"
           tox-plugins: tox-uv
 
   build:
