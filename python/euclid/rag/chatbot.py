@@ -49,6 +49,8 @@ from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 from transformers import AutoModel, AutoTokenizer
 
+from euclid import STATIC_DIR
+
 from .streamlit_callback import get_streamlit_cb
 
 
@@ -231,12 +233,8 @@ def handle_user_input(
     # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
-        "human": Path(__file__).resolve().parents[3]
-        / "static"
-        / "user_avatar.png",
-        "ai": Path(__file__).resolve().parents[3]
-        / "static"
-        / "euclid_cartoon.png",
+        "human": STATIC_DIR / "user_avatar.png",
+        "ai": STATIC_DIR / "euclid_cartoon.png",
     }
 
     for msg in msgs.messages:

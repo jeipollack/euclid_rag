@@ -22,3 +22,9 @@
 import pkgutil
 
 __path__ = pkgutil.extend_path(__path__, __name__)
+
+import importlib.resources
+import pathlib
+
+with importlib.resources.path("euclid", "static") as static_path:
+    STATIC_DIR = pathlib.Path(static_path)

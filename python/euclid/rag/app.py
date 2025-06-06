@@ -26,7 +26,6 @@ retriever, QA chain, session state, UI elements, and handling user of
 interactions.
 """
 
-import importlib.resources
 from pathlib import Path
 
 import streamlit as st
@@ -35,6 +34,7 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 
+from euclid import STATIC_DIR
 from euclid.rag.chatbot import (
     configure_retriever,
     create_qa_chain,
@@ -48,8 +48,6 @@ from euclid.rag.layout import (
 
 # Load environment variables from .env file
 load_dotenv()
-STATIC_DIR = importlib.resources.files("euclid.static")
-
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "rubin_telescope.png")
 st.set_page_config(
