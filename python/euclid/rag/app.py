@@ -26,6 +26,7 @@ retriever, QA chain, session state, UI elements, and handling user of
 interactions.
 """
 
+import importlib.resources
 from pathlib import Path
 
 import streamlit as st
@@ -47,7 +48,7 @@ from euclid.rag.layout import (
 
 # Load environment variables from .env file
 load_dotenv()
-STATIC_DIR = Path(__file__).resolve().parents[3] / "static"
+STATIC_DIR = importlib.resources.files("euclid.static")
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "rubin_telescope.png")
