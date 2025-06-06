@@ -186,7 +186,7 @@ def create_qa_chain(
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
     start_ollama_server(cfg["llm"]["model"])
-    llm = OllamaLLM(**cfg["llm"], streaming=True)
+    llm = OllamaLLM(**cfg["llm"])
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
