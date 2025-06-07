@@ -11,15 +11,18 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Set the working directory in the container
 WORKDIR /app
 
+# Copy pyproject.toml separately to leverage Docker cache
+COPY pyproject.toml /app/
+
+# Install any needed packages specified in requirements.txt
+RUN uv pip install --system --upgrade pip
+RUN uv pip install --system -r pyproject.toml
+
 # Copy necessary source to container
 COPY . /app
 
 # Entrypoint needs to executable
 RUN chmod +x entrypoint.sh
-
-# Install any needed packages specified in requirements.txt
-RUN uv pip install --system --upgrade pip
-RUN uv pip install --system .
 
 # Expose the port that the app will run on
 EXPOSE 8501
