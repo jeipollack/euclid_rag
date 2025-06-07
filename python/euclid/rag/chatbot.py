@@ -81,8 +81,9 @@ def configure_retriever() -> VectorStoreRetriever:
         batch_size=cfg["embeddings"]["batch_size"],
     )
     index_dir = Path(cfg["vector_store"]["index_dir"])
+    vector_store = index_dir / "index.faiss"
 
-    if index_dir.exists():
+    if vector_store.exists():
         # Load prebuilt FAISS vectorstore
         vectorstore = FAISS.load_local(
             str(index_dir), embedder, allow_dangerous_deserialization=True
