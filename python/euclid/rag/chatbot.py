@@ -23,7 +23,6 @@
 
 """Set up of base chatbot based on settings in app_config.yaml file."""
 
-import subprocess
 from pathlib import Path
 
 import streamlit as st
@@ -52,11 +51,6 @@ from transformers import AutoModel, AutoTokenizer
 from euclid import STATIC_DIR
 
 from .streamlit_callback import get_streamlit_cb
-
-
-def start_ollama_server(model: str) -> None:
-    """Ensure the Ollama server is running with the specified model."""
-    subprocess.Popen(["ollama", "run", model])
 
 
 @st.cache_resource
@@ -185,7 +179,6 @@ def create_qa_chain(
 ) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    start_ollama_server(cfg["llm"]["model"])
     llm = OllamaLLM(**cfg["llm"])
 
     # Define the system message template
