@@ -25,12 +25,12 @@
 app that interacts with the chatbot.
 """
 
-from pathlib import Path
-
 import streamlit as st
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
+
+from euclid import STATIC_DIR
 
 
 def setup_sidebar() -> None:
@@ -52,11 +52,7 @@ def setup_landing_page() -> None:
         with col1:
             st.write(" ")
         with col2:
-            logo_path = (
-                Path(__file__).resolve().parents[3]
-                / "static"
-                / "euclid_cartoon.png"
-            )
+            logo_path = STATIC_DIR / "euclid_cartoon.png"
             st.image(str(logo_path))
 
             st.markdown(
