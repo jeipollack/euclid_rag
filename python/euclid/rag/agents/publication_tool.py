@@ -35,6 +35,13 @@ _model = AutoModelForSequenceClassification.from_pretrained(
     "BAAI/bge-reranker-base"
 )
 
+BONUS_WEIGHTS = {
+    "keywords": 0.5,
+    "title": 0.3,
+    "authors": 0.3,
+    "year": 0.2,
+}
+
 
 def semantic_rerank(query: str, docs: list) -> list:
     """
@@ -205,12 +212,26 @@ def get_publication_tool(
         query_tokens = tokenize(query)
         metadata_scored_docs = []
         for doc in filtered_docs:
-            m = doc.metadata
+            metadata = doc.metadata
             score = (
-                bonus_overlap(query_tokens, m.get("keywords"), 0.5)
-                + bonus_overlap(query_tokens, m.get("title"), 0.3)
-                + bonus_overlap(query_tokens, m.get("authors"), 0.3)
-                + bonus_overlap(query_tokens, str(m.get("year")), 0.2)
+                bonus_overlap(
+                    query_tokens,
+                    metadata.get("keywords"),
+                    BONUS_WEIGHTS["keywords"],
+                )
+                + bonus_overlap(
+                    query_tokens, metadata.get("title"), BONUS_WEIGHTS["title"]
+                )
+                + bonus_overlap(
+                    query_tokens,
+                    metadata.get("authors"),
+                    BONUS_WEIGHTS["authors"],
+                )
+                + bonus_overlap(
+                    query_tokens,
+                    str(metadata.get("year")),
+                    BONUS_WEIGHTS["year"],
+                )
             )
             metadata_scored_docs.append((score, doc))
 
