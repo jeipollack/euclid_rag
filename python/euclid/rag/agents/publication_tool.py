@@ -236,12 +236,10 @@ def get_publication_tool(
             metadata_scored_docs.append((score, doc))
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
-        rerank_candidates = [
+        top_scored_docs = [
             d for _, d in metadata_scored_docs[:top_candidates_threshold]
         ]
-        return semantic_rerank(query, rerank_candidates)[
-            :top_reranked_threshold
-        ]
+        return semantic_rerank(query, top_scored_docs)[:top_reranked_threshold]
 
     class _Retriever(BaseRetriever):
         """
