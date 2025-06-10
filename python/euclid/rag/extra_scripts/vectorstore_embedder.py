@@ -35,7 +35,20 @@ def _get_device() -> torch.device:
 
 
 class Embedder(Embeddings):
-    """Embedding model using MPS, CUDA, or CPU."""
+    """
+    Embeds text into dense vectors using a HuggingFace model.
+
+    Supports MPS, CUDA, or CPU.
+
+    Pooling strategy (CLS or mean) is inferred automatically.
+
+    Parameters
+    ----------
+    model_name : str, optional
+        HuggingFace model to use. Default is "BAAI/bge-base-en-v1.5".
+    batch_size : int, optional
+        Number of texts per batch. Default is 16.
+    """
 
     def __init__(
         self,
