@@ -34,32 +34,67 @@ def _get_device() -> torch.device:
     return torch.device("cpu")
 
 
-class E5MpsEmbedder(Embeddings):
-    """E5 embedding model using MPS, CUDA, or CPU."""
+class Embedder(Embeddings):
+    """Embedding model using MPS, CUDA, or CPU."""
 
     def __init__(
-        self, model_name: str = "intfloat/e5-small-v2", batch_size: int = 16
+        self,
+        model_name: str = "BAAI/bge-base-en-v1.5",
+        batch_size: int = 16,
     ) -> None:
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
         self._model = AutoModel.from_pretrained(model_name).to(_get_device())
         self._batch_size = batch_size
         self._device = self._model.device
+        self._pooling_strategy = self._detect_pooling()
+
+    def _detect_pooling(self) -> str:
+        """
+        Infer whether CLS or mean pooling should be used based on output shape.
+
+        Enables integration with different types of embedding models.
+        """
+        sample = ["Test input for pooling detection."]
+        tokens = self._tokenizer(
+            sample,
+            return_tensors="pt",
+            truncation=True,
+            padding=True,
+            max_length=512,
+        ).to(self._device)
+
+        with torch.no_grad():
+            output = self._model(**tokens).last_hidden_state
+
+        if output.shape[1] == 1:
+            return "cls"
+        return "mean"
 
     def _embed(self, texts: list[str]) -> list[list[float]]:
+        """Embed a list of texts using dynamic pooling."""
         results = []
         for i in range(0, len(texts), self._batch_size):
+            batch = texts[i : i + self._batch_size]
             tokens = self._tokenizer(
-                texts[i : i + self._batch_size],
+                batch,
                 return_tensors="pt",
                 truncation=True,
                 padding=True,
                 max_length=512,
             ).to(self._device)
+
             with torch.no_grad():
-                output = self._model(**tokens).last_hidden_state[:, 0, :]
-            vectors = output.cpu().numpy()
+                output = self._model(**tokens).last_hidden_state
+                if self._pooling_strategy == "cls":
+                    embeddings = output[:, 0]
+                else:
+                    mask = tokens["attention_mask"].unsqueeze(-1)
+                    summed = torch.sum(output * mask, dim=1)
+                    counts = torch.clamp(mask.sum(dim=1), min=1e-9)
+                    embeddings = summed / counts
+
+            vectors = embeddings.cpu().numpy()
             vectors = np.nan_to_num(vectors, nan=0.0, posinf=0.0, neginf=0.0)
-            # L2 normalize for cosine similarity
             vectors = normalize(vectors, axis=1)
             results.extend(vectors.tolist())
         return results
