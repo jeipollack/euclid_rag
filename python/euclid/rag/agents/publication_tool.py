@@ -42,6 +42,12 @@ BONUS_WEIGHTS = {
     "year": 0.2,
 }
 
+TOP_K_FOR_METADATA_SCORING = {
+    "similarity_k": 50,
+    "top_metadata_k": 20,
+    "top_reranked_k": 10,
+}
+
 
 def semantic_rerank(query: str, docs: list) -> list:
     """
@@ -182,20 +188,16 @@ def get_publication_tool(
         k_candidates=10,
     )
 
-    def retrieve(
-        query: str,
-        similarity_threshold: int = 50,
-        top_candidates_threshold: int = 20,
-        top_reranked_threshold: int = 10,
-    ) -> list:
+    def retrieve(query: str) -> list:
         """
         Retrieve relevant documents for a query using multi-stage ranking.
 
-        1. Perform FAISS similarity search (default: 50).
+        Steps:
+        1. Perform FAISS similarity search.
         2. Filter out exact and semantic duplicates.
         3. Score remaining documents using metadata keyword overlap.
-        4. Select top N candidates (default: 20) for CrossEncoder reranking.
-        5. Return top M reranked documents (default: 10).
+        4. Select top metadata-matching documents for CrossEncoder reranking.
+        5. Return top reranked documents.
 
         Returns
         -------
@@ -204,11 +206,12 @@ def get_publication_tool(
         """
         filtered_docs = []
         for doc, _ in retriever.vectorstore.similarity_search_with_score(
-            query, k=similarity_threshold
+            query, k=TOP_K_FOR_METADATA_SCORING["similarity_k"]
         ):
             text = doc.page_content
             if not dedup_hash.filter(text) and not dedup_semantic.filter(text):
                 filtered_docs.append(doc)
+
         query_tokens = tokenize(query)
         metadata_scored_docs = []
         for doc in filtered_docs:
@@ -237,9 +240,14 @@ def get_publication_tool(
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
         top_scored_docs = [
-            d for _, d in metadata_scored_docs[:top_candidates_threshold]
+            d
+            for _, d in metadata_scored_docs[
+                : TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
+            ]
         ]
-        return semantic_rerank(query, top_scored_docs)[:top_reranked_threshold]
+        return semantic_rerank(query, top_scored_docs)[
+            : TOP_K_FOR_METADATA_SCORING["top_reranked_k"]
+        ]
 
     class _Retriever(BaseRetriever):
         """
