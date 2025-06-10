@@ -19,11 +19,21 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-from euclid.rag.extra_scripts.deduplication import ChunkDeduplicator
+from euclid.rag.extra_scripts.deduplication import (
+    HashDeduplicator,
+    SemanticSimilarityDeduplicator,
+)
 from euclid.rag.extra_scripts.vectorstore_embedder import (
     Embedder,
     load_or_create_vectorstore,
 )
+
+DEDUPLICATION_CONFIG = {
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "similarity_threshold": 0.8,
+    "rerank_threshold": 0.85,
+    "k_candidates": 5,
+}
 
 
 def load_config(path: Path) -> dict:
@@ -41,7 +51,6 @@ class EuclidBibIngestor:
         self,
         index_dir: Path,
         temp_dir: Path,
-        deduplication_kwargs: dict,
         data_config: dict,
     ) -> None:
         """Initiate the ingestor."""
@@ -51,7 +60,6 @@ class EuclidBibIngestor:
         self._index_dir.mkdir(parents=True, exist_ok=True)
         self._temp_dir.mkdir(parents=True, exist_ok=True)
         self._vectorstore = self._load_vectorstore()
-        self._deduplication_config = deduplication_kwargs
         self._bib_url = data_config.get("bibtex_url")
         self._arxiv_pdf_url = data_config.get("arxiv_pdf_base_url")
         self._data_config = data_config
@@ -74,9 +82,16 @@ class EuclidBibIngestor:
 
     def ingest_new_papers(self) -> None:
         """Ingests new papers into the vectorstore."""
-        deduper = ChunkDeduplicator(
-            self._vectorstore, config=self._deduplication_config
+        dedup_filter_hash = HashDeduplicator()
+
+        dedup_filter_semantic = SemanticSimilarityDeduplicator(
+            vectorstore=self._vectorstore,
+            reranker_model=DEDUPLICATION_CONFIG["reranker_model"],
+            similarity_threshold=DEDUPLICATION_CONFIG["similarity_threshold"],
+            rerank_threshold=DEDUPLICATION_CONFIG["rerank_threshold"],
+            k_candidates=DEDUPLICATION_CONFIG["k_candidates"],
         )
+
         bib_entries = self._fetch_bibtex_entries()
         self._reload_vectorstore()
         existing_sources = self._get_existing_sources()
@@ -93,9 +108,12 @@ class EuclidBibIngestor:
 
             chunks = self._load_and_split_pdf(filepath)
             filtered_chunks = self._filter_and_enrich_chunks(
-                chunks, entry, filename, deduper
+                chunks,
+                entry,
+                filename,
+                dedup_filter_hash,
+                dedup_filter_semantic,
             )
-
             if filtered_chunks:
                 self._add_to_vectorstore(filtered_chunks)
                 self._log_sampled_chunks(filename)
@@ -143,12 +161,15 @@ class EuclidBibIngestor:
         chunks: list[Document],
         entry: dict,
         filename: str,
-        deduper: ChunkDeduplicator,
+        dedup_filter_hash: HashDeduplicator,
+        dedup_filter_semantic: SemanticSimilarityDeduplicator,
     ) -> list[Document]:
         filtered_chunks = []
         paper_meta = self._entry_metadata(entry)
         for chunk in chunks:
-            if deduper.is_duplicate(chunk.page_content):
+            if dedup_filter_hash.filter(chunk.page_content):
+                continue
+            if dedup_filter_semantic.filter(chunk.page_content):
                 continue
             chunk.metadata.update(paper_meta)
             chunk.metadata["category"] = "publication"
@@ -243,13 +264,11 @@ def run_bibtex_ingestion() -> None:
 
     index_dir = Path(config["vector_store"]["index_dir"]).resolve()
     temp_dir = Path("rag/downloaded").resolve()
-    dedup_config = config.get("deduplication", {})
     data_config = config.get("data", {})
 
     ingestor = EuclidBibIngestor(
         index_dir=index_dir,
         temp_dir=temp_dir,
-        deduplication_kwargs=dedup_config,
         data_config=data_config,
     )
     ingestor.ingest_new_papers()
