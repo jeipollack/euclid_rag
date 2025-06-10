@@ -2,7 +2,7 @@
 # Licensed under the GNU LGPL v3.0.
 # See <https://www.gnu.org/licenses/>.
 
-"""Agent for all EC publications and metadata."""
+"""Tool for querying Euclid-Consortium publications and metadata."""
 
 from __future__ import annotations
 
@@ -317,7 +317,7 @@ def get_publication_tool(
         return answer
 
     return Tool(
-        name="euclid_publication_agent",
+        name="euclid_publication_tool",
         func=run,
         description="Answer questions about Euclid scientific papers.",
     )
