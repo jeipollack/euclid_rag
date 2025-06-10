@@ -5,7 +5,6 @@
 """
 Ingest publications into a FAISS vectorstore from the official EC BibTeX.
 Each paper is embedded immediately after download and deleted afterward.
-Includes a weekly ingestion scheduler using APScheduler.
 """
 
 import re
@@ -20,9 +19,9 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-from euclid.rag.extra_scripts.deduplication import DeduplicationFilter
+from euclid.rag.extra_scripts.deduplication import ChunkDeduplicator
 from euclid.rag.extra_scripts.vectorstore_embedder import (
-    E5MpsEmbedder,
+    Embedder,
     load_or_create_vectorstore,
 )
 
@@ -48,7 +47,7 @@ class EuclidBibIngestor:
         """Initiate the ingestor."""
         self._index_dir = index_dir
         self._temp_dir = temp_dir
-        self._embedder = E5MpsEmbedder()
+        self._embedder = Embedder()
         self._index_dir.mkdir(parents=True, exist_ok=True)
         self._temp_dir.mkdir(parents=True, exist_ok=True)
         self._vectorstore = self._load_vectorstore()
@@ -75,7 +74,7 @@ class EuclidBibIngestor:
 
     def ingest_new_papers(self) -> None:
         """Ingests new papers into the vectorstore."""
-        deduper = DeduplicationFilter(
+        deduper = ChunkDeduplicator(
             self._vectorstore, config=self._deduplication_config
         )
         bib_entries = self._fetch_bibtex_entries()
@@ -144,7 +143,7 @@ class EuclidBibIngestor:
         chunks: list[Document],
         entry: dict,
         filename: str,
-        deduper: DeduplicationFilter,
+        deduper: ChunkDeduplicator,
     ) -> list[Document]:
         filtered_chunks = []
         paper_meta = self._entry_metadata(entry)
