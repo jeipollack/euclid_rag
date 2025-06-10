@@ -42,8 +42,8 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from .Agents.publication_agent import get_publication_agent
-from .extra_scripts.vectorstore_embedder import E5MpsEmbedder
+from .Agents.publication_tool import get_publication_tool
+from .extra_scripts.vectorstore_embedder import Embedder
 from .streamlit_callback import get_streamlit_cb
 
 
@@ -64,7 +64,7 @@ def configure_retriever() -> VectorStoreRetriever:
     """Load retriever based on config.yaml."""
     cfg = load_cfg()
 
-    embedder = E5MpsEmbedder(
+    embedder = Embedder(
         model_name=cfg["embeddings"]["model_name"],
         batch_size=cfg["embeddings"]["batch_size"],
     )
@@ -91,9 +91,9 @@ def create_agent() -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
 
     retriever = configure_retriever()
 
-    # Sub-agents: later add get_dpdd_agent(), get_redmine_agent(), etc ..
-    agents = [
-        get_publication_agent(llm, retriever),
+    # Tools:: later add get_dpdd_tool(), get_redmine_tool(), etc ..
+    tools = [
+        get_publication_tool(llm, retriever),
     ]
 
     def euclid_ai(
@@ -104,8 +104,8 @@ def create_agent() -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
         Ensures at least one agent is always used.
         """
         question = inputs["input"]
-        for ag in agents:
-            answer = ag.run(question, callbacks=callbacks)
+        for tool in tools:
+            answer = tool.run(question, callbacks=callbacks)
             if not answer.lower().startswith("i don't have"):
                 return {"answer": answer, "context": []}
 
