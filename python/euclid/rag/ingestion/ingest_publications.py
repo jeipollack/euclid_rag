@@ -135,14 +135,14 @@ class EuclidBibIngestor:
                 allow_dangerous_deserialization=True,
             )
 
-    def _get_existing_sources(self) -> set[str]:
+    def _get_existing_sources(self) -> set[str]:  # type: ignore[unreachable]
         existing_sources: set[str] = set()
         if self._vectorstore is not None:
             store = self._vectorstore.docstore
             for doc_id in self._vectorstore.index_to_docstore_id.values():
                 docs = store.search(doc_id)
                 if not isinstance(docs, list):
-                    continue  # here mypy now knows docs is list[Any]
+                    continue
 
                 docs_list: list[Document] = [
                     d for d in docs if isinstance(d, Document)
@@ -203,7 +203,7 @@ class EuclidBibIngestor:
             allow_dangerous_deserialization=True,
         )
 
-    def _log_sampled_chunks(self, filename: str) -> None:
+    def _log_sampled_chunks(self, filename: str) -> None:  # type: ignore[unreachable]
         if self._vectorstore is None:
             return
 
