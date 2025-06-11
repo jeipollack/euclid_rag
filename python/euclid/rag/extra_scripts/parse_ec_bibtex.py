@@ -91,10 +91,12 @@ class EuclidBibIngestor:
 
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
             vectorstore=self._vectorstore,
-            reranker_model=DEDUPLICATION_CONFIG["reranker_model"],
-            similarity_threshold=DEDUPLICATION_CONFIG["similarity_threshold"],
-            rerank_threshold=DEDUPLICATION_CONFIG["rerank_threshold"],
-            k_candidates=DEDUPLICATION_CONFIG["k_candidates"],
+            reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
+            similarity_threshold=float(
+                DEDUPLICATION_CONFIG["similarity_threshold"]
+            ),
+            rerank_threshold=float(DEDUPLICATION_CONFIG["rerank_threshold"]),
+            k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
         )
 
         bib_entries = self._fetch_bibtex_entries()
