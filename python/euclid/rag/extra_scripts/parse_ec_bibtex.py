@@ -244,10 +244,11 @@ class EuclidBibIngestor:
         year = entry.get("year")
         kw = entry.get("keywords", "")
         # prefer ADS URL; fall back to arXiv PDF link
-        url = (
-            entry.get("adsurl")
-            or f"{self._arxiv_pdf_url}{entry.get('eprint')}.pdf"
-        )
+        eprint = entry.get("eprint")
+        if not isinstance(eprint, str):
+            raise TypeError("Missing or invalid eprint in BibTeX entry.")
+
+        url = entry.get("adsurl") or f"{self._arxiv_pdf_url}{eprint}.pdf"
 
         return {
             "title": title,
