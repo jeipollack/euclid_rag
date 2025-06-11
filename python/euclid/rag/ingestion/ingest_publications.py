@@ -143,12 +143,14 @@ class EuclidBibIngestor:
                 raw_result: Any = store.search(doc_id)
                 if not isinstance(raw_result, list):
                     continue
-                for doc in raw_result:
-                    if not isinstance(doc, Document):
-                        continue
-                    source = doc.metadata.get("source")
-                    if source:
-                        existing_sources.add(source)
+                if isinstance(docs, list) and all(
+                    isinstance(d, Document) for d in docs
+                ):
+                    docs_list: list[Document] = docs
+                    for doc in docs_list:
+                        source = doc.metadata.get("source")
+                        if source:
+                            existing_sources.add(source)
         return existing_sources
 
     def _should_process(self, entry: dict, existing_sources: set[str]) -> bool:
@@ -216,15 +218,16 @@ class EuclidBibIngestor:
             raw_result: Any = store.search(doc_id)
             if not isinstance(raw_result, list):
                 continue
-
-            for doc in raw_result:
-                if not isinstance(doc, Document):
-                    continue
-                source = doc.metadata.get("source")
-                if isinstance(source, str) and source == filename:
-                    shown += 1
-                    if shown >= 3:
-                        return
+            if isinstance(docs, list) and all(
+                isinstance(d, Document) for d in docs
+            ):
+                docs_list: list[Document] = docs
+                for doc in docs_list:
+                    source = doc.metadata.get("source")
+                    if isinstance(source, str) and source == filename:
+                        shown += 1
+                        if shown >= 3:
+                            return
 
     def _fetch_bibtex_entries(self) -> list[dict]:
         """Fetch BibTeX entries."""
