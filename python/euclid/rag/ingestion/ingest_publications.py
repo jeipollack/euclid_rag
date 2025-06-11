@@ -141,12 +141,13 @@ class EuclidBibIngestor:
             store = self._vectorstore.docstore
             for doc_id in self._vectorstore.index_to_docstore_id.values():
                 docs = store.search(doc_id)
-                if not isinstance(docs, list):  # guard: docs is now list[Any]
-                    continue
+                if not isinstance(docs, list):
+                    continue  # here mypy now knows docs is list[Any]
 
-                for doc in docs:  # docs has type list[Any] here
-                    if not isinstance(doc, Document):  # per-item guard
-                        continue
+                docs_list: list[Document] = [
+                    d for d in docs if isinstance(d, Document)
+                ]
+                for doc in docs_list:
                     source = doc.metadata.get("source")
                     if source:
                         existing_sources.add(source)
@@ -223,9 +224,10 @@ class EuclidBibIngestor:
 >>>>>>> f7aba01 (Adjust static type checking for vector store in Git CI)
                 continue
 
-            for doc in docs:
-                if not isinstance(doc, Document):
-                    continue
+            docs_list: list[Document] = [
+                d for d in docs if isinstance(d, Document)
+            ]
+            for doc in docs_list:
                 source = doc.metadata.get("source")
                 if isinstance(source, str) and source == filename:
                     shown += 1
