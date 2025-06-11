@@ -29,8 +29,6 @@ retriever, QA chain, session state, UI elements, handling user of
 interactions, and scheduled ingestion of data.
 """
 
-import threading
-import time
 from pathlib import Path
 
 import streamlit as st
@@ -40,8 +38,7 @@ from langchain_community.chat_message_histories import (
 )
 
 from euclid import STATIC_DIR
-from euclid.rag.chatbot import create_agent, handle_user_input
-from euclid.rag.extra_scripts.parse_ec_bibtex import run_bibtex_ingestion
+from euclid.rag.chatbot import create_euclid_router, handle_user_input
 from euclid.rag.layout import (
     setup_header_and_footer,
     setup_landing_page,
@@ -51,9 +48,6 @@ from euclid.rag.layout import (
 # Load environment variables from .env file
 load_dotenv()
 STATIC_DIR = Path(__file__).resolve().parents[3] / "static"
-
-# Automated data ingestion (for now: BibTeX only)
-threading.Thread(target=run_bibtex_ingestion, daemon=True).start()
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "rubin_telescope.png")
@@ -73,15 +67,15 @@ with Path.open(file_path) as css:
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
-
+# Check that vectorstore exists before starting
 vectorstore_path = Path("rag/FAISS_vectorstore/index.faiss")
-while not vectorstore_path.exists():
-    with st.spinner("Preparing Euclid knowledge base..."):
-        while not vectorstore_path.exists():
-            time.sleep(1)
+if not vectorstore_path.exists():
+    raise RuntimeError(
+        "Vectorstore missing. Please run ingestion before launching the app."
+    )
 
 # Configure the vectorstore retriever and QA chain
-agent = create_agent()
+router = create_euclid_router()
 
 # Enable dynamic filtering based on user input
 setup_sidebar()
@@ -96,4 +90,4 @@ msgs = StreamlitChatMessageHistory()
 setup_header_and_footer(msgs)
 
 # Handle user input and chat history
-handle_user_input(agent, msgs)
+handle_user_input(router, msgs)
