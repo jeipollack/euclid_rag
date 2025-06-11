@@ -140,16 +140,15 @@ class EuclidBibIngestor:
             store = self._vectorstore.docstore
             for doc_id in self._vectorstore.index_to_docstore_id.values():
                 docs = store.search(doc_id)
-                if not docs:
+                if not isinstance(docs, list):  # guard: docs is now list[Any]
                     continue
-                if isinstance(docs, list) and all(
-                    isinstance(d, Document) for d in docs
-                ):
-                    docs_list: list[Document] = docs
-                    for doc in docs_list:
-                        source = doc.metadata.get("source")
-                        if source:
-                            existing_sources.add(source)
+
+                for doc in docs:  # docs has type list[Any] here
+                    if not isinstance(doc, Document):  # per-item guard
+                        continue
+                    source = doc.metadata.get("source")
+                    if source:
+                        existing_sources.add(source)
         return existing_sources
 
     def _should_process(self, entry: dict, existing_sources: set[str]) -> bool:
@@ -215,18 +214,17 @@ class EuclidBibIngestor:
 
         for doc_id in index_ids.values():
             docs = store.search(doc_id)
-            if not docs:
+            if not isinstance(docs, list):
                 continue
-            if isinstance(docs, list) and all(
-                isinstance(d, Document) for d in docs
-            ):
-                docs_list: list[Document] = docs
-                for doc in docs_list:
-                    source = doc.metadata.get("source")
-                    if isinstance(source, str) and source == filename:
-                        shown += 1
-                        if shown >= 3:
-                            return
+
+            for doc in docs:
+                if not isinstance(doc, Document):
+                    continue
+                source = doc.metadata.get("source")
+                if isinstance(source, str) and source == filename:
+                    shown += 1
+                    if shown >= 3:
+                        return
 
     def _fetch_bibtex_entries(self) -> list[dict]:
         """Fetch BibTeX entries."""
