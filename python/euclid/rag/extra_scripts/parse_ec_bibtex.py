@@ -11,7 +11,6 @@ import re
 from pathlib import Path
 
 import requests
-import yaml
 from bibtexparser.bparser import BibTexParser
 from bibtexparser.customization import convert_to_unicode
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -27,6 +26,7 @@ from euclid.rag.extra_scripts.vectorstore_embedder import (
     Embedder,
     load_or_create_vectorstore,
 )
+from euclid.rag.utils.config import load_config
 
 DEDUPLICATION_CONFIG = {
     "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
@@ -34,12 +34,6 @@ DEDUPLICATION_CONFIG = {
     "rerank_threshold": 0.85,
     "k_candidates": 5,
 }
-
-
-def load_config(path: Path) -> dict:
-    """Load YAML configuration from the given path."""
-    with path.open("r") as f:
-        return yaml.safe_load(f)
 
 
 class EuclidBibIngestor:
@@ -258,10 +252,8 @@ class EuclidBibIngestor:
         return f"{arxiv_id}_{short}.pdf"
 
 
-def run_bibtex_ingestion() -> None:
+def run_bibtex_ingestion(config: dict) -> None:
     """Run the bibtex ingestion script."""
-    config = load_config(Path("rag/app_config.yaml"))
-
     index_dir = Path(config["vector_store"]["index_dir"]).resolve()
     temp_dir = Path("rag/downloaded").resolve()
     data_config = config.get("data", {})
@@ -278,4 +270,5 @@ if __name__ == "__main__":
     """
     Manual ingestion call.
     """
-    run_bibtex_ingestion()
+    config = load_config(Path("rag/app_config.yaml"))
+    run_bibtex_ingestion(config)
