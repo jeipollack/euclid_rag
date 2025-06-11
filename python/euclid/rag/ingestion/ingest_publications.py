@@ -145,11 +145,11 @@ class EuclidBibIngestor:
                 if isinstance(docs, list) and all(
                     isinstance(d, Document) for d in docs
                 ):
-                    for doc in docs:
-                        if isinstance(doc, Document):
-                            source = doc.metadata.get("source")
-                            if source:
-                                existing_sources.add(source)
+                    docs_list: list[Document] = docs
+                    for doc in docs_list:
+                        source = doc.metadata.get("source")
+                        if source:
+                            existing_sources.add(source)
         return existing_sources
 
     def _should_process(self, entry: dict, existing_sources: set[str]) -> bool:
@@ -220,9 +220,8 @@ class EuclidBibIngestor:
             if isinstance(docs, list) and all(
                 isinstance(d, Document) for d in docs
             ):
-                for doc in docs:
-                    if not isinstance(doc, Document):
-                        continue
+                docs_list: list[Document] = docs
+                for doc in docs_list:
                     source = doc.metadata.get("source")
                     if isinstance(source, str) and source == filename:
                         shown += 1
