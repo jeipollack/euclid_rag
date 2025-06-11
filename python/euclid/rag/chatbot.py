@@ -34,22 +34,37 @@ from pathlib import Path
 
 import streamlit as st
 import yaml
+from langchain.agents import Tool
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 from langchain_community.vectorstores import FAISS
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.language_models import BaseLanguageModel
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from .Agents.publication_tool import get_publication_tool
 from .extra_scripts.vectorstore_embedder import Embedder
+from .retrievers.publication_tool import get_publication_tool
 from .streamlit_callback import get_streamlit_cb
 
 
 @st.cache_resource
 def load_cfg(config_path: str | None = None) -> dict:
-    """Load chatbot configuration from app_config.yaml."""
+    """
+    Load the YAML configuration used by the chatbot.
+
+    Parameters
+    ----------
+    config_path : str or None, optional
+        Path to a YAML file. If *None*, defaults to app_config.yaml in the
+        same directory as this module.
+
+    Returns
+    -------
+    dict
+        Parsed configuration dictionary.
+    """
     cfg_path = (
         Path(config_path)
         if config_path
@@ -61,7 +76,14 @@ def load_cfg(config_path: str | None = None) -> dict:
 
 @st.cache_resource(ttl="1h")
 def configure_retriever() -> VectorStoreRetriever:
-    """Load retriever based on config.yaml."""
+    """
+    Build and cache a FAISS based retriever for Euclid publications.
+
+    Returns
+    -------
+    VectorStoreRetriever
+        Retriever with ``search_type="similarity"`` and *k*=6.
+    """
     cfg = load_cfg()
 
     embedder = Embedder(
@@ -80,28 +102,56 @@ def configure_retriever() -> VectorStoreRetriever:
 
 
 def submit_text() -> None:
-    """Submit the user input."""
+    """Flag that the user pressed <enter> in
+    the chat box (Streamlit callback).
+    """
     st.session_state.message_sent = True
 
 
-def create_agent() -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
+def _build_tools(llm: BaseLanguageModel) -> list[Tool]:
+    """
+    Assemble all domain-specific RAG tools.
+
+    Currently, returns only the publications tool, but additional
+    tools (DPDD, Redmine, etc.) can be appended here.
+
+    Parameters
+    ----------
+    llm : BaseLanguageModel
+        Shared language model used by all tools.
+
+    Returns
+    -------
+    list of Tool
+        Tools ready for routing.
+    """
+    retriever = configure_retriever()
+    return [
+        get_publication_tool(llm, retriever),
+    ]
+
+
+def create_euclid_router() -> (
+    Callable[[dict, list[BaseCallbackHandler] | None], dict]
+):
     """Return Euclid-AI that **always** delegates to at least one sub-agent."""
     cfg = load_cfg()
     llm = OllamaLLM(**cfg["llm"])
 
-    retriever = configure_retriever()
+    tools = _build_tools(llm)
 
-    # Tools:: later add get_dpdd_tool(), get_redmine_tool(), etc ..
-    tools = [
-        get_publication_tool(llm, retriever),
-    ]
-
-    def euclid_ai(
-        inputs: dict, callbacks: list[BaseCallbackHandler] | None = None
+    def router(
+        inputs: dict,
+        callbacks: list[BaseCallbackHandler] | None = None,
     ) -> dict:
         """
-        Loop through sub-agents until one gives a non-empty answer.
-        Ensures at least one agent is always used.
+        Build a router for Euclid RAG tools.
+
+        Returns
+        -------
+        Callable
+            Callable that takes a query dict and optional callbacks,
+            and returns an answer with context.
         """
         question = inputs["input"]
         for tool in tools:
@@ -112,14 +162,23 @@ def create_agent() -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
         # Nothing found in any agent
         return {"answer": "I don't have that information yet.", "context": []}
 
-    return euclid_ai
+    return router
 
 
 def handle_user_input(
-    agent: Callable[[dict, list[BaseCallbackHandler] | None], dict],
+    router: Callable[[dict, list[BaseCallbackHandler] | None], dict],
     msgs: StreamlitChatMessageHistory,
 ) -> None:
-    """Manage input from user."""
+    """
+    Display chat history and handle new user input in Streamlit.
+
+    Parameters
+    ----------
+    router : Callable
+        Callable that routs to correct tools for the response.
+    msgs : StreamlitChatMessageHistory
+        Chat history object for managing messages.
+    """
     if len(msgs.messages) == 0:
         msgs.clear()
 
@@ -147,7 +206,7 @@ def handle_user_input(
             placeholder = st.empty()
             stream_handler = get_streamlit_cb(placeholder)
 
-            result = agent(
+            result = router(
                 {"input": user_query, "chat_history": msgs.messages},
                 callbacks=[stream_handler],
             )
