@@ -139,7 +139,10 @@ class EuclidBibIngestor:
         if self._vectorstore is not None:
             store = self._vectorstore.docstore
             for doc_id in self._vectorstore.index_to_docstore_id.values():
-                for doc in store.search(doc_id):
+                docs = store.search(doc_id)
+                if not docs:
+                    continue
+                for doc in docs:
                     if isinstance(doc, Document):
                         source = doc.metadata.get("source")
                         if source:
@@ -211,7 +214,10 @@ class EuclidBibIngestor:
             return
 
         for doc_id in index_ids.values():
-            for doc in store.search(doc_id):
+            docs = store.search(doc_id)
+            if not docs:
+                continue
+            for doc in docs:
                 if not isinstance(doc, Document):
                     continue
                 source = doc.metadata.get("source")
