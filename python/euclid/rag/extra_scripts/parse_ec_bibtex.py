@@ -50,12 +50,18 @@ class EuclidBibIngestor:
         """Initiate the ingestor."""
         self._index_dir = index_dir
         self._temp_dir = temp_dir
-        self._embedder = Embedder()
+        self._model_name = data_config.get(
+            "embedding_model_name", "intfloat/e5-small-v2"
+        )
+        self._batch_size = data_config.get("embedding_batch_size", 16)
+        self._bib_url = data_config.get("bibtex_url")
+        self._arxiv_pdf_url = data_config.get("arxiv_pdf_base_url")
+        self._embedder = Embedder(
+            model_name=self._model_name, batch_size=self._batch_size
+        )
         self._index_dir.mkdir(parents=True, exist_ok=True)
         self._temp_dir.mkdir(parents=True, exist_ok=True)
         self._vectorstore = self._load_vectorstore()
-        self._bib_url = data_config.get("bibtex_url")
-        self._arxiv_pdf_url = data_config.get("arxiv_pdf_base_url")
         self._data_config = data_config
 
     def _load_vectorstore(self) -> FAISS | None:
