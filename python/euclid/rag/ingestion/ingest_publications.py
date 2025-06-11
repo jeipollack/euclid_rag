@@ -9,6 +9,7 @@ Each paper is embedded immediately after download and deleted afterward.
 
 import re
 from pathlib import Path
+from typing import cast
 
 import requests
 from bibtexparser.bparser import BibTexParser
@@ -142,7 +143,7 @@ class EuclidBibIngestor:
                 docs = store.search(doc_id)
                 if not docs:
                     continue
-                for doc in docs:
+                for doc in cast("list[Document]", docs):
                     if isinstance(doc, Document):
                         source = doc.metadata.get("source")
                         if source:
@@ -217,7 +218,7 @@ class EuclidBibIngestor:
             docs = store.search(doc_id)
             if not docs:
                 continue
-            for doc in docs:
+            for doc in cast("list[Document]", docs):
                 if not isinstance(doc, Document):
                     continue
                 source = doc.metadata.get("source")
