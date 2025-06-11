@@ -222,6 +222,9 @@ class EuclidBibIngestor:
 
     def _fetch_bibtex_entries(self) -> list[dict]:
         """Fetch BibTeX entries."""
+        if not isinstance(self._bib_url, str):
+            raise TypeError("Missing or invalid 'bibtex_url' in config.")
+
         response = requests.get(self._bib_url, timeout=60)
         response.raise_for_status()
         parser = BibTexParser(common_strings=True)
@@ -230,6 +233,9 @@ class EuclidBibIngestor:
 
     def _download_pdf(self, arxiv_id: str, target_path: Path) -> bool:
         """Download a PDF from arXiv."""
+        if not isinstance(self._arxiv_pdf_url, str):
+            raise TypeError("Missing or invalid 'arxiv pdf url' in config.")
+
         url = f"{self._arxiv_pdf_url}{arxiv_id}.pdf"
         response = requests.get(url, timeout=10)
         response.raise_for_status()
