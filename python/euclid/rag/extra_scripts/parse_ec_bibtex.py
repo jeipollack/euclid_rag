@@ -272,3 +272,10 @@ def run_bibtex_ingestion() -> None:
         data_config=data_config,
     )
     ingestor.ingest_new_papers()
+
+
+if __name__ == "__main__":
+    """
+    Manual ingestion call.
+    """
+    run_bibtex_ingestion()
