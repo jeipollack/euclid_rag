@@ -1,6 +1,0 @@
-# config/banned_sections.yaml
-banned_sections:
-  names:
-    - Header
-    - Data Header
-  full_links:
