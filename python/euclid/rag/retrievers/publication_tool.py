@@ -4,6 +4,8 @@
 
 """Tool for querying Euclid-Consortium publications and metadata."""
 
+from __future__ import annotations
+
 import string
 from typing import Any, cast
 
