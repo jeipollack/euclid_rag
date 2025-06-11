@@ -29,8 +29,6 @@ retriever, QA chain, session state, UI elements, handling user of
 interactions, and scheduled ingestion of data.
 """
 
-import threading
-import time
 from pathlib import Path
 
 import streamlit as st
