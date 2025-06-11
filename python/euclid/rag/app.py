@@ -43,10 +43,14 @@ from euclid.rag.layout import (
     setup_landing_page,
     setup_sidebar,
 )
+from euclid.rag.utils.config import load_config
 
 # Load environment variables from .env file
 load_dotenv()
 STATIC_DIR = Path(__file__).resolve().parents[3] / "static"
+
+# Load configuration file
+CONFIG = load_config(Path("rag/app_config.yaml"))
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "rubin_telescope.png")
@@ -74,7 +78,7 @@ if not vectorstore_path.exists():
     )
 
 # Configure the vectorstore retriever and QA chain
-router = create_euclid_router()
+router = create_euclid_router(CONFIG)
 
 # Enable dynamic filtering based on user input
 setup_sidebar()
