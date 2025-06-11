@@ -45,14 +45,14 @@ class Embedder(Embeddings):
     Parameters
     ----------
     model_name : str, optional
-        HuggingFace model to use. Default is "BAAI/bge-base-en-v1.5".
+        HuggingFace model to use. Default is "intfloat/e5-small-v2".
     batch_size : int, optional
         Number of texts per batch. Default is 16.
     """
 
     def __init__(
         self,
-        model_name: str = "BAAI/bge-base-en-v1.5",
+        model_name: str = "intfloat/e5-small-v2",
         batch_size: int = 16,
     ) -> None:
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
