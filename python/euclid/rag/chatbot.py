@@ -33,7 +33,6 @@ from collections.abc import Callable
 from pathlib import Path
 
 import streamlit as st
-import yaml
 from langchain.agents import Tool
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
@@ -61,33 +60,8 @@ def start_ollama_server(model: str) -> None:
     subprocess.Popen(["ollama", "run", model])
 
 
-@st.cache_resource
-def load_cfg(config_path: str | None = None) -> dict:
-    """
-    Load the YAML configuration used by the chatbot.
-
-    Parameters
-    ----------
-    config_path : str or None, optional
-        Path to a YAML file. If *None*, defaults to app_config.yaml in the
-        same directory as this module.
-
-    Returns
-    -------
-    dict
-        Parsed configuration dictionary.
-    """
-    cfg_path = (
-        Path(config_path)
-        if config_path
-        else Path(__file__).resolve().parent / "app_config.yaml"
-    )
-    with cfg_path.open() as fh:
-        return yaml.safe_load(fh)
-
-
 @st.cache_resource(ttl="1h")
-def configure_retriever() -> VectorStoreRetriever:
+def configure_retriever(config: dict) -> VectorStoreRetriever:
     """
     Build and cache a FAISS based retriever for Euclid publications.
 
@@ -96,13 +70,11 @@ def configure_retriever() -> VectorStoreRetriever:
     VectorStoreRetriever
         Retriever with ``search_type="similarity"`` and *k*=6.
     """
-    cfg = load_cfg()
-
     embedder = Embedder(
-        model_name=cfg["embeddings"]["model_name"],
-        batch_size=cfg["embeddings"]["batch_size"],
+        model_name=config["embeddings"]["model_name"],
+        batch_size=config["embeddings"]["batch_size"],
     )
-    index_dir = Path(cfg["vector_store"]["index_dir"])
+    index_dir = Path(config["vector_store"]["index_dir"])
     vectorstore = FAISS.load_local(
         str(index_dir), embedder, allow_dangerous_deserialization=True
     )
@@ -143,13 +115,12 @@ def _build_tools(llm: BaseLanguageModel) -> list[Tool]:
     ]
 
 
-def create_euclid_router() -> Callable[
-    [dict, list[BaseCallbackHandler] | None], dict
-]:
+def create_euclid_router(
+    config: dict,
+) -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
     """Return Euclid-AI that **always** delegates to at least one sub-agent."""
-    cfg = load_cfg()
-    start_ollama_server(cfg["llm"]["model"])
-    llm = OllamaLLM(**cfg["llm"], streaming=True)
+    start_ollama_server(config["llm"]["model"])
+    llm = OllamaLLM(**config["llm"], streaming=True)
 
     tools = _build_tools(llm)
 
@@ -225,7 +196,7 @@ def handle_user_input(
 
             result = router(
                 {"input": user_query, "chat_history": msgs.messages},
-                callbacks=[stream_handler],
+                [stream_handler],
             )
 
             answer = result["answer"]
