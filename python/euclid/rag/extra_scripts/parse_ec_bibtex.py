@@ -82,6 +82,11 @@ class EuclidBibIngestor:
 
     def ingest_new_papers(self) -> None:
         """Ingests new papers into the vectorstore."""
+        if self._vectorstore is None:
+            raise RuntimeError(
+                "Vectorstore must be initialized before deduplication."
+            )
+
         dedup_filter_hash = HashDeduplicator()
 
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
