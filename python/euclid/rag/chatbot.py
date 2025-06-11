@@ -92,7 +92,7 @@ def submit_text() -> None:
     st.session_state.message_sent = True
 
 
-def _build_tools(llm: BaseLanguageModel) -> list[Tool]:
+def _build_tools(llm: BaseLanguageModel, config: dict) -> list[Tool]:
     """
     Assemble all domain-specific RAG tools.
 
@@ -109,7 +109,7 @@ def _build_tools(llm: BaseLanguageModel) -> list[Tool]:
     list of Tool
         Tools ready for routing.
     """
-    retriever = configure_retriever()
+    retriever = configure_retriever(config)
     return [
         get_publication_tool(llm, retriever),
     ]
@@ -122,7 +122,7 @@ def create_euclid_router(
     start_ollama_server(config["llm"]["model"])
     llm = OllamaLLM(**config["llm"], streaming=True)
 
-    tools = _build_tools(llm)
+    tools = _build_tools(llm, config)
 
     def router(
         inputs: dict,
