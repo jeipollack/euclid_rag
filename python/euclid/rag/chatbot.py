@@ -108,7 +108,7 @@ def create_euclid_router(
 ) -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
     """Return Euclid-AI that **always** delegates to at least one sub-agent."""
     start_ollama_server(config["llm"]["model"])
-    llm = OllamaLLM(**config["llm"], streaming=True)
+    llm = OllamaLLM(**config["llm"])
 
     tools = _build_tools(llm, config)
 
