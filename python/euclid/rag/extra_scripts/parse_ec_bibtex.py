@@ -28,7 +28,7 @@ from euclid.rag.extra_scripts.vectorstore_embedder import (
 )
 from euclid.rag.utils.config import load_config
 
-DEDUPLICATION_CONFIG = {
+DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
     "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
     "similarity_threshold": 0.8,
     "rerank_threshold": 0.85,
