@@ -9,6 +9,7 @@ Each paper is embedded immediately after download and deleted afterward.
 
 import re
 from pathlib import Path
+from typing import Any
 
 import requests
 from bibtexparser.bparser import BibTexParser
@@ -139,17 +140,15 @@ class EuclidBibIngestor:
         if self._vectorstore is not None:
             store = self._vectorstore.docstore
             for doc_id in self._vectorstore.index_to_docstore_id.values():
-                docs = store.search(doc_id)
-                if not docs:
+                raw_result: Any = store.search(doc_id)
+                if not isinstance(raw_result, list):
                     continue
-                if isinstance(docs, list) and all(
-                    isinstance(d, Document) for d in docs
-                ):
-                    for doc in docs:
-                        if isinstance(doc, Document):
-                            source = doc.metadata.get("source")
-                            if source:
-                                existing_sources.add(source)
+                for doc in raw_result:
+                    if not isinstance(doc, Document):
+                        continue
+                    source = doc.metadata.get("source")
+                    if source:
+                        existing_sources.add(source)
         return existing_sources
 
     def _should_process(self, entry: dict, existing_sources: set[str]) -> bool:
@@ -214,20 +213,18 @@ class EuclidBibIngestor:
             return
 
         for doc_id in index_ids.values():
-            docs = store.search(doc_id)
-            if not docs:
+            raw_result: Any = store.search(doc_id)
+            if not isinstance(raw_result, list):
                 continue
-            if isinstance(docs, list) and all(
-                isinstance(d, Document) for d in docs
-            ):
-                for doc in docs:
-                    if not isinstance(doc, Document):
-                        continue
-                    source = doc.metadata.get("source")
-                    if isinstance(source, str) and source == filename:
-                        shown += 1
-                        if shown >= 3:
-                            return
+
+            for doc in raw_result:
+                if not isinstance(doc, Document):
+                    continue
+                source = doc.metadata.get("source")
+                if isinstance(source, str) and source == filename:
+                    shown += 1
+                    if shown >= 3:
+                        return
 
     def _fetch_bibtex_entries(self) -> list[dict]:
         """Fetch BibTeX entries."""
