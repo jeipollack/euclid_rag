@@ -3,8 +3,7 @@ FROM python:3.12-slim-bookworm
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-RUN apt-get -y install git curl
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
 RUN curl -fsSL https://ollama.com/install.sh | sh
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +14,6 @@ WORKDIR /app
 COPY pyproject.toml /app/
 
 # Install any needed packages specified in requirements.txt
-RUN uv pip install --system --upgrade pip
 RUN uv pip install --system -r pyproject.toml
 
 # Copy necessary source to container
