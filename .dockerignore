@@ -15,7 +15,5 @@ htmlcov
 tests
 *.yaml
 *.md
-COPYRIGHT
-LICENSE
 ruff-shared.toml
 .coverage
