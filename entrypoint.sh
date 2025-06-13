@@ -16,13 +16,25 @@ with open("python/euclid/rag/app_config.yaml", "r") as file:
     data = yaml.safe_load(file)
     print(data["llm"]["model"])
 ')
-echo "Model tag: $llm_model"
+if [ -z "$llm_model" ]; then
+    echo "Failed to parse config! Please check the config is valid."
+    exit 1;
+fi
+echo "Container will use model: $llm_model"
 
 
 # Wait until the server is running
+timeout=30
+count=0
 until check_server; do
+    if [ $count -ge $timeout ]; then
+        echo "Ollama server failed to start after $timeout seconds."
+        kill $(cat "$PID_FILE") || true
+        exit 1
+    fi
     echo "Waiting for Ollama server to start..."
-    sleep 2
+    sleep 1
+    count=$((count + 1))
 done
 
 # Run the Ollama command and redirect output
