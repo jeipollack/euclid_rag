@@ -13,7 +13,7 @@ WORKDIR /app
 # Copy pyproject.toml separately to leverage Docker cache
 COPY pyproject.toml /app/
 
-# Install any needed packages specified in requirements.txt
+# Install required packages
 RUN uv pip install --system -r pyproject.toml
 
 # Copy necessary source to container
