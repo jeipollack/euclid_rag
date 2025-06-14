@@ -227,13 +227,8 @@ class EuclidBibIngestor:
             return
 
         for doc_id in index_ids.values():
-<<<<<<< HEAD
-            raw_result: Any = store.search(doc_id)
-            if not isinstance(raw_result, list):
-=======
             docs = store.search(doc_id)
             if not isinstance(docs, list):
->>>>>>> f7aba01 (Adjust static type checking for vector store in Git CI)
                 continue
 
             docs_list: list[Document] = [
