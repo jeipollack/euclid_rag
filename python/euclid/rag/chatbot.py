@@ -23,7 +23,6 @@
 
 """Set up of base chatbot based on settings in app_config.yaml file."""
 
-import subprocess
 from pathlib import Path
 
 import streamlit as st
@@ -49,12 +48,9 @@ from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 from transformers import AutoModel, AutoTokenizer
 
+from euclid import STATIC_DIR
+
 from .streamlit_callback import get_streamlit_cb
-
-
-def start_ollama_server(model: str) -> None:
-    """Ensure the Ollama server is running with the specified model."""
-    subprocess.Popen(["ollama", "run", model])
 
 
 @st.cache_resource
@@ -85,8 +81,9 @@ def configure_retriever() -> VectorStoreRetriever:
         batch_size=cfg["embeddings"]["batch_size"],
     )
     index_dir = Path(cfg["vector_store"]["index_dir"])
+    vector_store = index_dir / "index.faiss"
 
-    if index_dir.exists():
+    if vector_store.exists():
         # Load prebuilt FAISS vectorstore
         vectorstore = FAISS.load_local(
             str(index_dir), embedder, allow_dangerous_deserialization=True
@@ -183,8 +180,7 @@ def create_qa_chain(
 ) -> Runnable:
     """Create a QA chain for the chatbot."""
     cfg = load_cfg()
-    start_ollama_server(cfg["llm"]["model"])
-    llm = OllamaLLM(**cfg["llm"], streaming=True)
+    llm = OllamaLLM(**cfg["llm"])
 
     # Define the system message template
     system_template = """You are Euclid AI Assistant, a helpful assistant
@@ -231,12 +227,8 @@ def handle_user_input(
     # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
-        "human": Path(__file__).resolve().parents[3]
-        / "static"
-        / "user_avatar.png",
-        "ai": Path(__file__).resolve().parents[3]
-        / "static"
-        / "euclid_cartoon.png",
+        "human": STATIC_DIR / "user_avatar.png",
+        "ai": STATIC_DIR / "euclid_cartoon.png",
     }
 
     for msg in msgs.messages:

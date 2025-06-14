@@ -35,9 +35,13 @@ dependencies = [
     "langchain==0.3.20",
     "openai==1.65.4",
     "langchain-openai==0.3.7",
+    "langchain-ollama==0.3.2",
     "langchain-weaviate==0.0.4",
     "langchain-community==0.3.19",
-    "faiss-cpu==1.9.0.post1"
+    "faiss-cpu==1.9.0.post1",
+    "torch==2.6.0",
+    "transformers==4.49.0",
+    "pymupdf"
 ]
 dynamic = ["version"]
 
