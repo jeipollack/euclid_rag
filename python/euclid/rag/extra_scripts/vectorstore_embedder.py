@@ -22,16 +22,9 @@ from langchain_core.embeddings import Embeddings
 from sklearn.preprocessing import normalize
 from transformers import AutoModel, AutoTokenizer
 
+from euclid.rag.utils.device import get_device
+
 logger = logging.getLogger(__name__)
-
-
-def _get_device() -> torch.device:
-    """Return the torch device to use for embedding."""
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    if torch.backends.mps.is_available():
-        return torch.device("mps")
-    return torch.device("cpu")
 
 
 class Embedder(Embeddings):
@@ -56,7 +49,7 @@ class Embedder(Embeddings):
         batch_size: int = 16,
     ) -> None:
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self._model = AutoModel.from_pretrained(model_name).to(_get_device())
+        self._model = AutoModel.from_pretrained(model_name).to(get_device())
         self._batch_size = batch_size
         self._device = self._model.device
         self._pooling_strategy = self._detect_pooling()
