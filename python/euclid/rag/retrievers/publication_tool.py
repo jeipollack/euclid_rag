@@ -165,7 +165,7 @@ def get_publication_tool(
                 "the Euclid Consortium and European Space Agency.\n"
                 "First look at the CONTEXT below.\n"
                 "If it contains information that directly answers"
-                "the users question, quote or paraphrase that.\n"
+                "the user's question, quote or paraphrase it.\n"
                 "If the CONTEXT is missing a full answer,"
                 "rely on your own knowledge of cosmology and astrophysics"
                 "and the Euclid mission to provide a clear,"
