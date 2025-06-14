@@ -83,25 +83,9 @@ class EuclidBibIngestor:
 
     def ingest_new_papers(self) -> None:
         """Ingests new papers into the vectorstore."""
-        if self._vectorstore is None:
-            raise RuntimeError(
-                "Vectorstore must be initialized before deduplication."
-            )
-
         dedup_filter_hash = HashDeduplicator()
 
-        dedup_filter_semantic = SemanticSimilarityDeduplicator(
-            vectorstore=self._vectorstore,
-            reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
-            similarity_threshold=float(
-                DEDUPLICATION_CONFIG["similarity_threshold"]
-            ),
-            rerank_threshold=float(DEDUPLICATION_CONFIG["rerank_threshold"]),
-            k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
-        )
-
         bib_entries = self._fetch_bibtex_entries()
-        self._reload_vectorstore()
         existing_sources = self._get_existing_sources()
 
         for entry in bib_entries:
@@ -115,6 +99,27 @@ class EuclidBibIngestor:
                 continue
 
             chunks = self._load_and_split_pdf(filepath)
+
+            # Init of vectorstore after first chunks are available
+            if self._vectorstore is None:
+                self._vectorstore = FAISS.from_documents(
+                    chunks, self._embedder
+                )
+                self._vectorstore.save_local(str(self._index_dir))
+                self._reload_vectorstore()
+
+            dedup_filter_semantic = SemanticSimilarityDeduplicator(
+                vectorstore=self._vectorstore,
+                reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
+                similarity_threshold=float(
+                    DEDUPLICATION_CONFIG["similarity_threshold"]
+                ),
+                rerank_threshold=float(
+                    DEDUPLICATION_CONFIG["rerank_threshold"]
+                ),
+                k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
+            )
+
             filtered_chunks = self._filter_and_enrich_chunks(
                 chunks,
                 entry,
@@ -122,10 +127,17 @@ class EuclidBibIngestor:
                 dedup_filter_hash,
                 dedup_filter_semantic,
             )
+
             if filtered_chunks:
                 self._add_to_vectorstore(filtered_chunks)
                 self._log_sampled_chunks(filename)
+
             filepath.unlink(missing_ok=True)
+
+        if self._vectorstore is None:
+            raise RuntimeError(
+                "No valid papers were ingested,vectorstore was not created."
+            )
 
     def _reload_vectorstore(self) -> None:
         if self._vectorstore is not None:
@@ -281,7 +293,7 @@ class EuclidBibIngestor:
 def run_bibtex_ingestion(config: dict) -> None:
     """Run the bibtex ingestion script."""
     index_dir = Path(config["vector_store"]["index_dir"]).resolve()
-    temp_dir = Path("rag/downloaded").resolve()
+    temp_dir = Path("tmp").resolve()
     data_config = config.get("data", {})
 
     ingestor = EuclidBibIngestor(
