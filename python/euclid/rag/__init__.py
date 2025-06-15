@@ -19,20 +19,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-"""Define and retrieve the version string for the package."""
-
-from importlib.metadata import PackageNotFoundError, version
-
-__all__ = ["__version__"]
-
-__version__: str
-"""The version string of rubin.rag
-(PEP 440 / SemVer compatible).
-"""
-
-try:
-    __version__ = version(__name__)
-except PackageNotFoundError:
-    # package is not installed
-    __version__ = "0.0.1"
