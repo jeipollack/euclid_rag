@@ -2,8 +2,8 @@
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
 name = "euclid_rag"
 description = "Euclid RAG LLM Application"
-license = {file = "LICENSE"}
-readme= "README.md"
+# license = {file = "LICENSE"}
+# readme= "README.md"
 keywords = [
     "euclid",
 ]
