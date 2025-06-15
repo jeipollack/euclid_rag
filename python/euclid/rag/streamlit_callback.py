@@ -75,7 +75,7 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
                 container (st.delta_generator.DeltaGenerator):
                     The Streamlit container where text will be rendered.
                 initial_text (str): Optional initial text to
-                start with in the container.
+                start within the container.
             """
             self.container = container
             self.text = initial_text
@@ -130,8 +130,8 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
 
         def wrapper(*args: Any, **kwargs: Any) -> fn_return_type:
             """
-            Add the Streamlit context and
-            then calls the original function.
+            Add the Streamlit context and then calls the original function.
+
             Args:
                 *args: Positional arguments to pass to the original function.
                 **kwargs: Keyword arguments to pass to the original function.
