@@ -2,8 +2,8 @@
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
 name = "euclid_rag"
 description = "Euclid RAG LLM Application"
-# license = {file = "LICENSE"}
-# readme= "README.md"
+license = {file = "LICENSE"}
+readme= "README.md"
 keywords = [
     "euclid",
 ]
@@ -85,19 +85,17 @@ docs = [
 Source = "https://github.com/jeipollack/euclid_rag"
 
 [build-system]
-requires = [
-    "setuptools>=61",
-    "wheel",
-    "setuptools_scm[toml]>=6.2"
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools.packages.find]
-# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
-where = ["python"]
-include = ["euclid"]
+[tool.hatch.build.hooks.vcs]
+version-file = "python/euclid/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/euclid"]
 
 [tool.black]
 line-length = 79

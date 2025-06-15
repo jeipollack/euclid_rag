@@ -19,6 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Define and retrieve the version string for the package."""
+
+from ._version import *
+
 import pkgutil
 
 __path__ = pkgutil.extend_path(__path__, __name__)
