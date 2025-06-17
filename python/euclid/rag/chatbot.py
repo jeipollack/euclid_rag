@@ -29,57 +29,52 @@ Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
 """
 
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 import streamlit as st
-import yaml
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.agents import Tool
 from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import MessagesPlaceholder
-from langchain_core.runnables import Runnable
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.language_models import BaseLanguageModel
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from .FAISS_vectorstore.vectorstore_embedder import E5MpsEmbedder
+from .extra_scripts.vectorstore_embedder import Embedder
+from .retrievers.publication_tool import get_publication_tool
 from .streamlit_callback import get_streamlit_cb
 
 
 def start_ollama_server(model: str) -> None:
-    """Ensure the Ollama server is running with the specified model."""
+    """
+    Ensure an Ollama server is running for the requested model.
+
+    Parameters
+    ----------
+    model : str
+        Name of the Ollama model to launch (e.g., "gemma:2b").
+    """
     subprocess.Popen(["ollama", "run", model])
 
 
-@st.cache_resource
-def load_cfg(config_path: str | None = None) -> dict:
-    """Load chatbot configuration from app_config.yaml."""
-    cfg_path = (
-        Path(config_path)
-        if config_path
-        else Path(__file__).resolve().parent / "app_config.yaml"
-    )
-    with cfg_path.open() as fh:
-        return yaml.safe_load(fh)
-
-
 @st.cache_resource(ttl="1h")
-def configure_retriever() -> VectorStoreRetriever:
-    """Load retriever based on config.yaml."""
-    cfg = load_cfg()
+def configure_retriever(config: dict) -> VectorStoreRetriever:
+    """
+    Build and cache a FAISS based retriever for Euclid publications.
 
-    embedder = E5MpsEmbedder(
-        model_name=cfg["embeddings"]["model_name"],
-        batch_size=cfg["embeddings"]["batch_size"],
+    Returns
+    -------
+    VectorStoreRetriever
+        Retriever with ``search_type="similarity"`` and *k*=6.
+    """
+    embedder = Embedder(
+        model_name=config["embeddings"]["model_name"],
+        batch_size=config["embeddings"]["batch_size"],
     )
-    index_dir = Path(cfg["vector_store"]["index_dir"])
+    index_dir = Path(config["vector_store"]["index_dir"])
     vectorstore = FAISS.load_local(
         str(index_dir), embedder, allow_dangerous_deserialization=True
     )
@@ -91,42 +86,83 @@ def configure_retriever() -> VectorStoreRetriever:
 
 
 def submit_text() -> None:
-    """Submit the user input."""
+    """Flag that the user pressed <enter> in
+    the chat box (Streamlit callback).
+    """
     st.session_state.message_sent = True
 
 
-def create_qa_chain(retriever: VectorStoreRetriever) -> Runnable:
-    """Create a QA chain for the chatbot."""
-    cfg = load_cfg()
-    start_ollama_server(cfg["llm"]["model"])
-    llm = OllamaLLM(**cfg["llm"], streaming=True)
+def _build_tools(llm: BaseLanguageModel, config: dict) -> list[Tool]:
+    """
+    Assemble all domain-specific RAG tools.
 
-    system_template = """You are Euclid AI Assistant, a helpful assistant
-    within the Euclid Consortium Science Ground Segment.
-    Use only the provided CONTEXT to answer questions.
-    If the answer is not in CONTEXT, reply: I don't have that info.
+    Currently, returns only the publications tool, but additional
+    tools (DPDD, Redmine, etc.) can be appended here.
 
-    ----------------
-    {context}
-    ----------------"""
+    Parameters
+    ----------
+    llm : BaseLanguageModel
+        Shared language model used by all tools.
 
-    qa_prompt = ChatPromptTemplate(
-        messages=[
-            SystemMessagePromptTemplate.from_template(system_template),
-            MessagesPlaceholder("chat_history"),
-            HumanMessagePromptTemplate.from_template("Question:```{input}```"),
-        ],
-        input_variables=["input", "chat_history", "context"],
-    )
+    Returns
+    -------
+    list of Tool
+        Tools ready for routing.
+    """
+    retriever = configure_retriever(config)
+    return [
+        get_publication_tool(llm, retriever),
+    ]
 
-    question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-    return create_retrieval_chain(retriever, question_answer_chain)
+
+def create_euclid_router(
+    config: dict,
+) -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
+    """Return Euclid-AI that **always** delegates to at least one sub-agent."""
+    start_ollama_server(config["llm"]["model"])
+    llm = OllamaLLM(**config["llm"])
+
+    tools = _build_tools(llm, config)
+
+    def router(
+        inputs: dict,
+        callbacks: list[BaseCallbackHandler] | None = None,
+    ) -> dict:
+        """
+        Build a router for Euclid RAG tools.
+
+        Returns
+        -------
+        Callable
+            Callable that takes a query dict and optional callbacks,
+            and returns an answer with context.
+        """
+        question = inputs["input"]
+        for tool in tools:
+            answer = tool.run(question, callbacks=callbacks)
+            if not answer.lower().startswith("i don't have"):
+                return {"answer": answer, "context": []}
+
+        # Nothing found in any agent
+        return {"answer": "I don't have that information yet.", "context": []}
+
+    return router
 
 
 def handle_user_input(
-    qa_chain: Runnable, msgs: StreamlitChatMessageHistory
+    router: Callable[[dict, list[BaseCallbackHandler] | None], dict],
+    msgs: StreamlitChatMessageHistory,
 ) -> None:
-    """Manage input from user."""
+    """
+    Display chat history and handle new user input in Streamlit.
+
+    Parameters
+    ----------
+    router : Callable
+        Callable that routs to correct tools for the response.
+    msgs : StreamlitChatMessageHistory
+        Chat history object for managing messages.
+    """
     if len(msgs.messages) == 0:
         msgs.clear()
 
@@ -137,43 +173,33 @@ def handle_user_input(
         / "user_avatar.png",
         "ai": Path(__file__).resolve().parents[3]
         / "static"
-        / "rubin_telescope.png",
+        / "euclid_cartoon.png",
     }
 
     for msg in msgs.messages:
         st.chat_message(
             avatars[msg.type], avatar=avatar_images[msg.type]
-        ).write(msg.content)
+        ).markdown(msg.content)
 
     if user_query := st.chat_input(
-        placeholder="Message Euclid AI", on_submit=submit_text
+        placeholder="Message Euclid AI",
+        key="euclid_chat_input",
+        on_submit=submit_text,
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
-            st.write(user_query)
+            st.markdown(user_query)
         msgs.add_user_message(user_query)
 
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
-            stream_handler = get_streamlit_cb(st.empty())
-            result = qa_chain.invoke(
-                {
-                    "input": user_query,
-                    "chat_history": msgs.messages,
-                },
-                {"callbacks": [stream_handler]},
-            )
-            answer = result["answer"]
-            msgs.add_ai_message(answer)
+            placeholder = st.empty()
+            stream_handler = get_streamlit_cb(placeholder)
 
-            with st.expander("See sources"):
-                scores = [
-                    chunk.metadata["score"]
-                    for chunk in result["context"]
-                    if "score" in chunk.metadata
-                ]
-                if scores:
-                    max_score = max(scores)
-                    threshold = max_score * 0.9
-                    for chunk in result["context"]:
-                        score = chunk.metadata.get("score", 0)
-                        if score >= threshold:
-                            st.info(f"Source: {chunk.metadata['source']}")
+            result = router(
+                {"input": user_query, "chat_history": msgs.messages},
+                [stream_handler],
+            )
+
+            answer = result["answer"]
+            placeholder.markdown(answer, unsafe_allow_html=False)
+
+        msgs.add_ai_message(answer)

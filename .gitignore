@@ -118,6 +118,9 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
+# PyCharm project settings
+.idea/
+
 # mkdocs documentation
 /site
 
@@ -129,5 +132,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Data (temporary) location
-python/euclid/rag/downloaded
+# Temporary files
+/tmp/
