@@ -134,3 +134,6 @@ dmypy.json
 
 # Temporary files
 /tmp/
+
+# Vector store
+python/euclid/rag/FAISS_vectorstore
