@@ -4,8 +4,12 @@
 
 import re
 from datetime import datetime
+
+import logging
 from typing import List, Dict, Any
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 class RedmineCleaner:
     """
@@ -33,10 +37,12 @@ class RedmineCleaner:
         Returns:
             A filtered list of entries with acceptable statuses.
         """
-        return [entry for entry in data if entry.get("metadata", {}).get("status") != "NOK"]
+        filtered_entries = [entry for entry in data if entry.get("metadata", {}).get("status") != "NOK"]
+        logger.info(f'[ING] {len(filtered_entries)} from {len(data)} entries kept after filtering')
+        return filtered_entries
 
 
-    def convert_redmine_headers(self, line: str) -> str | None:
+    def _convert_redmine_headers(self, line: str) -> str | None:
         """Convert Redmine headers (h1. to h6.) to Markdown (# to ######)."""
         match = re.match(r'^(h[1-6])\. (.+)', line)
         if not match:
@@ -46,7 +52,7 @@ class RedmineCleaner:
         return '#' * level + ' ' + title
 
 
-    def convert_redmine_lists(self, line: str) -> str | None:
+    def _convert_redmine_lists(self, line: str) -> str | None:
         """Convert Redmine nested lists (*, **) to Markdown lists with indentation."""
         match = re.match(r'^(\*+)\s+(.*)', line)
         if not match:
@@ -56,12 +62,12 @@ class RedmineCleaner:
         return f"{indent}- {content.strip()}"
 
 
-    def convert_redmine_links(self, line: str) -> str:
+    def _convert_redmine_links(self, line: str) -> str:
         """Convert Redmine links "text":url to Markdown [text](url)."""
         return re.sub(r'"([^"]+)":(\S+)', r'[\1](\2)', line)
 
 
-    def convert_redmine_bold_italic(self, line: str) -> str:
+    def _convert_redmine_bold_italic(self, line: str) -> str:
         """Convert *bold* and _italic_ Redmine syntax to Markdown **bold** and *italic*."""
         # Bold: *text*
         line = re.sub(r'\*(\S(.*?\S)?)\*', r'**\1**', line)
@@ -70,14 +76,14 @@ class RedmineCleaner:
         return line
 
 
-    def convert_redmine_linebreaks(self, line: str) -> str:
+    def _convert_redmine_linebreaks(self, line: str) -> str:
         """
         Convert explicit Redmine line breaks '\\n' in text to Markdown double spaces + newline.
         """
         return line.replace('\\n', '  \n')
 
 
-    def convert_redmine_images(self, line: str) -> str:
+    def _convert_redmine_images(self, line: str) -> str:
         """
         Convert Redmine image syntax !image.png! or !image.png|widthxheight! 
         to Markdown ![alt](image.png).
@@ -88,7 +94,7 @@ class RedmineCleaner:
         return re.sub(r'!(\S+?)!', repl, line)
 
 
-    def convert_redmine_table(self, lines: list[str]) -> tuple[list[str], int]:
+    def _convert_redmine_table(self, lines: list[str]) -> tuple[list[str], int]:
         """
         Convert Redmine table block lines starting with | to Markdown table.
         Returns tuple (converted_lines, number_of_lines_consumed).
@@ -127,27 +133,27 @@ class RedmineCleaner:
             line = lines[i].rstrip('\r\n')
             # Tables: if line starts with |, handle full table block
             if line.startswith('|'):
-                table_md, consumed = self.convert_redmine_table(lines[i:])
+                table_md, consumed = self._convert_redmine_table(lines[i:])
                 md_lines.extend(table_md)
                 i += consumed
                 continue
             # Headers
-            header_conv = self.convert_redmine_headers(line)
+            header_conv = self._convert_redmine_headers(line)
             if header_conv:
                 md_lines.append(header_conv)
                 i += 1
                 continue
             # Lists
-            list_conv = self.convert_redmine_lists(line)
+            list_conv = self._convert_redmine_lists(line)
             if list_conv:
                 md_lines.append(list_conv)
                 i += 1
                 continue
             # Inline conversions
-            line = self.convert_redmine_images(line)
-            line = self.convert_redmine_links(line)
-            line = self.convert_redmine_bold_italic(line)
-            line = self.convert_redmine_linebreaks(line)
+            line = self._convert_redmine_images(line)
+            line = self._convert_redmine_links(line)
+            line = self._convert_redmine_bold_italic(line)
+            line = self._convert_redmine_linebreaks(line)
             md_lines.append(line)
             i += 1
         return '\n'.join(md_lines)
@@ -161,12 +167,13 @@ class RedmineCleaner:
             metadata: The metadata dictionary from a Redmine page.
 
         Returns:
-            A norm#alized metadata dictionary.
+            A normalized metadata dictionary.
         """
         meta = metadata.copy()
         try:
             meta["created_on"] = datetime.strptime(meta["created_on"], "%Y-%m-%d %H:%M")
             meta["updated_on"] = datetime.strptime(meta["updated_on"], "%Y-%m-%d %H:%M")
+            meta["hierarchy"] = f"{meta["project_path"]} > {meta["page_name"]}"
         except Exception:
             pass  # Leave original if parsing fails
         meta["project"] = meta.get("project", "").upper()
@@ -193,6 +200,7 @@ class RedmineCleaner:
             length += len(s)
         if chunk:
             chunks.append(" ".join(chunk))
+        logger.info(f'[ING] Content splint into {len(chunks)} chunks')
         return chunks
 
 
@@ -221,19 +229,21 @@ class RedmineCleaner:
         Returns:
             List of prepared documents ready for ingestion (e.g., in vector DB).
         """
+        logger.info(f'[ING] Preparing files for ingestion...')
         cleaned_data = []
         for entry in self.filter_valid_entries(raw_data):
             content = self.redmine_to_markdown(entry["content"])
             chunks = self.split_content(content)
             metadata = self.normalize_metadata(entry["metadata"])
             for i, chunk in enumerate(chunks):
+                logger.debug(metadata)
                 cleaned_data.append({
                     "content": self.enrich_with_context(entry, chunk),
                     "metadata": {
                         **metadata,
                         "chunk_index": i,
                         "page_name": metadata.get("page_name", ""),
-                        "hierarchy": metadata.get("hierarchy", ""),
+                        "hierarchy": f"{metadata.get("hierarchy", "")} > {i}",
                     }
                 })
         return cleaned_data
