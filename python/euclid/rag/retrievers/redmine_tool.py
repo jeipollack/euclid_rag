@@ -2,7 +2,7 @@
 # Licensed under the GNU LGPL v3.0.
 # See <https://www.gnu.org/licenses/>.
 
-"""Tool for querying Euclid-Consortium publications and metadata."""
+"""Tool for querying Euclid-Consortium redmine and metadata."""
 
 from __future__ import annotations
 
@@ -18,6 +18,8 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+import datetime
+import streamlit as st 
 from langchain_community.vectorstores import FAISS
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import MessagesPlaceholder
@@ -29,25 +31,21 @@ from euclid.rag.extra_scripts.deduplication import (
     HashDeduplicator,
     SemanticSimilarityDeduplicator,
 )
+from euclid.rag.utils.acronym_handler import *
+
+import logging
+import json
+
+with open("rag/utils/acronyms.json", "r", encoding="utf-8") as f:
+    ACRONYMS = json.load(f)
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 _tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
 _model = AutoModelForSequenceClassification.from_pretrained(
     "BAAI/bge-reranker-base"
 )
-
-BONUS_WEIGHTS = {
-    "keywords": 0.5,
-    "title": 0.3,
-    "authors": 0.3,
-    "year": 0.2,
-}
-
-TOP_K_FOR_METADATA_SCORING = {
-    "similarity_k": 50,
-    "top_metadata_k": 20,
-    "top_reranked_k": 10,
-}
-
 
 def semantic_rerank(query: str, docs: list) -> list:
     """
@@ -58,7 +56,7 @@ def semantic_rerank(query: str, docs: list) -> list:
     query : str
         The input query string.
     docs : list
-        A list of documents to rerank.
+        A list of (langchain) documents to rerank.
 
         Each document must have a `page_content` attribute.
 
@@ -128,14 +126,50 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
     """
     if not field:
         return 0.0
+    
+    cleaned_field = (
+        field.replace(",", " ")
+        .replace("_", " ")      
+        .replace("-", " ")
+    )
+
     return weight * sum(
         1
-        for w in field.replace(",", " ").split()
+        for w in cleaned_field.split()
         if w.lower().translate(punctuation_strip) in q
     )
 
+def bonus_recency(updated_on: datetime.datetime, weight: float = 0.3, half_life:int = 365) -> float:
+    """
+    Compute a bonus based on how recent the update is.
 
-def get_publication_tool(
+    Parameters
+    ----------
+    updated_on : datetime.datetime
+        The datetime the document was last updated.
+    weight : float
+        The max weight to apply for a very recent document.
+    half_life : int
+        The number of days after which the weight is halved.
+        If not specified, defaults to 365 days.
+
+    Returns
+    -------
+    float
+        A score between 0 and weight depending on recency.
+    """
+    if not updated_on:
+        return 0.0
+
+    now = datetime.datetime.utcnow()
+    days_old = (now - updated_on).days
+
+    # Use an exponential decaying: more recent = closer to weight
+    decay = 0.5 ** (days_old / half_life)
+
+    return weight * decay
+
+def get_redmine_tool(
     llm: BaseLanguageModel, retriever: VectorStoreRetriever
 ) -> Tool:
     """
@@ -167,9 +201,7 @@ def get_publication_tool(
                 "If it contains information that directly answers"
                 "the user's question, quote or paraphrase it.\n"
                 "If the CONTEXT is missing a full answer,"
-                "rely on your own knowledge of cosmology and astrophysics"
-                "and the Euclid mission to provide a clear,"
-                "accurate response **without inventing sources**. \n\n"
+                "answer ‘I don't have that information yet.’ and nothing else.\n\n"
                 "<CONTEXT>\n{context}\n</CONTEXT>"
             ),
             MessagesPlaceholder("chat_history"),
@@ -204,13 +236,33 @@ def get_publication_tool(
         list
             Ranked list of the most relevant documents for the query.
         """
-        filtered_docs = []
-        for doc, _ in retriever.vectorstore.similarity_search_with_score(
+
+        BONUS_WEIGHTS = st.session_state["BONUS_WEIGHTS"]
+        TOP_K_FOR_METADATA_SCORING = st.session_state["TOP_K_FOR_METADATA_SCORING"]
+
+        logger.info(f"[RAG] Query received: {query}")
+        filtered_docs, filtered_scores = [], []
+
+        query = expand_acronyms_in_query(query, ACRONYMS)
+        logger.debug(f"[RAG] Expanded query: {query}")
+
+        initial_results = retriever.vectorstore.similarity_search_with_score(
             query, k=TOP_K_FOR_METADATA_SCORING["similarity_k"]
-        ):
+        )
+        logger.info(f"[RAG] Retrieved {len(initial_results)} documents from FAISS.")
+
+        for doc, score in initial_results:
             text = doc.page_content
-            if not dedup_hash.filter(text) and not dedup_semantic.filter(text):
-                filtered_docs.append(doc)
+            if dedup_hash.filter(text):
+                logger.debug("[RAG] Hash duplicate removed.")
+                continue
+            if dedup_semantic.filter(text):
+                logger.debug("[RAG] Semantic duplicate removed.")
+                continue
+            filtered_docs.append(doc)
+            filtered_scores.append(score)
+        logger.info(f"[RAG] {len(filtered_docs)} documents remaining after deduplication.")
+        logger.info(f"[RAG] Top corresponding scores: {[round(s, 3) for s in filtered_scores[:5]]}")
 
         query_tokens = tokenize(query)
         metadata_scored_docs = []
@@ -219,35 +271,47 @@ def get_publication_tool(
             score = (
                 bonus_overlap(
                     query_tokens,
-                    metadata.get("keywords"),
-                    BONUS_WEIGHTS["keywords"],
-                )
-                + bonus_overlap(
-                    query_tokens, metadata.get("title"), BONUS_WEIGHTS["title"]
+                    metadata.get("page_name"),
+                    BONUS_WEIGHTS["pages"],
                 )
                 + bonus_overlap(
                     query_tokens,
-                    metadata.get("authors"),
-                    BONUS_WEIGHTS["authors"],
+                    str(metadata.get("category")),
+                    BONUS_WEIGHTS["category"],
                 )
                 + bonus_overlap(
                     query_tokens,
-                    str(metadata.get("year")),
+                    str(metadata.get("updated_on").year),
                     BONUS_WEIGHTS["year"],
+                )
+                + bonus_recency(
+                    metadata.get("updated_on"),
+                    weight=BONUS_WEIGHTS["recency"]
                 )
             )
             metadata_scored_docs.append((score, doc))
+            logger.debug(
+                f"[RAG] Bonus score {score:.3f} for {metadata.get('project_path')} "
+                f"(category={metadata.get('category')}, year={metadata.get('updated_on')}, "
+                f"hierarchy={metadata.get('hierarchy')})"
+            )
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
+        logger.info("[RAG] Metadata scoring completed.")
+        logger.info(f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in metadata_scored_docs[:5]]}")
+
         top_scored_docs = [
             d
             for _, d in metadata_scored_docs[
                 : TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
             ]
         ]
-        return semantic_rerank(query, top_scored_docs)[
-            : TOP_K_FOR_METADATA_SCORING["top_reranked_k"]
-        ]
+        logger.info(f"[RAG] {len(top_scored_docs)} documents kept for reranking.")
+
+        reranked = semantic_rerank(query, top_scored_docs)
+        logger.info(f"[RAG] Final reranked document count: {len(reranked)}")
+        return reranked[:TOP_K_FOR_METADATA_SCORING["top_reranked_k"]]
+
 
     class _Retriever(BaseRetriever):
         """
@@ -300,24 +364,26 @@ def get_publication_tool(
         seen, lines = set(), []
         for d in res["context"]:
             m = d.metadata
-            key = (m.get("title"), m.get("url"))
+            key = (m.get("wiki_path"), m.get("updated_on"))
             if key in seen:
                 continue
             seen.add(key)
             lines.append(
-                f"- **{m.get('title', 'Untitled')}** "
-                f"({m.get('year', 'n.d.')}) — "
-                f"{m.get('authors', 'Euclid Collaboration')} — {m.get('url')}"
+                f"{m.get('source')} "
+                f"- {m.get('project_path', 'Untitled')} "
+                f" (last update: {m.get('updated_on', 'n.d.')}) \n"
+                f"{m.get('wiki_path', 'No URL available')}"
             )
-
         # Append formatted sources if any
         if lines:
-            answer += "\n\n**Sources**\n" + "\n".join(lines)
+            answer += "\n\n**Sources**\n\n" + "\n\n".join(lines)
+            
+        logger.info(f"[RAG] Returning final answer with {len(res['context'])} sources.")
 
         return answer
 
     return Tool(
-        name="euclid_publication_tool",
+        name="euclid_redmine_tool",
         func=run,
-        description="Answer questions about Euclid scientific papers.",
+        description="Answer questions using Euclid consortium redmine.",
     )

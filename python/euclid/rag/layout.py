@@ -33,16 +33,68 @@ from langchain_community.chat_message_histories import (
 from euclid import STATIC_DIR
 
 
+# def setup_sidebar() -> None:
+#     """Set up the sidebar for the Streamlit app."""
+#     st.sidebar.markdown("Select sources to search:")
+#     st.session_state["required_sources"] = []
+#     if st.sidebar.checkbox("Redmine", value=True):
+#         st.session_state["required_sources"].append("redmine")
+#     if st.sidebar.checkbox("Data Products Descriptions", value=True):
+#         st.session_state["required_sources"].append("dpdd")
+#     if st.sidebar.checkbox("Euclid SGS Developers", value=True):
+#         st.session_state["required_sources"].append("sgsdev")
+
+
 def setup_sidebar() -> None:
     """Set up the sidebar for the Streamlit app."""
-    st.sidebar.markdown("Select sources to search:")
-    st.session_state["required_sources"] = []
-    if st.sidebar.checkbox("Redmine", value=True):
-        st.session_state["required_sources"].append("redmine")
-    if st.sidebar.checkbox("Data Products Descriptions", value=True):
-        st.session_state["required_sources"].append("dpdd")
-    if st.sidebar.checkbox("Euclid SGS Developers", value=True):
-        st.session_state["required_sources"].append("sgsdev")
+
+    st.sidebar.title("Settings")
+
+    tabs = st.sidebar.tabs(["Configuration"])
+
+    with tabs[0]:
+        st.subheader("Metadata bonus weights")
+
+        if "BONUS_WEIGHTS" not in st.session_state:
+            st.session_state.BONUS_WEIGHTS = {
+                "pages": 0.5,
+                "category": 0.3,
+                "year": 0.2,
+                "recency": 0.5,
+            }
+
+        st.session_state.BONUS_WEIGHTS["pages"] = st.slider(
+            "Keyword in page title", 0.0, 1.0, st.session_state.BONUS_WEIGHTS["pages"], 0.05
+        )
+        st.session_state.BONUS_WEIGHTS["category"] = st.slider(
+            "Keyword in page category", 0.0, 1.0, st.session_state.BONUS_WEIGHTS["category"], 0.05
+        )
+        st.session_state.BONUS_WEIGHTS["year"] = st.slider(
+            "Last update corresponding to a given year", 0.0, 1.0, st.session_state.BONUS_WEIGHTS["year"], 0.05
+        )
+        st.session_state.BONUS_WEIGHTS["recency"] = st.slider(
+            "Page recency", 0.0, 1.0, st.session_state.BONUS_WEIGHTS["recency"], 0.05
+        )
+
+        st.divider()
+        st.subheader("Number of pages selected")
+
+        if "TOP_K_FOR_METADATA_SCORING" not in st.session_state:
+            st.session_state.TOP_K_FOR_METADATA_SCORING = {
+                "similarity_k": 20,
+                "top_metadata_k": 10,
+                "top_reranked_k": 5,
+            }
+
+        st.session_state.TOP_K_FOR_METADATA_SCORING["similarity_k"] = st.number_input(
+            "1. Top K - Semantic similarity", min_value=1, max_value=100, value=st.session_state.TOP_K_FOR_METADATA_SCORING["similarity_k"]
+        )
+        st.session_state.TOP_K_FOR_METADATA_SCORING["top_metadata_k"] = st.number_input(
+            "2. Top K - Metadata bonus weights", min_value=1, max_value=100, value=st.session_state.TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
+        )
+        st.session_state.TOP_K_FOR_METADATA_SCORING["top_reranked_k"] = st.number_input(
+            "3. Top K - Semantic similarity reranked", min_value=1, max_value=100, value=st.session_state.TOP_K_FOR_METADATA_SCORING["top_reranked_k"]
+        )
 
 
 def setup_landing_page() -> None:
@@ -80,7 +132,15 @@ def setup_header_and_footer(msgs: StreamlitChatMessageHistory) -> None:
     st.markdown(
         (
             "<footer class='footer-fixed'>Euclid AI Assistant aims for "
-            "accuracy, but can make mistakes.</footer>"
+            "accuracy, but can make mistakes. \n"
+            "If the sources are outdated, please update the tables at "
+            "<a href='https://euclid.roe.ac.uk/projects/ops/wiki/Selected_Redmine_Projects' target='_blank'>Redmine Projects</a> & "
+            "<a href='https://euclid.roe.ac.uk/projects/ops/wiki/Rag_wiki_pages' target='_blank'>RAG Wiki Pages</a>."
+            "</footer>"
         ),
+        # (
+        #     "<footer class='footer-fixed'>Euclid AI Assistant aims for "
+        #     "accuracy, but can make mistakes.</footer>"
+        # ),
         unsafe_allow_html=True,
     )
