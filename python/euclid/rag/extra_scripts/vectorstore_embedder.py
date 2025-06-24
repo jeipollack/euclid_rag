@@ -8,7 +8,6 @@ Embedding and vectorstore management utilities for Euclid document ingestion.
 This module provides:
 - An E5 embedding class with support for MPS/CUDA/CPU.
 - A function to load or create a FAISS vectorstore from PDFs.
-- A function to load or create a FAISS vectorstore from Redmine pre-cleaned (as a list of dic)
 """
 
 import logging
@@ -120,23 +119,99 @@ class Embedder(Embeddings):
         """Return the torch device used by the model."""
         return self._device
 
+def load_pdf_documents(pdf_paths: list[Path]) -> list[Document]:
+    """
+    Load documents from a list of PDF files using PyMuPDF.
 
-def load_or_create_vectorstore(
-    index_dir: Path, embedder: Embeddings, pdf_paths: list[Path]
-) -> FAISS:
-    """Load a FAISS vectorstore from disk or build it from the given data."""
-    index_dir.mkdir(parents=True, exist_ok=True)
+    Parameters
+    ----------
+    pdf_paths : List[Path]
+        List of paths to PDF files.
+
+    Returns
+    -------
+    List[Document]
+        A list of LangChain Document objects.
+    """
     docs = []
     for pdf_path in pdf_paths:
-        loader = PyMuPDFLoader(str(pdf_path))
-        loaded = loader.load()
-        for d in loaded:
-            d.metadata["source"] = pdf_path.name
-        docs.extend(loaded)
+        try:
+            loader = PyMuPDFLoader(str(pdf_path))
+            loaded = loader.load()
+            for d in loaded:
+                d.metadata["source"] = pdf_path.name
+            docs.extend(loaded)
+        except Exception as e:
+            logger.warning(f"Failed to load PDF '{pdf_path}': {e}")
+    return docs
 
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800, chunk_overlap=100
-    )
+
+def load_json_documents(json_paths: list[Path]) -> list[Document]:
+    """
+    Load documents from a list of JSON files.
+
+    Each JSON file should contain a list of dicts with at least a "content" field
+    and optionally a "metadata" field.
+
+    Parameters
+    ----------
+    json_paths : List[Path]
+        List of paths to JSON files.
+
+    Returns
+    -------
+    List[Document]
+        A list of LangChain Document objects.
+    """
+    docs = []
+    for json_path in json_paths:
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if not isinstance(data, list):
+                    continue
+                for item in data:
+                    content = item.get("content", "")
+                    metadata = item.get("metadata", {})
+                    if content.strip():
+                        docs.append(Document(page_content=content, metadata=metadata))
+        except Exception as e:
+            logger.warning(f"Failed to load JSON '{json_path}': {e}")
+    return docs
+
+
+def load_or_create_vectorstore(
+    index_dir: Path,
+    embedder: Embeddings,
+    pdf_paths: list[Path] = [],
+    json_paths: list[Path] = [],
+) -> FAISS:
+    """
+    Load a FAISS vectorstore from disk, or create it from PDF and JSON documents.
+
+    Parameters
+    ----------
+    index_dir : Path
+        Directory where the FAISS index is stored (or will be created).
+    embedder : Embeddings
+        Embedding model implementing the LangChain Embeddings interface.
+    pdf_paths : List[Path], optional
+        List of PDF paths to load and embed.
+    json_paths : List[Path], optional
+        List of JSON paths to load and embed.
+
+    Returns
+    -------
+    FAISS
+        The FAISS vectorstore.
+    """
+    index_dir.mkdir(parents=True, exist_ok=True)
+
+    docs = load_pdf_documents(pdf_paths) + load_json_documents(json_paths)
+    if not docs:
+        raise ValueError("No documents found (PDFs and JSONs are empty or invalid).")
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
     chunks = splitter.split_documents(docs)
 
     index_file = index_dir / "index.faiss"
@@ -148,43 +223,12 @@ def load_or_create_vectorstore(
                 allow_dangerous_deserialization=False,
             )
         except Exception as exc:
-            raise RuntimeError("Failed to load existing vectorstore") from exc
+            raise RuntimeError("Failed to load existing FAISS vectorstore.") from exc
+
         if chunks:
             vectorstore.add_documents(chunks)
             vectorstore.save_local(str(index_dir))
         return vectorstore
-
-    vectorstore = FAISS.from_documents(chunks, embedder)
-    vectorstore.save_local(str(index_dir))
-    return vectorstore
-
-
-def load_or_create_redmine_vectorstore(
-    index_dir: Path, embedder: Embeddings, redmine_docs: list[dict]
-) -> FAISS:
-    """
-    Load a FAISS vectorstore from disk or build it from pre-cleaned Redmine documents.
-
-    Args:
-        index_dir: Directory where the FAISS index is stored or will be saved.
-        embedder: An instance of an Embeddings model (e.g., E5MpsEmbedder).
-        redmine_docs: List of cleaned documents with 'content' and 'metadata'.
-
-    Returns:
-        A FAISS vectorstore containing the embedded Redmine documents.
-    """
-    if index_dir.exists():
-        return FAISS.load_local(
-            str(index_dir), embedder, allow_dangerous_deserialization=True
-        )
-
-    documents = [
-        Document(page_content=doc["content"], metadata=doc["metadata"])
-        for doc in redmine_docs
-    ]
-
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
-    chunks = splitter.split_documents(documents)
 
     vectorstore = FAISS.from_documents(chunks, embedder)
     vectorstore.save_local(str(index_dir))
