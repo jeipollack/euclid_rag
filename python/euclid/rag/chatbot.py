@@ -45,6 +45,7 @@ from langchain_ollama import OllamaLLM
 
 from .extra_scripts.vectorstore_embedder import Embedder
 from .retrievers.publication_tool import get_publication_tool
+from .retrievers.redmine_tool import get_redmine_tool
 from .streamlit_callback import get_streamlit_cb
 
 
@@ -111,7 +112,8 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> list[Tool]:
     """
     retriever = configure_retriever(config)
     return [
-        get_publication_tool(llm, retriever),
+        get_redmine_tool(llm, retriever),
+        get_publication_tool(llm, retriever)
     ]
 
 
