@@ -6,9 +6,13 @@
 
 from __future__ import annotations
 
+import datetime
+import json
+import logging
 import string
 from typing import Any, cast
 
+import streamlit as st
 import torch
 from langchain.agents import Tool
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -18,8 +22,6 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
-import datetime
-import streamlit as st 
 from langchain_community.vectorstores import FAISS
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import MessagesPlaceholder
@@ -33,19 +35,31 @@ from euclid.rag.extra_scripts.deduplication import (
 )
 from euclid.rag.utils.acronym_handler import *
 
-import logging
-import json
-
-with open("rag/utils/acronyms.json", "r", encoding="utf-8") as f:
+with open("rag/utils/acronyms.json", encoding="utf-8") as f:
     ACRONYMS = json.load(f)
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 _tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
 _model = AutoModelForSequenceClassification.from_pretrained(
     "BAAI/bge-reranker-base"
 )
+
+BONUS_WEIGHTS = {
+    "pages": 0.5,
+    "category": 0.3,
+    "year": 0.2,
+    "recency": 0.5,
+}
+
+TOP_K_FOR_METADATA_SCORING = {
+    "similarity_k": 20,
+    "top_metadata_k": 10,
+    "top_reranked_k": 5,
+}
 
 def semantic_rerank(query: str, docs: list) -> list:
     """
@@ -126,12 +140,8 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
     """
     if not field:
         return 0.0
-    
-    cleaned_field = (
-        field.replace(",", " ")
-        .replace("_", " ")      
-        .replace("-", " ")
-    )
+
+    cleaned_field = field.replace(",", " ").replace("_", " ").replace("-", " ")
 
     return weight * sum(
         1
@@ -139,7 +149,10 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
         if w.lower().translate(punctuation_strip) in q
     )
 
-def bonus_recency(updated_on: datetime.datetime, weight: float = 0.3, half_life:int = 365) -> float:
+
+def bonus_recency(
+    updated_on: datetime.datetime, weight: float = 0.3, half_life: int = 365
+) -> float:
     """
     Compute a bonus based on how recent the update is.
 
@@ -168,6 +181,7 @@ def bonus_recency(updated_on: datetime.datetime, weight: float = 0.3, half_life:
     decay = 0.5 ** (days_old / half_life)
 
     return weight * decay
+
 
 def get_redmine_tool(
     llm: BaseLanguageModel, retriever: VectorStoreRetriever
@@ -237,9 +251,6 @@ def get_redmine_tool(
             Ranked list of the most relevant documents for the query.
         """
 
-        BONUS_WEIGHTS = st.session_state["BONUS_WEIGHTS"]
-        TOP_K_FOR_METADATA_SCORING = st.session_state["TOP_K_FOR_METADATA_SCORING"]
-
         logger.info(f"[RAG] Query received: {query}")
         filtered_docs, filtered_scores = [], []
 
@@ -249,7 +260,9 @@ def get_redmine_tool(
         initial_results = retriever.vectorstore.similarity_search_with_score(
             query, k=TOP_K_FOR_METADATA_SCORING["similarity_k"]
         )
-        logger.info(f"[RAG] Retrieved {len(initial_results)} documents from FAISS.")
+        logger.info(
+            f"[RAG] Retrieved {len(initial_results)} documents from FAISS."
+        )
 
         for doc, score in initial_results:
             text = doc.page_content
@@ -261,8 +274,12 @@ def get_redmine_tool(
                 continue
             filtered_docs.append(doc)
             filtered_scores.append(score)
-        logger.info(f"[RAG] {len(filtered_docs)} documents remaining after deduplication.")
-        logger.info(f"[RAG] Top corresponding scores: {[round(s, 3) for s in filtered_scores[:5]]}")
+        logger.info(
+            f"[RAG] {len(filtered_docs)} documents remaining after deduplication."
+        )
+        logger.info(
+            f"[RAG] Top corresponding scores: {[round(s, 3) for s in filtered_scores[:5]]}"
+        )
 
         query_tokens = tokenize(query)
         metadata_scored_docs = []
@@ -285,8 +302,7 @@ def get_redmine_tool(
                     BONUS_WEIGHTS["year"],
                 )
                 + bonus_recency(
-                    metadata.get("updated_on"),
-                    weight=BONUS_WEIGHTS["recency"]
+                    metadata.get("updated_on"), weight=BONUS_WEIGHTS["recency"]
                 )
             )
             metadata_scored_docs.append((score, doc))
@@ -298,7 +314,9 @@ def get_redmine_tool(
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
         logger.info("[RAG] Metadata scoring completed.")
-        logger.info(f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in metadata_scored_docs[:5]]}")
+        logger.info(
+            f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in metadata_scored_docs[:5]]}"
+        )
 
         top_scored_docs = [
             d
@@ -306,12 +324,13 @@ def get_redmine_tool(
                 : TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
             ]
         ]
-        logger.info(f"[RAG] {len(top_scored_docs)} documents kept for reranking.")
+        logger.info(
+            f"[RAG] {len(top_scored_docs)} documents kept for reranking."
+        )
 
         reranked = semantic_rerank(query, top_scored_docs)
         logger.info(f"[RAG] Final reranked document count: {len(reranked)}")
-        return reranked[:TOP_K_FOR_METADATA_SCORING["top_reranked_k"]]
-
+        return reranked[: TOP_K_FOR_METADATA_SCORING["top_reranked_k"]]
 
     class _Retriever(BaseRetriever):
         """
@@ -377,8 +396,10 @@ def get_redmine_tool(
         # Append formatted sources if any
         if lines:
             answer += "\n\n**Sources**\n\n" + "\n\n".join(lines)
-            
-        logger.info(f"[RAG] Returning final answer with {len(res['context'])} sources.")
+
+        logger.info(
+            f"[RAG] Returning final answer with {len(res['context'])} sources."
+        )
 
         return answer
 
