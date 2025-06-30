@@ -21,9 +21,14 @@
 
 """Define and retrieve the version string for the package."""
 
-from ._version import *
-
 import pkgutil
+
+try:
+    from ._version import __version__
+except ImportError:
+    __version__ = "unknown"
+
+__all__ = ["__version__"]
 
 __path__ = pkgutil.extend_path(__path__, __name__)
 
