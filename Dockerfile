@@ -40,7 +40,7 @@ COPY . .
 # Copy necessary source to container
 COPY python/euclid entrypoint.sh /app/
 COPY --from=builder /app/.venv .venv
-COPY --from=builder /app/python/euclid/_version.py /app/python/euclid/_version.py 
+COPY --from=builder /app/python/euclid/_version.py /app/python/euclid/_version.py
 
 ENV PATH="/app/.venv/bin:$PATH"
 
