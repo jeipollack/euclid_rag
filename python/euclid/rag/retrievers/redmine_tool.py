@@ -12,7 +12,6 @@ import logging
 import string
 from typing import Any, cast
 
-import streamlit as st
 import torch
 from langchain.agents import Tool
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -60,6 +59,7 @@ TOP_K_FOR_METADATA_SCORING = {
     "top_metadata_k": 10,
     "top_reranked_k": 5,
 }
+
 
 def semantic_rerank(query: str, docs: list) -> list:
     """
@@ -250,7 +250,6 @@ def get_redmine_tool(
         list
             Ranked list of the most relevant documents for the query.
         """
-
         logger.info(f"[RAG] Query received: {query}")
         filtered_docs, filtered_scores = [], []
 
