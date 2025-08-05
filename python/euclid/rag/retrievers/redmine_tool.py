@@ -10,6 +10,7 @@ import datetime
 import json
 import logging
 import string
+from pathlib import Path
 from typing import Any, cast
 
 import torch
@@ -32,9 +33,9 @@ from euclid.rag.extra_scripts.deduplication import (
     HashDeduplicator,
     SemanticSimilarityDeduplicator,
 )
-from euclid.rag.utils.acronym_handler import *
+from euclid.rag.utils.acronym_handler import expand_acronyms_in_query
 
-with open("rag/utils/acronyms.json", encoding="utf-8") as f:
+with Path.open("rag/utils/acronyms.json", encoding="utf-8") as f:
     ACRONYMS = json.load(f)
 
 logger = logging.getLogger(__name__)
@@ -174,7 +175,7 @@ def bonus_recency(
     if not updated_on:
         return 0.0
 
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.utcnow()  # noqa: DTZ003
     days_old = (now - updated_on).days
 
     # Use an exponential decaying: more recent = closer to weight
@@ -183,7 +184,7 @@ def bonus_recency(
     return weight * decay
 
 
-def get_redmine_tool(
+def get_redmine_tool(  # noqa: C901, PLR0915
     llm: BaseLanguageModel, retriever: VectorStoreRetriever
 ) -> Tool:
     """
@@ -215,7 +216,8 @@ def get_redmine_tool(
                 "If it contains information that directly answers"
                 "the user's question, quote or paraphrase it.\n"
                 "If the CONTEXT is missing a full answer,"
-                "answer ‘I don't have that information yet.’ and nothing else.\n\n"
+                "answer 'I don't have that information yet.' and nothing else."
+                "\n\n"
                 "<CONTEXT>\n{context}\n</CONTEXT>"
             ),
             MessagesPlaceholder("chat_history"),
@@ -273,11 +275,11 @@ def get_redmine_tool(
                 continue
             filtered_docs.append(doc)
             filtered_scores.append(score)
+        logger.info(f"[RAG] {len(filtered_docs)} documents remaining.")
         logger.info(
-            f"[RAG] {len(filtered_docs)} documents remaining after deduplication."
-        )
-        logger.info(
-            f"[RAG] Top corresponding scores: {[round(s, 3) for s in filtered_scores[:5]]}"
+            f"[RAG] Top corresponding scores: {
+                [round(s, 3) for s in filtered_scores[:5]]
+            }"
         )
 
         query_tokens = tokenize(query)
@@ -306,15 +308,19 @@ def get_redmine_tool(
             )
             metadata_scored_docs.append((score, doc))
             logger.debug(
-                f"[RAG] Bonus score {score:.3f} for {metadata.get('project_path')} "
-                f"(category={metadata.get('category')}, year={metadata.get('updated_on')}, "
+                f"[RAG] Bonus score {score:.3f} for"
+                f"{metadata.get('project_path')}"
+                f"(category={metadata.get('category')},"
+                f"year={metadata.get('updated_on')},"
                 f"hierarchy={metadata.get('hierarchy')})"
             )
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
         logger.info("[RAG] Metadata scoring completed.")
         logger.info(
-            f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in metadata_scored_docs[:5]]}"
+            f"[RAG] Top metadata scores: {
+                [round(s, 3) for s, _ in metadata_scored_docs[:5]]
+            }"
         )
 
         top_scored_docs = [
