@@ -10,6 +10,7 @@ This module provides:
 - A function to load or create a FAISS vectorstore from PDFs.
 """
 
+import json
 import logging
 from pathlib import Path
 
@@ -18,8 +19,8 @@ import torch
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
-from langchain_core.embeddings import Embeddings
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from sklearn.preprocessing import normalize
 from transformers import AutoModel, AutoTokenizer
 
@@ -119,6 +120,7 @@ class Embedder(Embeddings):
         """Return the torch device used by the model."""
         return self._device
 
+
 def load_pdf_documents(pdf_paths: list[Path]) -> list[Document]:
     """
     Load documents from a list of PDF files using PyMuPDF.
@@ -150,7 +152,8 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
     """
     Load documents from a list of JSON files.
 
-    Each JSON file should contain a list of dicts with at least a "content" field
+    Each JSON file should contain a list of dicts
+    with at least a "content" field
     and optionally a "metadata" field.
 
     Parameters
@@ -166,7 +169,7 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
     docs = []
     for json_path in json_paths:
         try:
-            with open(json_path, "r", encoding="utf-8") as f:
+            with Path.open(json_path, encoding="utf-8") as f:
                 data = json.load(f)
                 if not isinstance(data, list):
                     continue
@@ -174,7 +177,9 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
                     content = item.get("content", "")
                     metadata = item.get("metadata", {})
                     if content.strip():
-                        docs.append(Document(page_content=content, metadata=metadata))
+                        docs.append(
+                            Document(page_content=content, metadata=metadata)
+                        )
         except Exception as e:
             logger.warning(f"Failed to load JSON '{json_path}': {e}")
     return docs
@@ -183,11 +188,12 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
 def load_or_create_vectorstore(
     index_dir: Path,
     embedder: Embeddings,
-    pdf_paths: list[Path] = [],
-    json_paths: list[Path] = [],
+    pdf_paths: list[Path] = list | None,
+    json_paths: list[Path] = list | None,
 ) -> FAISS:
     """
-    Load a FAISS vectorstore from disk, or create it from PDF and JSON documents.
+    Load a FAISS vectorstore from disk,
+    or create it from PDF and JSON documents.
 
     Parameters
     ----------
@@ -205,13 +211,21 @@ def load_or_create_vectorstore(
     FAISS
         The FAISS vectorstore.
     """
+    if pdf_paths is None:
+        pdf_paths = []
+    if json_paths is None:
+        json_paths = []
     index_dir.mkdir(parents=True, exist_ok=True)
 
     docs = load_pdf_documents(pdf_paths) + load_json_documents(json_paths)
     if not docs:
-        raise ValueError("No documents found (PDFs and JSONs are empty or invalid).")
+        raise ValueError(
+            "No documents found (PDFs and JSONs are empty or invalid)."
+        )
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=800, chunk_overlap=100
+    )
     chunks = splitter.split_documents(docs)
 
     index_file = index_dir / "index.faiss"
@@ -223,7 +237,9 @@ def load_or_create_vectorstore(
                 allow_dangerous_deserialization=False,
             )
         except Exception as exc:
-            raise RuntimeError("Failed to load existing FAISS vectorstore.") from exc
+            raise RuntimeError(
+                "Failed to load existing FAISS vectorstore."
+            ) from exc
 
         if chunks:
             vectorstore.add_documents(chunks)

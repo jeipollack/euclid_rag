@@ -1,19 +1,14 @@
+"""Module to ingest JSON-exported Redmine pages into a FAISS vectorstore."""
+
 # Copyright (C) 2025 Euclid Science Ground Segment
 # Licensed under the GNU LGPL v3.0.
 # See <https://www.gnu.org/licenses/>.
 
-
 import json
 import logging
-import re
 from pathlib import Path
 from typing import Any
 
-import requests
-from bibtexparser.bparser import BibTexParser
-from bibtexparser.customization import convert_to_unicode
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
@@ -21,16 +16,14 @@ from euclid.rag.extra_scripts.deduplication import (
     HashDeduplicator,
     SemanticSimilarityDeduplicator,
 )
-from euclid.rag.extra_scripts.vectorstore_embedder import (
-    Embedder,
-    load_or_create_vectorstore,
-)
-from euclid.rag.utils.config import load_config
+from euclid.rag.extra_scripts.vectorstore_embedder import Embedder
 from euclid.rag.redmine.redmine_cleaner import RedmineCleaner
+from euclid.rag.utils.config import load_config
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
-
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
@@ -40,24 +33,39 @@ DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
     "k_candidates": 5,
 }
 
+
 class EuclidJSONIngestor:
     """Ingest JSON-exported Redmine pages into a FAISS vectorstore."""
 
-    def __init__(self, index_dir: Path, json_dir: Path, data_config: dict) -> None:
+    def __init__(
+        self, index_dir: Path, json_dir: Path, data_config: dict
+    ) -> None:
         self._index_dir = index_dir
         self._json_dir = json_dir
-        self._model_name = data_config.get("embedding_model_name", "intfloat/e5-small-v2")
+        self._model_name = data_config.get(
+            "embedding_model_name", "intfloat/e5-small-v2"
+        )
         self._batch_size = data_config.get("embedding_batch_size", 16)
-        self._embedder = Embedder(model_name=self._model_name, batch_size=self._batch_size)
+        self._embedder = Embedder(
+            model_name=self._model_name, batch_size=self._batch_size
+        )
         self._vectorstore = self._load_vectorstore()
         self._data_config = data_config
-        self._cleaner = RedmineCleaner(max_chunk_length=self._data_config.get("chunk_size", 800))
-        logger.info(f"[ING] EuclidJSONIngestor initialized with model={self._model_name}, index_dir={self._index_dir}, json_dir={self._json_dir}")
+        self._cleaner = RedmineCleaner(
+            max_chunk_length=self._data_config.get("chunk_size", 800)
+        )
+        logger.info(
+            "[ING] EuclidJSONIngestor initialized"
+            f"with model={self._model_name}",
+            f"index_dir={self._index_dir}, json_dir={self._json_dir}",
+        )
 
     def _load_vectorstore(self) -> FAISS | None:
         index_file = self._index_dir / "index.faiss"
         if index_file.exists():
-            logger.info(f"[ING] Loading existing FAISS index from {self._index_dir}")
+            logger.info(
+                f"[ING] Loading existing FAISS index from {self._index_dir}"
+            )
             return FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -72,20 +80,22 @@ class EuclidJSONIngestor:
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
             vectorstore=self._vectorstore,
             reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
-            similarity_threshold=float(DEDUPLICATION_CONFIG["similarity_threshold"]),
+            similarity_threshold=float(
+                DEDUPLICATION_CONFIG["similarity_threshold"]
+            ),
             rerank_threshold=float(DEDUPLICATION_CONFIG["rerank_threshold"]),
             k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
         )
 
         existing_sources = self._get_existing_sources()
-        logger.info(f"[ING] Loaded {len(existing_sources)} existing sources from vectorstore.")
-        
+        logger.info(f"[ING] Loaded {len(existing_sources)} existing sources.")
+
         for json_path in self._json_dir.glob("*.json"):
             with json_path.open(encoding="utf-8") as f:
                 try:
                     data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.error(f"[ING] Decoding error for {json_path}: {e}")
+                except json.JSONDecodeError:
+                    logger.exception(f"[ING] Decoding error for {json_path}")
                     continue
 
             pages = data if isinstance(data, list) else data.get("pages", [])
@@ -97,29 +107,37 @@ class EuclidJSONIngestor:
                 page_id = str(metadata.get("project_id") or "unknown").strip()
 
                 if not page_id:
-                    logger.warning("[ING] Skipping page without valid ID or title")
+                    logger.warning(
+                        "[ING] Skipping page without valid ID or title"
+                    )
                     continue
                 if page_id in existing_sources:
-                    logger.debug(f"[ING] Page {page_id} already ingested, skipping.")
+                    logger.debug(
+                        f"[ING] Page {page_id} already ingested, skipping."
+                    )
                     continue
 
                 doc = Document(
                     page_content=entry.get("content", ""),
-                    metadata={
-                        **metadata,
-                        "source": "Redmine"
-                    },
+                    metadata={**metadata, "source": "Redmine"},
                 )
 
                 if dedup_filter_hash.filter(doc.page_content):
                     logger.debug("[ING] Chunk filtered by hash deduplication.")
                     continue
-                if dedup_filter_semantic.vectorstore and dedup_filter_semantic.filter(doc.page_content):
-                    logger.debug("[ING] Chunk filtered by semantic deduplication.")
+                if (
+                    dedup_filter_semantic.vectorstore
+                    and dedup_filter_semantic.filter(doc.page_content)
+                ):
+                    logger.debug(
+                        "[ING] Chunk filtered by semantic deduplication."
+                    )
                     continue
 
                 if self._vectorstore is None:
-                    self._vectorstore = FAISS.from_documents([doc], self._embedder)
+                    self._vectorstore = FAISS.from_documents(
+                        [doc], self._embedder
+                    )
                 else:
                     self._vectorstore.add_documents([doc])
 
@@ -130,7 +148,9 @@ class EuclidJSONIngestor:
                     allow_dangerous_deserialization=True,
                 )
 
-                logger.info(f"[ING] Ingested page: {metadata.get('hierarchy')}")
+                logger.info(
+                    f"[ING] Ingested page: {metadata.get('hierarchy')}"
+                )
 
         logger.info("[ING] Redmine ingestion completed.")
 
@@ -149,6 +169,7 @@ class EuclidJSONIngestor:
                             existing_sources.add(source)
         return existing_sources
 
+
 def run_redmine_ingestion(config: dict) -> None:
     """Run the Redmine JSON ingestion script."""
     index_dir = Path(config["vector_store"]["index_dir"]).resolve()
@@ -161,6 +182,7 @@ def run_redmine_ingestion(config: dict) -> None:
         data_config=data_config,
     )
     ingestor.ingest_redmine_pages()
+
 
 if __name__ == "__main__":
     """
