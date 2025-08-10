@@ -1,8 +1,10 @@
 services:
   ollama:
-    image: "ollama/ollama"
     volumes:
       -  "ollama:/root/.ollama"
+    build:
+      context: .
+      dockerfile: Dockerfile_ollama
 
   euclid:
     build:
@@ -12,6 +14,8 @@ services:
       - "8501:8501"
     volumes:
       - "vector_store:/app/faiss_index"
+    depends_on:
+      - "ollama"
 
 volumes:
   ollama:
