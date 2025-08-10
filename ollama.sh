@@ -2,9 +2,12 @@
 
 mkdir -p /app/logs
 
+# Start the Ollama server in the background and redirect output
+ollama serve > /app/logs/ollama_serve.log 2>&1 &
+
 # Function to check if the server is running
 check_server() {
-    curl -sSf http://ollama:11434 > /dev/null
+    curl -sSf http://localhost:11434 > /dev/null
 }
 
 # Wait until the server is running
@@ -21,5 +24,10 @@ until check_server; do
     count=$((count + 1))
 done
 
-# Start the Streamlit app
-PYTHONPATH=/app/python streamlit run python/euclid/rag/app.py
+ollama pull gemma3:4b > /app/logs/ollama_pull.log 2>&1 &
+
+echo "Running Ollama server."
+while :
+do
+	sleep 100
+done
