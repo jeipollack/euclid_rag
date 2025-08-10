@@ -7,7 +7,7 @@ ollama serve > /app/logs/ollama_serve.log 2>&1 &
 
 # Function to check if the server is running
 check_server() {
-    curl -sSf http://localhost:11434 > /dev/null
+    curl -sSf http://ollama:11434 > /dev/null
 }
 
 llm_model=$(python3 -c '
