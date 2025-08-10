@@ -1,13 +1,3 @@
-# ================================ Ollama build stage ================================
-
-FROM python:3.12-slim-bookworm AS ollama
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-RUN curl -fsSL https://ollama.com/install.sh | sh
-
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # ================================ Python build stage ================================
 
 FROM python:3.12-slim-bookworm AS builder
@@ -31,7 +21,10 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # # ================================ Prod stage ================================
 
-FROM ollama AS production
+FROM python:3.12-slim-bookworm AS production
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

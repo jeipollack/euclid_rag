@@ -1,0 +1,18 @@
+services:
+  ollama:
+    image: "ollama/ollama"
+    volumes:
+      -  "ollama:/root/.ollama"
+
+  euclid:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - "vector_store:/app/faiss_index"
+
+volumes:
+  ollama:
+  vector_store:
