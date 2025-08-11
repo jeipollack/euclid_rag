@@ -9,6 +9,7 @@ Each paper is embedded immediately after download and deleted afterward.
 
 import re
 from pathlib import Path
+from typing import Any
 
 import requests
 from bibtexparser.bparser import BibTexParser
@@ -146,21 +147,21 @@ class EuclidBibIngestor:
                 allow_dangerous_deserialization=True,
             )
 
-    def _get_existing_sources(self) -> set[str]:  # type: ignore[unreachable]
+    def _get_existing_sources(self) -> set[str]:
+        """Return set of existing 'source' values from the vectorstore."""
         existing_sources: set[str] = set()
         if self._vectorstore is not None:
             store = self._vectorstore.docstore
             for doc_id in self._vectorstore.index_to_docstore_id.values():
-                docs = store.search(doc_id)
+                docs: Any = store.search(doc_id)
                 if not isinstance(docs, list):
                     continue
-
                 docs_list: list[Document] = [
                     d for d in docs if isinstance(d, Document)
                 ]
                 for doc in docs_list:
                     source = doc.metadata.get("source")
-                    if source:
+                    if isinstance(source, str):
                         existing_sources.add(source)
         return existing_sources
 
@@ -214,7 +215,10 @@ class EuclidBibIngestor:
             allow_dangerous_deserialization=True,
         )
 
-    def _log_sampled_chunks(self, filename: str) -> None:  # type: ignore[unreachable]
+    def _log_sampled_chunks(self, filename: str) -> None:
+        """Log (or inspect) up to 3 chunks for a given file from the
+        vectorstore.
+        """
         if self._vectorstore is None:
             return
 
@@ -226,7 +230,7 @@ class EuclidBibIngestor:
             return
 
         for doc_id in index_ids.values():
-            docs = store.search(doc_id)
+            docs: Any = store.search(doc_id)
             if not isinstance(docs, list):
                 continue
 
