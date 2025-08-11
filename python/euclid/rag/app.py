@@ -48,13 +48,12 @@ from euclid.rag.utils.config import load_config
 
 # Load environment variables from .env file
 load_dotenv()
-STATIC_DIR = Path(__file__).resolve().parents[3] / "static"
 
 # Load configuration file
 CONFIG = load_config(Path("rag/app_config.yaml"))
 
 # Set page configuration and design
-icon_path = str(STATIC_DIR / "rubin_telescope.png")
+icon_path = str(STATIC_DIR / "euclid_cartoon.png")
 st.set_page_config(
     page_title="Euclid Bot",
     initial_sidebar_state="collapsed",

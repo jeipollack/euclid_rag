@@ -9,7 +9,6 @@ Each paper is embedded immediately after download and deleted afterward.
 
 import re
 from pathlib import Path
-from typing import Any
 
 import requests
 from bibtexparser.bparser import BibTexParser
