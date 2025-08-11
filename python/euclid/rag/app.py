@@ -50,7 +50,7 @@ from euclid.rag.utils.config import load_config
 load_dotenv()
 
 # Load configuration file
-CONFIG = load_config(Path("rag/app_config.yaml"))
+CONFIG = load_config(Path("python/euclid/rag/app_config.yaml"))
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "euclid_cartoon.png")
@@ -71,7 +71,7 @@ if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
 # Check that vectorstore exists before starting
-vectorstore_path = Path("rag/FAISS_vectorstore/index.faiss")
+vectorstore_path = Path("python/euclid/rag/FAISS_vectorstore/index.faiss")
 if not vectorstore_path.exists():
     raise RuntimeError(
         "Vectorstore missing. Please run ingestion before launching the app."
