@@ -28,7 +28,6 @@ Streamlit chatbot interface for the Euclid AI Assistant.
 Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
 """
 
-import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
@@ -42,6 +41,8 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
+
+from euclid import STATIC_DIR
 
 from .extra_scripts.vectorstore_embedder import Embedder
 from .retrievers.publication_tool import get_publication_tool
@@ -107,7 +108,6 @@ def create_euclid_router(
     config: dict,
 ) -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
     """Return Euclid-AI that **always** delegates to at least one sub-agent."""
-    start_ollama_server(config["llm"]["model"])
     llm = OllamaLLM(**config["llm"])
 
     tools = _build_tools(llm, config)
