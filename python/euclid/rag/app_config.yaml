@@ -1,5 +1,6 @@
 llm:
-  model: "gemma3:4b"
+  # Available models at https://ollama.com/library
+  model: "mistral:latest"
   temperature: 0
 
 embeddings:
@@ -9,9 +10,18 @@ embeddings:
 
 vector_store:
   type: "faiss"
-  index_dir: "faiss_index"
+  index_dir: "rag/FAISS_vectorstore"
 
 data:
-  pdf_path: "papers/Euclid_I_Overview_of_the_Euclid_mission.pdf"
+  bibtex_url: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
+  arxiv_pdf_base_url: "https://arxiv.org/pdf/"
   chunk_size: 800
   chunk_overlap: 100
+
+deduplication:
+  similarity_threshold: 0.97
+  rerank_threshold: 0.85
+  reranker_model: "cross-encoder/stsb-roberta-base"
+  k_candidates: 5
+  max_embedding_logs: 3
+  debug_mode: true

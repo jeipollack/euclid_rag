@@ -118,6 +118,9 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
+# PyCharm project settings
+.idea/
+
 # mkdocs documentation
 /site
 
@@ -128,3 +131,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Temporary files
+/tmp/
+
+# Vector store
+python/euclid/rag/FAISS_vectorstore
