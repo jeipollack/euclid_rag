@@ -63,7 +63,7 @@ RuntimeError: Vectorstore missing. Please run ingestion before launching the app
 
 ### Run ingestion:
 ```
-python -m python/euclid/rag/ingestion/ingest_publications.py -c /path/to/config_file
+python python/euclid/rag/ingestion/ingest_publications.py -c /path/to/config_file
 ```
 
 By default, this uses the `python/euclid/rag/app_config.yaml` file in the repository.
@@ -71,7 +71,7 @@ By default, this uses the `python/euclid/rag/app_config.yaml` file in the reposi
 To use a different config file, pass the `-c` / `--config` option:
 
 ```
-python -m euclid.rag.ingest -c /path/to/custom_config.yaml
+python python/euclid/rag/ingestion/ingest_publications.py -c /path/to/config_file
 ```
 
 ### Run the chatbot:
