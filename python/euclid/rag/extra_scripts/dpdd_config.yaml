@@ -5,6 +5,7 @@
 base_urls :
   - type : msp
     #url : https://euclid.esac.esa.int/msp/dpdd/live/
+    base_url : https://euclid.esac.esa.int/dr/q1/dpdd/
     url : http://st-dm.pages.euclid-sgs.uk/data-product-doc/dm10/
     version : dm10
     # optional: if true, scrape full site ignoring topics
