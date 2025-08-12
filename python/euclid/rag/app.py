@@ -70,12 +70,6 @@ with Path.open(file_path) as css:
 if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
-# Check that vectorstore exists before starting
-vectorstore_path = Path("python/euclid/rag/FAISS_vectorstore/index.faiss")
-if not vectorstore_path.exists():
-    raise RuntimeError(
-        "Vectorstore missing. Please run ingestion before launching the app."
-    )
 
 # Configure the vectorstore retriever and QA chain
 router = create_euclid_router(CONFIG)
