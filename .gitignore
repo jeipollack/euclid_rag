@@ -136,4 +136,4 @@ dmypy.json
 /tmp/
 
 # Vector store
-python/euclid/rag/FAISS_vectorstore
+faiss_index/
