@@ -40,8 +40,44 @@ source .venv/bin/activate
 make init
 
 ```
+### Build the Vector Store
+Before running the chatbot, you must ingest data and build the vector store.
+The location and type of the vector store are defined in `app_config.yaml`, for example:
+
+```
+vector_store:
+  type: "faiss"
+  index_dir: "faiss_index"
+```
+
+- type — currently only "faiss" is supported.
+- index_dir — path where the FAISS index files (index.faiss, index.pkl) will be stored.
+
+This can be a relative path (within the repo) or an absolute path.
+
+If the vector store is missing, the app will fail to start with:
+
+```
+RuntimeError: Vectorstore missing. Please run ingestion before launching the app.
+```
+
+### Run ingestion:
+```
+python -m python/euclid/rag/ingestion/ingest_publications.py -c /path/to/config_file
+```
+
+By default, this uses the `python/euclid/rag/app_config.yaml` file in the repository.
+
+To use a different config file, pass the `-c` / `--config` option:
+
+```
+python -m euclid.rag.ingest -c /path/to/custom_config.yaml
+```
 
 ### Run the chatbot:
+
+Once the vector store has been built, you can launch the chatbot:
+
 ```sh
 cd python/euclid
 streamlit run rag/app.py
