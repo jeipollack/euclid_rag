@@ -7,6 +7,7 @@ Ingest publications into a FAISS vectorstore from the official EC BibTeX.
 Each paper is embedded immediately after download and deleted afterward.
 """
 
+import argparse
 import re
 from pathlib import Path
 from typing import Any
@@ -310,9 +311,26 @@ def run_bibtex_ingestion(config: dict) -> None:
     ingestor.ingest_new_papers()
 
 
-if __name__ == "__main__":
-    """
-    Manual ingestion call.
-    """
-    config = load_config(Path("rag/app_config.yaml"))
+def main() -> None:
+    """Run the ingestion script."""
+    parser = argparse.ArgumentParser(
+        description="Ingest publications from the Euclid BibTeX file."
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=str,
+        default="python/euclid/rag/app_config.yaml",
+        help="Path to the configuration file.",
+    )
+    args = parser.parse_args()
+
+    config = load_config(Path(args.config))
     run_bibtex_ingestion(config)
+
+
+if __name__ == "__main__":
+    # Run the ingestion script if this file is executed directly
+    # This allows for easy command-line execution
+    # and testing without needing to import it in another script.
+    main()
