@@ -64,9 +64,15 @@ def configure_retriever(config: dict) -> VectorStoreRetriever:
         batch_size=config["embeddings"]["batch_size"],
     )
     index_dir = Path(config["vector_store"]["index_dir"])
-    vectorstore = FAISS.load_local(
-        str(index_dir), embedder, allow_dangerous_deserialization=True
-    )
+    try:
+        vectorstore = FAISS.load_local(
+            str(index_dir), embedder, allow_dangerous_deserialization=True
+        )
+    except FileNotFoundError as err:
+        raise RuntimeError(
+            "Vectorstore missing. Please run ingestion "
+            "before launching the app."
+        ) from err
 
     return vectorstore.as_retriever(
         search_type="similarity",
