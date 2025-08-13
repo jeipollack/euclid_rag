@@ -137,6 +137,9 @@ dmypy.json
 # Temporary files
 /tmp/
 
+# macOS stuff
+.DS_Store
+
 # Vector store
 faiss_index/
 
