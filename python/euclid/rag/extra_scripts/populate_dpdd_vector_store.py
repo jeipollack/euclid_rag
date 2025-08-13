@@ -49,12 +49,11 @@ class EuclidDPDDIngestor:
         }
         # self.banned_full_links = set(cfg['banned_sections']['full_links'])
         self.topics = cfg["topics"]
-        # TODO (paulz): for the moment it's hardcoded, but we should use config
         self.base_url = cfg["base_urls"][0]["base_url"]
         self.scrape_all = True
 
     def _load_vectorstore(self) -> FAISS | None:
-        """Load the FAISS vectorstore if it exists."""
+        """Load the FAISS vectorstore from the index directory."""
         if (
             self._index_dir.exists()
             and (self._index_dir / "index.faiss").exists()
@@ -71,12 +70,10 @@ class EuclidDPDDIngestor:
         return None
 
     def ingest_new_data(self) -> None:
-        """Ingests new data into the vectorstore."""
+        """Ingest new data into the vectorstore."""
         texts, metadatas = self._fetch_dpdd_entries()
-        new_ingested = 0
 
         # Get list of already ingested paper filenames
-
         existing_sources: set[str] = set()
         if self._vectorstore is not None:
             # Extract metadata 'source' from vectorstore's docs
@@ -114,12 +111,10 @@ class EuclidDPDDIngestor:
             else:
                 self._vectorstore.add_documents(chunks)
 
-            new_ingested += 1
-
             self._vectorstore.save_local(str(self._index_dir))
 
     def _get_all_topics_for_baseurl(self) -> list[dict[str, str]]:
-        """Get all topics for baseurl."""
+        """Get all topics for the base URL."""
         results: list[dict[str, str]] = []
         try:
             # Get the main page
@@ -134,8 +129,10 @@ class EuclidDPDDIngestor:
                     return []
                 logger.exception("Failed to fetch DPDD page %s", self.base_url)
                 return []
+
             # Parse the main page
             soup = BeautifulSoup(response.text, "html.parser")
+
             # Find main content div
             main_div = soup.find("div", class_="body", role="main")
             if not isinstance(main_div, Tag):
@@ -143,6 +140,7 @@ class EuclidDPDDIngestor:
                     "Main content div not found for %s", self.base_url
                 )
                 return results
+
             # Iterate over sections except indices-and-tables
             for section in main_div.find_all("section"):
                 if not isinstance(section, Tag):
@@ -170,7 +168,7 @@ class EuclidDPDDIngestor:
         return results
 
     def _fetch_dpdd_entries(self) -> tuple[list[str], list[dict[str, str]]]:
-        """Fetch DPDD entries."""
+        """Fetch DPDD entries from the configured topics."""
         texts: list[str] = []
         metadatas: list[dict[str, str]] = []
         # Scrape All
@@ -195,6 +193,7 @@ class EuclidDPDDIngestor:
         return texts, metadatas
 
     def _get_dpdd_sections(self, url: str, name: str) -> list[dict[str, str]]:
+        """Get DPDD sections from a given URL."""
         results: list[dict[str, str]] = []
         try:
             soup = self._fetch_and_parse(url)
@@ -225,11 +224,13 @@ class EuclidDPDDIngestor:
         return results
 
     def _fetch_and_parse(self, url: str) -> BeautifulSoup:
+        """Fetch and parse a URL, returning a BeautifulSoup object."""
         response = requests.get(url, timeout=15)
         response.raise_for_status()
         return BeautifulSoup(response.text, "html.parser")
 
     def _extract_subtopic_links(self, soup: BeautifulSoup) -> list[Tag]:
+        """Extract subtopic links from the BeautifulSoup object."""
         return [
             el
             for el in soup.find_all(
@@ -241,6 +242,7 @@ class EuclidDPDDIngestor:
     def _normalize_link(
         self, link: Tag, base_url: str
     ) -> tuple[str | None, str]:
+        """Normalize a link to ensure it has a valid URL."""
         if not (isinstance(link, Tag) and "href" in link.attrs):
             return None, ""
         href = link["href"]
@@ -267,6 +269,7 @@ class EuclidDPDDIngestor:
         source_name: str,
         results: list[dict[str, str]],
     ) -> None:
+        """Process sections of a subtopic and extract content."""
         sections = soup.find_all("section")
         for section in sections:
             if not isinstance(section, Tag):
