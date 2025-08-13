@@ -4,7 +4,7 @@ import sys
 repo_path = Path(__file__).parents[1]
 docs_path = repo_path / "docs"
 src_path = repo_path / "python"
-static_path = repo_path / "static"
+static_path = src_path / "euclid" / "static"
 
 # At top of conf.py, after imports:
 with open(docs_path / "_rst_epilog.rst", encoding="utf-8") as f:
