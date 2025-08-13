@@ -34,7 +34,9 @@ from pathlib import Path
 
 import streamlit as st
 from langchain.agents import Tool
-from langchain_community.chat_message_histories import StreamlitChatMessageHistory
+from langchain_community.chat_message_histories import (
+    StreamlitChatMessageHistory,
+)
 from langchain_community.vectorstores import FAISS
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseLanguageModel
@@ -44,12 +46,14 @@ from langchain_ollama import OllamaLLM
 from euclid import STATIC_DIR
 
 from .extra_scripts.vectorstore_embedder import Embedder
-from .retrievers.publication_tool import get_publication_tool
 from .retrievers.redmine_tool import get_redmine_tool
+from .retrievers.generic_retrieval_tool import get_generic_retrieval_tool
 from .streamlit_callback import get_streamlit_cb
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 @st.cache_resource(ttl="1h")
@@ -82,10 +86,18 @@ def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
     logger.debug(f"Creating path to {index_dir}")
     index_path = Path(index_dir)
     try:
-        logger.info(f"Attempting to load vector store from: {index_path.resolve()}")
-        vectorstore = FAISS.load_local(str(index_path), embedder, allow_dangerous_deserialization=True)
-        logger.info(f"Successfully loaded vector store from: {index_path.resolve()}")
-        logger.info(f"Loaded FAISS store with {vectorstore.index.ntotal} vectors.")
+        logger.info(
+            f"Attempting to load vector store from: {index_path.resolve()}"
+        )
+        vectorstore = FAISS.load_local(
+            str(index_path), embedder, allow_dangerous_deserialization=True
+        )
+        logger.info(
+            f"Successfully loaded vector store from: {index_path.resolve()}"
+        )
+        logger.info(
+            f"Loaded FAISS store with {vectorstore.index.ntotal} vectors."
+        )
     except FileNotFoundError as err:
         raise RuntimeError(
             f"Vectorstore missing at {index_path}. Please run ingestion before launching the app."
@@ -125,14 +137,22 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
     logger.info("CACHE MISS - Building RAG tools from scratch...")
     logger.info(f"Model: {llm.model if hasattr(llm, 'model') else 'unknown'}")
     logger.info(f"Config keys: {list(config.keys())}")
-    redmine_retriever = configure_retriever(config, config["vector_store"]["redmine_index_dir"])
-    logger.info(f"Redmine vector store: {config['vector_store']['redmine_index_dir']}")
+    redmine_retriever = configure_retriever(
+        config, config["vector_store"]["redmine_index_dir"]
+    )
+    logger.info(
+        f"Redmine vector store: {config['vector_store']['redmine_index_dir']}"
+    )
 
-    publication_retriever = configure_retriever(config, config["vector_store"]["publication_index_dir"])
-    logger.info(f"Pub. vector store: {config['vector_store']['publication_index_dir']}")
+    generic_retriever = configure_retriever(
+        config, config["vector_store"]["publication_index_dir"]
+    )
+    logger.info(
+        f"Pub. vector store: {config['vector_store']['publication_index_dir']}"
+    )
     tools = {
         "redmine": get_redmine_tool(llm, redmine_retriever),
-        "publications": get_publication_tool(llm, publication_retriever),
+        "publications": get_generic_retrieval_tool(llm, generic_retriever),
     }
     logger.info("RAG tools built successfully.")
     return tools
@@ -197,7 +217,9 @@ def handle_user_input(
     }
 
     for msg in msgs.messages:
-        st.chat_message(avatars[msg.type], avatar=avatar_images[msg.type]).markdown(msg.content)
+        st.chat_message(
+            avatars[msg.type], avatar=avatar_images[msg.type]
+        ).markdown(msg.content)
 
     if user_query := st.chat_input(
         placeholder="Message Euclid AI",
