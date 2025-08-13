@@ -178,8 +178,6 @@ def get_generic_retrieval_tool(
         query_tokens = tokenize(query)
         metadata_scored_docs = []
 
-        query_tokens = tokenize(query)
-        metadata_scored_docs = []
         for doc in filtered_docs:
             metadata = doc.metadata
             score = (
