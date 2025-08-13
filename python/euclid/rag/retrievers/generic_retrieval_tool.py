@@ -107,7 +107,7 @@ def format_source(m: dict) -> str:
         return f"- {m.get('source', 'Unknown source')}"
 
 
-def normalize_url(url: str) -> str:
+def normalize_url(url: str | None) -> str | None:
     """Remove URL fragments and query parameters for deduplication."""
     if not url:
         return url
@@ -237,8 +237,9 @@ def get_generic_retrieval_tool(
 
             # Deduplication key: combine the formatted source text and the URL
             display_text = (
-                m.get("subtopic") or m.get("title") or m.get("source")
-            )
+                m.get("subtopic") or m.get("title") or m.get("source") or ""
+            ).strip()
+
             key = (display_text.strip().lower(), norm_url)
 
             # Skip if already seen
