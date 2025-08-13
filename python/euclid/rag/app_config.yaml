@@ -29,6 +29,9 @@ pdf_data:
   chunk_size: 800
   chunk_overlap: 100
 
+  dpdd:
+    config: "python/euclid/rag/ingestion/config/ingest_dpdd_config.yaml"
+
 deduplication:
   similarity_threshold: 0.97
   rerank_threshold: 0.85
