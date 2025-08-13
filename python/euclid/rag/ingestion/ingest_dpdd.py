@@ -5,7 +5,12 @@
 # Licensed under the GNU LGPL v3.0.
 # See <https://www.gnu.org/licenses/>.
 
-"""Ingest DPDD Euclid information into a FAISS vectorstore."""
+"""Ingest Euclid Science Ground Segment Data Product Description Document (DPDD).
+
+This script downloads the DPDD from the Euclid website, processes it, and
+ingests the data into a FAISS vectorstore for use in the Euclid RAG system.
+
+"""
 
 import argparse
 import logging
@@ -13,7 +18,6 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
-import yaml
 from bs4 import BeautifulSoup
 from bs4.element import AttributeValueList, Tag
 from langchain.schema import Document
@@ -25,42 +29,49 @@ from euclid.rag.utils.config import load_config
 
 logger = logging.getLogger(__name__)
 
-# Hard-coded limit of topics to ingest
-# It's only for debug/testing purposes
-# In production we will set it to 0 (no limit) to ingest all topics
-TOPICS_NUMBER_LIMIT = 0  # 0 = no limit
-
 
 class EuclidDPDDIngestor:
     """Downloads and ingests DPDD data into the vectorstore."""
 
-    def __init__(self, index_dir: Path) -> None:
-        """Initialize the ingestor."""
-        self._index_dir = index_dir
+    def __init__(
+        self,
+        vectorstore_dir: Path,
+        dpdd_config_path: Path,
+    ) -> None:
+        """
+        Initialize the DPDD ingestor.
+
+        Parameters
+        ----------
+        vectorstore_dir : Path
+            Directory where the vectorstore index will be stored.
+        dpdd_config_path : Path
+            Path to the DPDD ingestion YAML configuration file.
+        """
+        self._vectorstore_dir = vectorstore_dir
         self._embedder = Embedder()
-        self._index_dir.mkdir(parents=True, exist_ok=True)
+        self._vectorstore_dir.mkdir(parents=True, exist_ok=True)
         self._vectorstore = self._load_vectorstore()
-        # Load banned sections config
-        config_path = Path(__file__).parent / "dpdd_config.yaml"
-        with Path.open(config_path) as f:
-            cfg = yaml.safe_load(f)
+        # Load configuration for DPDD ingestion
+        cfg = load_config(dpdd_config_path)
+
         self.banned_sections = {
             name.lower() for name in cfg["banned_sections"]["names"]
         }
-        # self.banned_full_links = set(cfg['banned_sections']['full_links'])
-        self.topics = cfg["topics"]
+        self.topics = cfg.get("topics", [])
         self.base_url = cfg["base_urls"][0]["base_url"]
-        self.scrape_all = True
+        self.scrape_all = cfg.get("scrape_all", True)
+        self.topics_number_limit = cfg.get("topics_number_limit", 0)
 
     def _load_vectorstore(self) -> FAISS | None:
         """Load the FAISS vectorstore from the index directory."""
         if (
-            self._index_dir.exists()
-            and (self._index_dir / "index.faiss").exists()
+            self._vectorstore_dir.exists()
+            and (self._vectorstore_dir / "index.faiss").exists()
         ):
             try:
                 return FAISS.load_local(
-                    str(self._index_dir),
+                    str(self._vectorstore_dir),
                     self._embedder,
                     allow_dangerous_deserialization=True,
                 )
@@ -70,7 +81,21 @@ class EuclidDPDDIngestor:
         return None
 
     def ingest_new_data(self) -> None:
-        """Ingest new data into the vectorstore."""
+        """Ingest new data into the vectorstore.
+
+        This method fetches DPDD entries, processes them, and adds them to the
+        vectorstore, avoiding duplicates based on the 'source' metadata field.
+
+        Raises
+        ------
+        RuntimeError
+            If the vectorstore directory is missing or cannot be created.
+
+        Returns
+        -------
+        None
+            This function does not return anything; it performs the ingestion.
+        """
         texts, metadatas = self._fetch_dpdd_entries()
 
         # Get list of already ingested paper filenames
@@ -111,10 +136,16 @@ class EuclidDPDDIngestor:
             else:
                 self._vectorstore.add_documents(chunks)
 
-            self._vectorstore.save_local(str(self._index_dir))
+            self._vectorstore.save_local(str(self._vectorstore_dir))
 
     def _get_all_topics_for_baseurl(self) -> list[dict[str, str]]:
-        """Get all topics for the base URL."""
+        """Get all topics for the base URL.
+
+        Returns
+        -------
+        list[dict[str, str]]
+            A list of dictionaries with topic names and links.
+        """
         results: list[dict[str, str]] = []
         try:
             # Get the main page
@@ -168,19 +199,29 @@ class EuclidDPDDIngestor:
         return results
 
     def _fetch_dpdd_entries(self) -> tuple[list[str], list[dict[str, str]]]:
-        """Fetch DPDD entries from the configured topics."""
+        """Fetch DPDD entries from the configured topics.
+
+        Returns
+        -------
+        tuple[list[str], list[dict[str, str]]]
+            A tuple containing a list of texts and a list of metadata dictionaries.
+        """
         texts: list[str] = []
         metadatas: list[dict[str, str]] = []
-        # Scrape All
-        if self.scrape_all:
-            list_of_urls = self._get_all_topics_for_baseurl()
-        else:
-            list_of_urls = self.topics
 
-        # Scrape topics
-        for i, topic in enumerate(list_of_urls):
-            if TOPICS_NUMBER_LIMIT > 0 and i >= TOPICS_NUMBER_LIMIT:
-                break
+        # Choose topics to scrape
+        list_of_urls = (
+            self._get_all_topics_for_baseurl()
+            if self.scrape_all
+            else self.topics
+        )
+
+        # Apply topics_number_limit (0 = no limit)
+        if self.topics_number_limit > 0:
+            list_of_urls = list_of_urls[: self.topics_number_limit]
+
+        # Scrape each topic
+        for topic in list_of_urls:
             name = topic["name"]
             url = urljoin(self.base_url, str(topic["link"]))
             results = self._get_dpdd_sections(url, name)
@@ -190,10 +231,24 @@ class EuclidDPDDIngestor:
                     metadatas.append(
                         {k: v for k, v in item.items() if k != "content"}
                     )
+
         return texts, metadatas
 
     def _get_dpdd_sections(self, url: str, name: str) -> list[dict[str, str]]:
-        """Get DPDD sections from a given URL."""
+        """Get DPDD sections from a given URL.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the DPDD topic page.
+        name : str
+            The name of the DPDD topic.
+
+        Returns
+        -------
+        list[dict[str, str]]
+            List of dictionaries containing the content and metadata of each section.
+        """
         results: list[dict[str, str]] = []
         try:
             soup = self._fetch_and_parse(url)
@@ -224,13 +279,35 @@ class EuclidDPDDIngestor:
         return results
 
     def _fetch_and_parse(self, url: str) -> BeautifulSoup:
-        """Fetch and parse a URL, returning a BeautifulSoup object."""
+        """Fetch and parse a URL, returning a BeautifulSoup object.
+
+        Parameters
+        ----------
+        url : str
+            The URL to fetch and parse.
+
+        Returns
+        -------
+        BeautifulSoup
+            Parsed HTML content as a BeautifulSoup object.
+        """
         response = requests.get(url, timeout=15)
         response.raise_for_status()
         return BeautifulSoup(response.text, "html.parser")
 
     def _extract_subtopic_links(self, soup: BeautifulSoup) -> list[Tag]:
-        """Extract subtopic links from the BeautifulSoup object."""
+        """Extract subtopic links from the BeautifulSoup object.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The BeautifulSoup object containing the parsed HTML.
+
+        Returns
+        -------
+        list[Tag]
+            List of subtopic links found in the soup.
+        """
         return [
             el
             for el in soup.find_all(
@@ -242,7 +319,21 @@ class EuclidDPDDIngestor:
     def _normalize_link(
         self, link: Tag, base_url: str
     ) -> tuple[str | None, str]:
-        """Normalize a link to ensure it has a valid URL."""
+        """Normalize a link to ensure it has a valid URL.
+
+        Parameters
+        ----------
+        link : Tag
+            The BeautifulSoup Tag containing the link.
+        base_url : str
+            The base URL to use for relative links.
+
+        Returns
+        -------
+        tuple[str | None, str]
+            A tuple containing the normalized URL and the link text.
+            If the link is invalid, returns (None, "").
+        """
         if not (isinstance(link, Tag) and "href" in link.attrs):
             return None, ""
         href = link["href"]
@@ -269,7 +360,26 @@ class EuclidDPDDIngestor:
         source_name: str,
         results: list[dict[str, str]],
     ) -> None:
-        """Process sections of a subtopic and extract content."""
+        """Process sections of a subtopic and extract content.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The BeautifulSoup object containing the parsed HTML of the subtopic.
+        subtopic_url : str
+            The URL of the subtopic page.
+        subtopic_text : str
+            The text of the subtopic.
+        source_name : str
+            The name of the source (e.g., "DPDD").
+        results : list[dict[str, str]]
+            List to append the extracted content and metadata.
+
+        Returns
+        -------
+        None
+            This function modifies the results list in place.
+        """
         sections = soup.find_all("section")
         for section in sections:
             if not isinstance(section, Tag):
@@ -324,9 +434,28 @@ class EuclidDPDDIngestor:
 
 
 def run_dpdd_ingestion(config: dict) -> None:
-    """Run the DPDD ingestion process."""
+    """Run the DPDD ingestion process.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary containing paths and settings.
+
+    Raises
+    ------
+    RuntimeError
+        If the vectorstore directory is missing or cannot be created.
+
+    Returns
+    -------
+    None
+        This function does not return anything; it performs the ingestion.
+    """
     index_dir = Path(config["vector_store"]["index_dir"])
-    ingestor = EuclidDPDDIngestor(index_dir=index_dir)
+    config_dir = Path(config["data"]["dpdd"]["config"])
+    ingestor = EuclidDPDDIngestor(
+        vectorstore_dir=index_dir, dpdd_config_path=config_dir
+    )
     ingestor.ingest_new_data()
 
 

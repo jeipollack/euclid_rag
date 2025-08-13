@@ -1,12 +1,7 @@
 # config/base_urls
-# For the moment we don't use this part of config
-# The base_url is hardcoded in the code
-# It is here for future use
 base_urls :
   - type : msp
-    #url : https://euclid.esac.esa.int/msp/dpdd/live/
     base_url : https://euclid.esac.esa.int/dr/q1/dpdd/
-    url : http://st-dm.pages.euclid-sgs.uk/data-product-doc/dm10/
     version : dm10
     # optional: if true, scrape full site ignoring topics
     scrape_all : false
@@ -42,7 +37,15 @@ topics:
   #   link: socdpd/socindex.html
   # - name: IOT Data Products
   #   link: iotdpd/iotindex.html
-# config/banned_sections
+
+# Optional limit of topics to ingest
+# 0 or missing = no limit
+topics_number_limit: 0
+
+# Option to scrape all sections
+# If true, it will ignore the topics and scrape all sections
+scrape_all: true  # or false
+
 # List of banned sections to skip
 banned_sections:
   names:
