@@ -1,6 +1,5 @@
 services:
   ollama:
-<<<<<<< HEAD
     build:
       context: .
       dockerfile: Dockerfile_ollama
@@ -14,13 +13,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 2
-=======
-    volumes:
-      -  "ollama:/root/.ollama"
-    build:
-      context: .
-      dockerfile: Dockerfile_ollama
->>>>>>> 758e3db (Added preliminary attempt at docker functioning docker compose)
 
   euclid:
     build:
