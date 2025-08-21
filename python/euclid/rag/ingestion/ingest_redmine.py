@@ -7,7 +7,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -77,18 +77,19 @@ class EuclidJSONIngestor:
     def ingest_redmine_pages(self) -> None:
         logger.info("[ING] Starting ingestion of Redmine pages...")
         dedup_filter_hash = HashDeduplicator()
-        if self._vectorstore is not None:
-            dedup_filter_semantic = SemanticSimilarityDeduplicator(
-                vectorstore=self._vectorstore,
-                reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
-                similarity_threshold=float(
-                    DEDUPLICATION_CONFIG["similarity_threshold"]
-                ),
-                rerank_threshold=float(
-                    DEDUPLICATION_CONFIG["rerank_threshold"]
-                ),
-                k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
-            )
+
+        if self._vectorstore is None:
+            self._vectorstore = FAISS.from_documents([], self._embedder)
+
+        dedup_filter_semantic = SemanticSimilarityDeduplicator(
+            vectorstore=cast("FAISS", self._vectorstore),
+            reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
+            similarity_threshold=float(
+                DEDUPLICATION_CONFIG["similarity_threshold"]
+            ),
+            rerank_threshold=float(DEDUPLICATION_CONFIG["rerank_threshold"]),
+            k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
+        )
 
         existing_sources = self._get_existing_sources()
         logger.info(f"[ING] Loaded {len(existing_sources)} existing sources.")
@@ -102,7 +103,6 @@ class EuclidJSONIngestor:
                     continue
 
             pages = data if isinstance(data, list) else data.get("pages", [])
-
             prepared_docs = self._cleaner.prepare_for_ingestion(pages)
 
             for entry in prepared_docs:
@@ -123,16 +123,13 @@ class EuclidJSONIngestor:
                 if dedup_filter_hash.filter(doc.page_content):
                     logger.debug("[ING] Chunk filtered by hash deduplication.")
                     continue
-                if dedup_filter_semantic is not None:
-                    if (
-                        dedup_filter_semantic.vectorstore
-                        and dedup_filter_semantic.filter(doc.page_content)
-                    ):
-                        logger.debug(
-                            "[ING] Chunk filtered by semantic deduplication."
-                        )
-                        continue
+                if dedup_filter_semantic.filter(doc.page_content):
+                    logger.debug(
+                        "[ING] Chunk filtered by semantic deduplication."
+                    )
+                    continue
 
+                # logique initiale conservée
                 if self._vectorstore is None:
                     self._vectorstore = FAISS.from_documents(
                         [doc], self._embedder
