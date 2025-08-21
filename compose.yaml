@@ -21,7 +21,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - "vector_store:/app/faiss_index"
+      - "./faiss_index:/app/python/euclid/rag/faiss_index"
       - "venv:/app/.venv"
     depends_on:
       ollama:
@@ -29,5 +29,5 @@ services:
 
 volumes:
   ollama:
-  vector_store:
   venv:
+
