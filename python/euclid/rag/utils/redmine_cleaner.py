@@ -9,7 +9,7 @@ Redmine-exported data.
 
 import logging
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -241,10 +241,10 @@ class RedmineCleaner:
         try:
             meta["created_on"] = datetime.strptime(
                 meta["created_on"], "%Y-%m-%d %H:%M %z"
-            ).replace(tzinfo=datetime.UTC)
+            ).replace(tzinfo=UTC)
             meta["updated_on"] = datetime.strptime(
                 meta["updated_on"], "%Y-%m-%d %H:%M %z"
-            ).replace(tzinfo=datetime.UTC)
+            ).replace(tzinfo=UTC)
             meta["hierarchy"] = f"{meta['project_path']} > {meta['page_name']}"
         except Exception:
             logger.exception("Failed to parse metadata timestamps")
@@ -263,7 +263,9 @@ class RedmineCleaner:
             A list of shorter text chunks.
         """
         sentences = re.split(r"(?<=[.!?]) +", content)
-        chunks, chunk, length = [], [], 0
+        chunks: list[str] = []
+        chunk: list[str] = []
+        length = 0
         for s in sentences:
             if length + len(s) > self.max_chunk_length:
                 chunks.append(" ".join(chunk))
