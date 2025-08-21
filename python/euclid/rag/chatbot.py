@@ -42,7 +42,7 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from euclid import STATIC_DIR
+from euclid import STATIC_DIR, APP_DIR
 
 from .extra_scripts.vectorstore_embedder import Embedder
 from .retrievers.publication_tool import get_publication_tool
@@ -63,7 +63,8 @@ def configure_retriever(config: dict) -> VectorStoreRetriever:
         model_name=config["embeddings"]["model_name"],
         batch_size=config["embeddings"]["batch_size"],
     )
-    index_dir = Path(config["vector_store"]["index_dir"])
+    index_dir = APP_DIR / Path(config["vector_store"]["index_dir"])
+
     try:
         vectorstore = FAISS.load_local(
             str(index_dir), embedder, allow_dangerous_deserialization=True

@@ -37,3 +37,6 @@ import pathlib
 
 with importlib.resources.path("euclid", "static") as static_path:
     STATIC_DIR = pathlib.Path(static_path)
+
+with importlib.resources.path("euclid", "rag") as app_path:
+    APP_DIR = pathlib.Path(app_path)
