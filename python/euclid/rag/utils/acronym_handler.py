@@ -20,8 +20,10 @@ def load_acronyms(path: str | Path) -> dict[str, str]:
         dict[str, str]: A dictionary where keys are acronyms
                         and values are their corresponding definitions.
     """
-    with Path.open(path, encoding="utf-8") as f:
-        return json.load(f)
+    p = Path(path)
+    with p.open(encoding="utf-8") as f:
+        data: dict[str, str] = json.load(f)
+    return data
 
 
 def extract_acronyms(text: str) -> set[str]:
