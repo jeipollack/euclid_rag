@@ -23,25 +23,18 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 FROM python:3.12-slim-bookworm AS production
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-COPY . .
-
 # Copy necessary source to container
-COPY python/euclid entrypoint.sh /app/
+COPY python/euclid /app/python/euclid
 COPY --from=builder /app/.venv .venv
 COPY --from=builder /app/python/euclid/_version.py /app/python/euclid/_version.py
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Entrypoint needs to executable
-RUN chmod +x entrypoint.sh
-
 # Expose the port that the app will run on
 EXPOSE 8501
 
 # Run the application when the container launches
-ENTRYPOINT ["./entrypoint.sh"]
+ENV PYTHONPATH=/app/python
+CMD ["streamlit", "run", "python/euclid/rag/app.py"]
