@@ -33,18 +33,6 @@ from langchain_community.chat_message_histories import (
 from euclid import STATIC_DIR
 
 
-# def setup_sidebar() -> None:
-#     """Set up the sidebar for the Streamlit app."""
-#     st.sidebar.markdown("Select sources to search:")
-#     st.session_state["required_sources"] = []
-#     if st.sidebar.checkbox("Redmine", value=True):
-#         st.session_state["required_sources"].append("redmine")
-#     if st.sidebar.checkbox("Data Products Descriptions", value=True):
-#         st.session_state["required_sources"].append("dpdd")
-#     if st.sidebar.checkbox("Euclid SGS Developers", value=True):
-#         st.session_state["required_sources"].append("sgsdev")
-
-
 def setup_sidebar() -> None:
     """Set up the sidebar for the Streamlit app."""
     st.sidebar.markdown("Select sources to search:")
