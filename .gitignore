@@ -139,3 +139,10 @@ dmypy.json
 
 # Vector store
 faiss_index/
+
+# Vector store
+faiss_index/
+
+#vectorstores
+*.faiss
+*.pkl
