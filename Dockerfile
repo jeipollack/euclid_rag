@@ -26,7 +26,7 @@ FROM python:3.12-slim-bookworm AS production
 WORKDIR /app
 
 # Copy necessary source to container
-COPY python/euclid entrypoint.sh /app/
+COPY python/euclid /app/python/euclid
 COPY --from=builder /app/.venv .venv
 COPY --from=builder /app/python/euclid/_version.py /app/python/euclid/_version.py
 
@@ -37,4 +37,8 @@ EXPOSE 8501
 
 # Run the application when the container launches
 ENV PYTHONPATH=/app/python
+<<<<<<< HEAD
 CMD ["streamlit", "run", "--server.port=8501", "python/euclid/rag/app.py"]
+=======
+CMD ["streamlit", "run", "python/euclid/rag/app.py"]
+>>>>>>> d0ef2ef (Moved healthcheck to docker compose, simplified entry point logic and removed uneeded copy)
