@@ -7,7 +7,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -82,7 +82,7 @@ class EuclidJSONIngestor:
             self._vectorstore = FAISS.from_documents([], self._embedder)
 
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
-            vectorstore=cast("FAISS", self._vectorstore),
+            vectorstore=self._vectorstore,
             reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
             similarity_threshold=float(
                 DEDUPLICATION_CONFIG["similarity_threshold"]
@@ -129,13 +129,7 @@ class EuclidJSONIngestor:
                     )
                     continue
 
-                # logique initiale conservée
-                if self._vectorstore is None:
-                    self._vectorstore = FAISS.from_documents(
-                        [doc], self._embedder
-                    )
-                else:
-                    self._vectorstore.add_documents([doc])
+                self._vectorstore.add_documents([doc])
 
                 self._vectorstore.save_local(str(self._index_dir))
                 self._vectorstore = FAISS.load_local(
