@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
+import requests
 from bibtexparser.bparser import BibTexParser
 from bibtexparser.customization import convert_to_unicode
 from langchain.text_splitter import RecursiveCharacterTextSplitter

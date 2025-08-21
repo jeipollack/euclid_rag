@@ -77,6 +77,11 @@ class EuclidJSONIngestor:
     def ingest_redmine_pages(self) -> None:
         logger.info("[ING] Starting ingestion of Redmine pages...")
         dedup_filter_hash = HashDeduplicator()
+
+        if self._vectorstore is None:
+            msg = "Vectorstore must be initialized before ingestion."
+            raise RuntimeError(msg)
+
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
             vectorstore=self._vectorstore,
             reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
