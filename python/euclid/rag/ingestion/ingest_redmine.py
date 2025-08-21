@@ -103,14 +103,9 @@ class EuclidJSONIngestor:
             prepared_docs = self._cleaner.prepare_for_ingestion(pages)
 
             for entry in prepared_docs:
-                metadata = entry.get("metadata")
-                page_id = str(metadata.get("project_id") or "unknown").strip()
+                metadata: dict[str, Any] = entry.get("metadata", {})
+                page_id = str(metadata.get("project_id", "unknown")).strip()
 
-                if not page_id:
-                    logger.warning(
-                        "[ING] Skipping page without valid ID or title"
-                    )
-                    continue
                 if page_id in existing_sources:
                     logger.debug(
                         f"[ING] Page {page_id} already ingested, skipping."
