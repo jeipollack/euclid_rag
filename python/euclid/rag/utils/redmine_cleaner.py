@@ -57,7 +57,7 @@ class RedmineCleaner:
         )
         return filtered_entries
 
-    def _convert_redmine_headers(self, line: str) -> str | None:
+    def convert_redmine_headers(self, line: str) -> str | None:
         """Convert Redmine headers (h1. to h6.) to Markdown (# to ######)."""
         match = re.match(r"^(h[1-6])\. (.+)", line)
         if not match:
@@ -66,7 +66,7 @@ class RedmineCleaner:
         title = match.group(2)
         return "#" * level + " " + title
 
-    def _convert_redmine_lists(self, line: str) -> str | None:
+    def convert_redmine_lists(self, line: str) -> str | None:
         """
         Convert Redmine nested lists (*, **) to Markdown lists with
         indentation.
@@ -78,11 +78,11 @@ class RedmineCleaner:
         indent = "  " * (len(stars) - 1)
         return f"{indent}- {content.strip()}"
 
-    def _convert_redmine_links(self, line: str) -> str:
+    def convert_redmine_links(self, line: str) -> str:
         """Convert Redmine links "text":url to Markdown [text](url)."""
         return re.sub(r'"([^"]+)":(\S+)', r"[\1](\2)", line)
 
-    def _convert_redmine_bold_italic(self, line: str) -> str:
+    def convert_redmine_bold_italic(self, line: str) -> str:
         """
         Convert *bold* and _italic_ Redmine syntax to Markdown
         **bold** and *italic*.
@@ -91,14 +91,14 @@ class RedmineCleaner:
         line = re.sub(r"\*(\S(.*?\S)?)\*", r"**\1**", line)
         return re.sub(r"_(\S(.*?\S)?)_", r"*\1*", line)
 
-    def _convert_redmine_linebreaks(self, line: str) -> str:
+    def convert_redmine_linebreaks(self, line: str) -> str:
         """
         Convert explicit Redmine line breaks  in text to Markdown
         double spaces + newline.
         """
         return line.replace("\\n", "  \n")
 
-    def _convert_redmine_images(self, line: str) -> str:
+    def convert_redmine_images(self, line: str) -> str:
         """
         Convert Redmine image syntax !image.png! or !image.png|widthxheight!
         to Markdown ![alt](image.png).
@@ -110,7 +110,7 @@ class RedmineCleaner:
 
         return re.sub(r"!(\S+?)!", repl, line)
 
-    def _convert_redmine_code_blocks(self, lines: list[str]) -> list[str]:
+    def convert_redmine_code_blocks(self, lines: list[str]) -> list[str]:
         """
         Convert <pre>...</pre> blocks to Markdown code blocks (```).
         Supports multi-line <pre> sections.
@@ -139,9 +139,7 @@ class RedmineCleaner:
                 output.append(line)
         return output
 
-    def _convert_redmine_table(
-        self, lines: list[str]
-    ) -> tuple[list[str], int]:
+    def convert_redmine_table(self, lines: list[str]) -> tuple[list[str], int]:
         """
         Convert Redmine table block lines starting with | to Markdown table.
         Returns tuple (converted_lines, number_of_lines_consumed).
@@ -175,7 +173,7 @@ class RedmineCleaner:
         code blocks, and line breaks.
         """
         lines = text.splitlines()
-        lines = self._convert_redmine_code_blocks(
+        lines = self.convert_redmine_code_blocks(
             lines
         )  # convert <pre> blocks to triple-backtick code blocks
         md_lines = []
@@ -198,30 +196,30 @@ class RedmineCleaner:
 
             # Tables: if line starts with |, handle full table block
             if line.startswith("|"):
-                table_md, consumed = self._convert_redmine_table(lines[i:])
+                table_md, consumed = self.convert_redmine_table(lines[i:])
                 md_lines.extend(table_md)
                 i += consumed
                 continue
 
             # Headers
-            header_conv = self._convert_redmine_headers(line)
+            header_conv = self.convert_redmine_headers(line)
             if header_conv:
                 md_lines.append(header_conv)
                 i += 1
                 continue
 
             # Lists
-            list_conv = self._convert_redmine_lists(line)
+            list_conv = self.convert_redmine_lists(line)
             if list_conv:
                 md_lines.append(list_conv)
                 i += 1
                 continue
 
             # Inline conversions
-            line = self._convert_redmine_images(line)
-            line = self._convert_redmine_links(line)
-            line = self._convert_redmine_bold_italic(line)
-            line = self._convert_redmine_linebreaks(line)
+            line = self.convert_redmine_images(line)
+            line = self.convert_redmine_links(line)
+            line = self.convert_redmine_bold_italic(line)
+            line = self.convert_redmine_linebreaks(line)
 
             md_lines.append(line)
             i += 1

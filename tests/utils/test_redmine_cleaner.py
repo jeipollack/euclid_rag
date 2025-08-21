@@ -1,7 +1,8 @@
-"""Tests for the Redmine content cleaner."""  # noqa: INP001
+"""Tests for the Redmine content cleaner."""
 
 import pytest
-from redmine_cleaner import RedmineCleaner
+
+from euclid.rag.utils.redmine_cleaner import RedmineCleaner
 
 
 @pytest.fixture
