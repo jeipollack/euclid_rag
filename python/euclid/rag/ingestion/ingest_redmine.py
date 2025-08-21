@@ -17,8 +17,8 @@ from euclid.rag.extra_scripts.deduplication import (
     SemanticSimilarityDeduplicator,
 )
 from euclid.rag.extra_scripts.vectorstore_embedder import Embedder
-from euclid.rag.redmine.redmine_cleaner import RedmineCleaner
 from euclid.rag.utils.config import load_config
+from euclid.rag.utils.redmine_cleaner import RedmineCleaner
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
