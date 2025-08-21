@@ -188,8 +188,8 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
 def load_or_create_vectorstore(
     index_dir: Path,
     embedder: Embeddings,
-    pdf_paths: list[Path] = list | None,
-    json_paths: list[Path] = list | None,
+    pdf_paths: None | list[Path] = None,
+    json_paths: None | list[Path] = None,
 ) -> FAISS:
     """
     Load a FAISS vectorstore from disk,
