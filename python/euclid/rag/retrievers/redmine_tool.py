@@ -35,8 +35,10 @@ from euclid.rag.extra_scripts.deduplication import (
 )
 from euclid.rag.utils.acronym_handler import expand_acronyms_in_query
 
-with Path.open("rag/utils/acronyms.json", encoding="utf-8") as f:
+acronym_path = Path(__file__).parent.parent / "utils" / "acronyms.json"
+with acronym_path.open(encoding="utf-8") as f:
     ACRONYMS = json.load(f)
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -152,7 +154,9 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
 
 
 def bonus_recency(
-    updated_on: datetime.datetime, weight: float = 0.3, half_life: int = 365
+    updated_on: datetime.datetime | None,
+    weight: float = 0.3,
+    half_life: int = 365,
 ) -> float:
     """
     Compute a bonus based on how recent the update is.
@@ -286,6 +290,7 @@ def get_redmine_tool(  # noqa: C901, PLR0915
         metadata_scored_docs = []
         for doc in filtered_docs:
             metadata = doc.metadata
+            updated_on = metadata.get("updated_on")
             score = (
                 bonus_overlap(
                     query_tokens,
@@ -299,12 +304,10 @@ def get_redmine_tool(  # noqa: C901, PLR0915
                 )
                 + bonus_overlap(
                     query_tokens,
-                    str(metadata.get("updated_on").year),
+                    str(updated_on.year) if updated_on else None,
                     BONUS_WEIGHTS["year"],
                 )
-                + bonus_recency(
-                    metadata.get("updated_on"), weight=BONUS_WEIGHTS["recency"]
-                )
+                + bonus_recency(updated_on, weight=BONUS_WEIGHTS["recency"])
             )
             metadata_scored_docs.append((score, doc))
             logger.debug(

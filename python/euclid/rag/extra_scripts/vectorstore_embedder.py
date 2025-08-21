@@ -234,7 +234,7 @@ def load_or_create_vectorstore(
             vectorstore = FAISS.load_local(
                 str(index_dir),
                 embedder,
-                allow_dangerous_deserialization=False,
+                allow_dangerous_deserialization=True,
             )
         except Exception as exc:
             raise RuntimeError(
