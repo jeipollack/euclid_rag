@@ -55,9 +55,10 @@ class EuclidJSONIngestor:
             max_chunk_length=self._data_config.get("chunk_size", 800)
         )
         logger.info(
-            "[ING] EuclidJSONIngestor initialized"
-            f"with model={self._model_name}",
-            f"index_dir={self._index_dir}, json_dir={self._json_dir}",
+            "[ING] EuclidJSONIngestor initialized with "
+            f"model={self._model_name} "
+            f"index_dir={self._index_dir}, "
+            f"json_dir={self._json_dir}"
         )
 
     def _load_vectorstore(self) -> FAISS | None:
@@ -76,11 +77,8 @@ class EuclidJSONIngestor:
 
     def ingest_redmine_pages(self) -> None:
         logger.info("[ING] Starting ingestion of Redmine pages...")
+
         dedup_filter_hash = HashDeduplicator()
-
-        if self._vectorstore is None:
-            self._vectorstore = FAISS.from_documents([], self._embedder)
-
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
             vectorstore=self._vectorstore,
             reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
@@ -95,19 +93,25 @@ class EuclidJSONIngestor:
         logger.info(f"[ING] Loaded {len(existing_sources)} existing sources.")
 
         for json_path in self._json_dir.glob("*.json"):
-            with json_path.open(encoding="utf-8") as f:
-                try:
+            try:
+                with json_path.open(encoding="utf-8") as f:
                     data = json.load(f)
-                except json.JSONDecodeError:
-                    logger.exception(f"[ING] Decoding error for {json_path}")
-                    continue
+            except json.JSONDecodeError:
+                logger.exception(f"[ING] Decoding error for {json_path}")
+                continue
 
             pages = data if isinstance(data, list) else data.get("pages", [])
             prepared_docs = self._cleaner.prepare_for_ingestion(pages)
 
             for entry in prepared_docs:
                 metadata: dict[str, Any] = entry.get("metadata", {})
-                page_id = str(metadata.get("project_id", "unknown")).strip()
+                page_id = str(metadata.get("project_id") or "unknown").strip()
+
+                if not page_id:
+                    logger.warning(
+                        "[ING] Skipping page without valid ID or title"
+                    )
+                    continue
 
                 if page_id in existing_sources:
                     logger.debug(
@@ -123,13 +127,21 @@ class EuclidJSONIngestor:
                 if dedup_filter_hash.filter(doc.page_content):
                     logger.debug("[ING] Chunk filtered by hash deduplication.")
                     continue
-                if dedup_filter_semantic.filter(doc.page_content):
+
+                if self._vectorstore and dedup_filter_semantic.filter(
+                    doc.page_content
+                ):
                     logger.debug(
                         "[ING] Chunk filtered by semantic deduplication."
                     )
                     continue
 
-                self._vectorstore.add_documents([doc])
+                if self._vectorstore is None:
+                    self._vectorstore = FAISS.from_documents(
+                        [doc], self._embedder
+                    )
+                else:
+                    self._vectorstore.add_documents([doc])
 
                 self._vectorstore.save_local(str(self._index_dir))
                 self._vectorstore = FAISS.load_local(

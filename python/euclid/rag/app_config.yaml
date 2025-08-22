@@ -1,6 +1,6 @@
 llm:
   # Available models at https://ollama.com/library
-  model: "mistral:latest"
+  model: "granite3.2:2b"
   temperature: 0
   base_url: "http://ollama:11434"
 
@@ -14,6 +14,7 @@ vector_store:
   index_dir: "faiss_index"
 
 data:
+  redmine_json_dir: "/home/gimener/Documents/Euclid/checkOps/check_redmine/tmp/sys/"
   bibtex_url: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
   arxiv_pdf_base_url: "https://arxiv.org/pdf/"
   chunk_size: 800
