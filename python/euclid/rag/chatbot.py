@@ -108,8 +108,8 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> list[Tool]:
     """
     retriever = configure_retriever(config)
     return [
-        get_redmine_tool(llm, retriever),
         get_publication_tool(llm, retriever),
+        get_redmine_tool(llm, retriever),
     ]
 
 

@@ -240,10 +240,10 @@ class RedmineCleaner:
         meta = metadata.copy()
         try:
             meta["created_on"] = datetime.strptime(
-                meta["created_on"], "%Y-%m-%d %H:%M %z"
+                meta["created_on"], "%Y-%m-%d %H:%M"
             ).replace(tzinfo=UTC)
             meta["updated_on"] = datetime.strptime(
-                meta["updated_on"], "%Y-%m-%d %H:%M %z"
+                meta["updated_on"], "%Y-%m-%d %H:%M"
             ).replace(tzinfo=UTC)
             meta["hierarchy"] = f"{meta['project_path']} > {meta['page_name']}"
         except Exception:
