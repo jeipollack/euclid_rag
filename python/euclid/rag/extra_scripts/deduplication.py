@@ -55,7 +55,7 @@ class SemanticSimilarityDeduplicator:
 
     def __init__(
         self,
-        vectorstore: FAISS,
+        vectorstore: FAISS | None,
         reranker_model: str,
         similarity_threshold: float,
         rerank_threshold: float,
@@ -82,6 +82,9 @@ class SemanticSimilarityDeduplicator:
         bool
             True if semantically duplicate, False otherwise.
         """
+        if self.vectorstore is None or self.vectorstore.index is None:
+            return False
+
         results = self.vectorstore.similarity_search_with_score(
             text, k=self.k_candidates
         )
