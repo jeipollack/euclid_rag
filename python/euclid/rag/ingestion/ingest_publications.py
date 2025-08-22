@@ -250,7 +250,7 @@ class EuclidBibIngestor:
         if not isinstance(self._bib_url, str):
             raise TypeError("Missing or invalid 'bibtex_url' in config.")
 
-        response = requests.get(self._bib_url, timeout=60)
+        response = requests.get(self._bib_url, timeout=300)
         response.raise_for_status()
         parser = BibTexParser(common_strings=True)
         parser.customization = convert_to_unicode
