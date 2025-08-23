@@ -223,7 +223,8 @@ class EuclidBibIngestor:
     ) -> list[Document]:
         filtered_chunks = []
         paper_meta = self._entry_metadata(entry)
-        for chunk in chunks:
+        hierarchy_root = f"{paper_meta['title']}"  # niveau 0 = le papier
+        for idx, chunk in enumerate(chunks):
             if dedup_filter_hash.filter(chunk.page_content):
                 logger.debug("Skipping chunk due to hash deduplication.")
                 continue
@@ -231,8 +232,13 @@ class EuclidBibIngestor:
                 logger.debug("Skipping chunk due to semantic similarity.")
                 continue
             chunk.metadata.update(paper_meta)
-            chunk.metadata["category"] = "publication"
-            chunk.metadata["source"] = filename
+            chunk.metadata.update(
+                {
+                    "category": "publication",
+                    "source": filename,
+                    "hierarchy": f"{hierarchy_root}/chunk_{idx}",
+                }
+            )
             filtered_chunks.append(chunk)
         logger.info(
             f"Filtered {len(chunks)} chunks, {len(filtered_chunks)} remaining."
