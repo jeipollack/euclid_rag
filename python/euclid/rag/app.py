@@ -71,11 +71,14 @@ if "message_sent" not in st.session_state:
     st.session_state.message_sent = False
 
 
-# Configure the vectorstore retriever and QA chain
-router = create_euclid_router(CONFIG)
-
 # Enable dynamic filtering based on user input
 setup_sidebar()
+
+# Configure the vectorstore retriever and QA chain
+if "selected_tool" not in st.session_state:
+    st.session_state["selected_tool"] = "redmine"
+
+router = create_euclid_router(CONFIG)
 
 # Set up the landing page
 setup_landing_page()

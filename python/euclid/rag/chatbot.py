@@ -28,6 +28,7 @@ Streamlit chatbot interface for the Euclid AI Assistant.
 Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
 """
 
+import logging
 from collections.abc import Callable
 from pathlib import Path
 
@@ -49,9 +50,14 @@ from .retrievers.publication_tool import get_publication_tool
 from .retrievers.redmine_tool import get_redmine_tool
 from .streamlit_callback import get_streamlit_cb
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
 
 @st.cache_resource(ttl="1h")
-def configure_retriever(config: dict) -> VectorStoreRetriever:
+def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
     """
     Build and cache a FAISS based retriever for Euclid publications.
 
@@ -60,19 +66,29 @@ def configure_retriever(config: dict) -> VectorStoreRetriever:
     VectorStoreRetriever
         Retriever with ``search_type="similarity"`` and *k*=6.
     """
+    logger.info(f"Configuring retriever for index_dir: '{index_dir}'")
     embedder = Embedder(
         model_name=config["embeddings"]["model_name"],
         batch_size=config["embeddings"]["batch_size"],
     )
-    index_dir = APP_DIR / Path(config["vector_store"]["index_dir"])
-
+    logger.debug(f"Creating path to {index_dir}")
+    index_path = Path(index_dir)
     try:
+        logger.info(
+            f"Attempting to load vectorstore from: {index_path.resolve()}"
+        )
         vectorstore = FAISS.load_local(
-            str(index_dir), embedder, allow_dangerous_deserialization=True
+            str(index_path), embedder, allow_dangerous_deserialization=True
+        )
+        logger.info(
+            f"Successfully loaded vectorstore from: {index_path.resolve()}"
+        )
+        logger.info(
+            f"Loaded FAISS store with {vectorstore.index.ntotal} vectors."
         )
     except FileNotFoundError as err:
         raise RuntimeError(
-            "Vectorstore missing. Please run ingestion "
+            f"Vectorstore missing at {index_path}. Please run ingestion "
             "before launching the app."
         ) from err
 
@@ -89,7 +105,8 @@ def submit_text() -> None:
     st.session_state.message_sent = True
 
 
-def _build_tools(llm: BaseLanguageModel, config: dict) -> list[Tool]:
+@st.cache_resource
+def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
     """
     Assemble all domain-specific RAG tools.
 
@@ -103,14 +120,29 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> list[Tool]:
 
     Returns
     -------
-    list of Tool
-        Tools ready for routing.
+    dict of str, Tool
+        Dictionary of tools ready for routing.
     """
-    retriever = configure_retriever(config)
-    return [
-        get_redmine_tool(llm, retriever),
-        get_publication_tool(llm, retriever),
-    ]
+    logger.info("Building RAG tools...")
+    redmine_retriever = configure_retriever(
+        config, config["vector_store"]["redmine_index_dir"]
+    )
+    logger.info(
+        f"Redmine VectorStore: {config['vector_store']['redmine_index_dir']}"
+    )
+
+    publication_retriever = configure_retriever(
+        config, config["vector_store"]["publication_index_dir"]
+    )
+    logger.info(
+        f"Publ. VectorStore: {config['vector_store']['publication_index_dir']}"
+    )
+    tools = {
+        "redmine": get_redmine_tool(llm, redmine_retriever),
+        "publications": get_publication_tool(llm, publication_retriever),
+    }
+    logger.info("RAG tools built successfully.")
+    return tools
 
 
 def create_euclid_router(
@@ -118,7 +150,6 @@ def create_euclid_router(
 ) -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
     """Return Euclid-AI that **always** delegates to at least one sub-agent."""
     llm = OllamaLLM(**config["llm"])
-
     tools = _build_tools(llm, config)
 
     def router(
@@ -134,13 +165,16 @@ def create_euclid_router(
             Callable that takes a query dict and optional callbacks,
             and returns an answer with context.
         """
+        selected_tool = st.session_state.get("selected_tool", "redmine")
+        tool = tools[selected_tool]
         question = inputs["input"]
-        for tool in tools:
-            answer = tool.run(question, callbacks=callbacks)
-            if not answer.lower().startswith("i don't have"):
-                return {"answer": answer, "context": []}
+        logger.info(f"Routing question to tool '{tool.name}': '{question}'")
+        answer = tool.run(question, callbacks=callbacks)
+        if not answer.lower().startswith("i don't have"):
+            return {"answer": answer, "context": []}
 
         # Nothing found in any agent
+        logger.warning(f"Tool '{tool.name}' could not find an answer.")
         return {"answer": "I don't have that information yet.", "context": []}
 
     return router
