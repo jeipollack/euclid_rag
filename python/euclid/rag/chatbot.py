@@ -105,7 +105,7 @@ def submit_text() -> None:
     st.session_state.message_sent = True
 
 
-@st.cache_resource
+@st.cache_resource(hash_funcs={OllamaLLM: lambda _: None})
 def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
     """
     Assemble all domain-specific RAG tools.

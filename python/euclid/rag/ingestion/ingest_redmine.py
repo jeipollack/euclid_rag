@@ -190,5 +190,5 @@ if __name__ == "__main__":
     """
     Manual ingestion entrypoint for Redmine pages.
     """
-    config = load_config(Path("rag/app_config.yaml"))
+    config = load_config(Path("python/euclid/rag/app_config.yaml"))
     run_redmine_ingestion(config)
