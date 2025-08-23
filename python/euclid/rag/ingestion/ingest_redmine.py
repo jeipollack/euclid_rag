@@ -174,7 +174,7 @@ class EuclidJSONIngestor:
 
 def run_redmine_ingestion(config: dict) -> None:
     """Run the Redmine JSON ingestion script."""
-    index_dir = Path(config["vector_store"]["index_dir"]).resolve()
+    index_dir = Path(config["vector_store"]["redmine_index_dir"]).resolve()
     json_dir = Path(config["data"]["redmine_json_dir"]).resolve()
     data_config = config.get("data", {})
 

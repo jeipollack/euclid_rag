@@ -8,6 +8,7 @@ Each paper is embedded immediately after download and deleted afterward.
 """
 
 import argparse
+import logging
 import re
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,11 @@ from euclid.rag.extra_scripts.vectorstore_embedder import (
     load_or_create_vectorstore,
 )
 from euclid.rag.utils.config import load_config
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
     "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
@@ -69,6 +75,9 @@ class EuclidBibIngestor:
     def _load_vectorstore(self) -> FAISS | None:
         """Load the FAISS vectorstore if it exists."""
         if (self._index_dir / "index.faiss").exists():
+            logger.info(
+                "Loading existing vectorstore from %s", self._index_dir
+            )
             return FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -77,6 +86,9 @@ class EuclidBibIngestor:
         else:
             pdf_paths = list(self._temp_dir.glob("*.pdf"))
             if pdf_paths:
+                logger.info(
+                    "Creating new vectorstore from PDFs in %s", self._temp_dir
+                )
                 return load_or_create_vectorstore(
                     self._index_dir, self._embedder, pdf_paths
                 )
@@ -84,10 +96,15 @@ class EuclidBibIngestor:
 
     def ingest_new_papers(self) -> None:
         """Ingests new papers into the vectorstore."""
+        logger.info("Starting ingestion of new papers.")
         dedup_filter_hash = HashDeduplicator()
 
         bib_entries = self._fetch_bibtex_entries()
+        logger.info("Fetched %d BibTeX entries.", len(bib_entries))
         existing_sources = self._get_existing_sources()
+        logger.info(
+            "Found %d existing sources in vectorstore.", len(existing_sources)
+        )
 
         for entry in bib_entries:
             if not self._should_process(entry, existing_sources):
@@ -103,6 +120,7 @@ class EuclidBibIngestor:
 
             # Init of vectorstore after first chunks are available
             if self._vectorstore is None:
+                logger.info("Creating new vectorstore from first paper.")
                 self._vectorstore = FAISS.from_documents(
                     chunks, self._embedder
                 )
@@ -136,12 +154,17 @@ class EuclidBibIngestor:
             filepath.unlink(missing_ok=True)
 
         if self._vectorstore is None:
+            logger.warning(
+                "No valid papers were ingested,vectorstore was not created."
+            )
             raise RuntimeError(
                 "No valid papers were ingested,vectorstore was not created."
             )
+        logger.info("Ingestion of new papers complete.")
 
     def _reload_vectorstore(self) -> None:
         if self._vectorstore is not None:
+            logger.info("Reloading vectorstore from %s", self._index_dir)
             self._vectorstore = FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -170,11 +193,18 @@ class EuclidBibIngestor:
         arxiv_id = entry.get("eprint")
         title = entry.get("title")
         if not arxiv_id or not title:
+            logger.debug(
+                "Skipping entry due to missing arxiv_id or title: %s", entry
+            )
             return False
         filename = self._format_filename(arxiv_id, title)
-        return filename not in existing_sources
+        if filename in existing_sources:
+            logger.debug("Skipping existing paper: %s", filename)
+            return False
+        return True
 
     def _load_and_split_pdf(self, filepath: Path) -> list[Document]:
+        logger.info("Loading and splitting PDF: %s", filepath)
         loader = PyMuPDFLoader(str(filepath))
         docs = loader.load()
         splitter = RecursiveCharacterTextSplitter(
@@ -195,16 +225,22 @@ class EuclidBibIngestor:
         paper_meta = self._entry_metadata(entry)
         for chunk in chunks:
             if dedup_filter_hash.filter(chunk.page_content):
+                logger.debug("Skipping chunk due to hash deduplication.")
                 continue
             if dedup_filter_semantic.filter(chunk.page_content):
+                logger.debug("Skipping chunk due to semantic similarity.")
                 continue
             chunk.metadata.update(paper_meta)
             chunk.metadata["category"] = "publication"
             chunk.metadata["source"] = filename
             filtered_chunks.append(chunk)
+        logger.info(
+            f"Filtered {len(chunks)} chunks, {len(filtered_chunks)} remaining."
+        )
         return filtered_chunks
 
     def _add_to_vectorstore(self, chunks: list[Document]) -> None:
+        logger.info("Adding %d chunks to vectorstore.", len(chunks))
         if self._vectorstore is None:
             self._vectorstore = FAISS.from_documents(chunks, self._embedder)
         else:
@@ -241,6 +277,11 @@ class EuclidBibIngestor:
             for doc in docs_list:
                 source = doc.metadata.get("source")
                 if isinstance(source, str) and source == filename:
+                    logger.debug(
+                        "Sample chunk for %s: %s",
+                        filename,
+                        doc.page_content[:200],
+                    )
                     shown += 1
                     if shown >= 3:
                         return
@@ -250,7 +291,8 @@ class EuclidBibIngestor:
         if not isinstance(self._bib_url, str):
             raise TypeError("Missing or invalid 'bibtex_url' in config.")
 
-        response = requests.get(self._bib_url, timeout=300)
+        logger.info("Fetching BibTeX entries from %s", self._bib_url)
+        response = requests.get(self._bib_url, timeout=60)
         response.raise_for_status()
         parser = BibTexParser(common_strings=True)
         parser.customization = convert_to_unicode
@@ -262,11 +304,17 @@ class EuclidBibIngestor:
             raise TypeError("Missing or invalid 'arxiv pdf url' in config.")
 
         url = f"{self._arxiv_pdf_url}{arxiv_id}.pdf"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        with target_path.open("wb") as f:
-            f.write(response.content)
-        return True
+        logger.info("Downloading PDF from %s", url)
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            with target_path.open("wb") as f:
+                f.write(response.content)
+            logger.info("Successfully downloaded %s", target_path)
+            return True  # noqa: TRY300
+        except requests.exceptions.RequestException:
+            logger.exception("Failed to download %s", url)
+            return False
 
     def _entry_metadata(self, entry: dict) -> dict:
         """Metadata to keep from a BibTeX entry."""
@@ -299,7 +347,8 @@ class EuclidBibIngestor:
 
 def run_bibtex_ingestion(config: dict) -> None:
     """Run the bibtex ingestion script."""
-    index_dir = Path(config["vector_store"]["index_dir"]).resolve()
+    logger.info("Starting BibTeX ingestion process.")
+    index_dir = Path(config["vector_store"]["publication_index_dir"]).resolve()
     temp_dir = Path("tmp").resolve()
     data_config = config.get("data", {})
 
@@ -309,6 +358,7 @@ def run_bibtex_ingestion(config: dict) -> None:
         data_config=data_config,
     )
     ingestor.ingest_new_papers()
+    logger.info("BibTeX ingestion process finished.")
 
 
 def main() -> None:
