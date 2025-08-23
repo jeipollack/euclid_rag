@@ -6,10 +6,10 @@
 
 from __future__ import annotations
 
-import datetime
 import json
 import logging
 import string
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, cast
 
@@ -154,7 +154,7 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
 
 
 def bonus_recency(
-    updated_on: datetime.datetime | None,
+    updated_on: datetime | None,
     weight: float = 0.3,
     half_life: int = 365,
 ) -> float:
@@ -176,16 +176,19 @@ def bonus_recency(
     float
         A score between 0 and weight depending on recency.
     """
-    if not updated_on:
+    if updated_on is None:
         return 0.0
 
-    now = datetime.datetime.utcnow()  # noqa: DTZ003
-    days_old = (now - updated_on).days
+    # Always work with UTC-aware datetimes
+    now = datetime.now(timezone.utc)  # noqa: UP017 - datetime.UTC is not compatible with mypy
+    if updated_on.tzinfo is None:
+        updated_on = updated_on.replace(tzinfo=timezone.utc)  # noqa: UP017
 
-    # Use an exponential decaying: more recent = closer to weight
-    decay = 0.5 ** (days_old / half_life)
+    days_old: float = float((now - updated_on).days)
 
-    return weight * decay
+    # Exponential decay: more recent → higher score
+    decay: float = 0.5 ** (days_old / half_life)
+    return decay
 
 
 def get_redmine_tool(  # noqa: C901, PLR0915
