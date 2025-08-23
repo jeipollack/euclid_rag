@@ -317,7 +317,7 @@ def get_redmine_tool(  # noqa: C901, PLR0915
                 f"[RAG] Bonus score {score:.3f} for "
                 f"{metadata.get('project_path')} "
                 f"(category={metadata.get('category')}, "
-                f"year={metadata.get('updated_on')}, "
+                f"year={metadata.get('updated_on')},"
                 f"hierarchy={metadata.get('hierarchy')})"
             )
 
