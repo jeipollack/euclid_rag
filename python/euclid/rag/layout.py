@@ -35,14 +35,10 @@ from euclid import STATIC_DIR
 
 def setup_sidebar() -> None:
     """Set up the sidebar for the Streamlit app."""
-    st.sidebar.markdown("Select sources to search:")
-    st.session_state["required_sources"] = []
-    if st.sidebar.checkbox("Redmine", value=True):
-        st.session_state["required_sources"].append("redmine")
-    if st.sidebar.checkbox("Data Products Descriptions", value=True):
-        st.session_state["required_sources"].append("dpdd")
-    if st.sidebar.checkbox("Euclid SGS Developers", value=True):
-        st.session_state["required_sources"].append("sgsdev")
+    st.sidebar.markdown("Select sources to use:")
+    tool_options = ["Redmine", "Publications"]
+    selected_tool = st.sidebar.radio("Sources", tool_options, index=0)
+    st.session_state["selected_tool"] = selected_tool.lower()
 
 
 def setup_landing_page() -> None:

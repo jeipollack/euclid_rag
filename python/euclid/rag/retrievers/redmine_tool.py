@@ -195,28 +195,28 @@ def get_redmine_tool(  # noqa: C901, PLR0915
     llm: BaseLanguageModel, retriever: VectorStoreRetriever
 ) -> Tool:
     """
-    Return a tool that answers questions using Euclid Consortium publications.
+    Return a tool that answers questions using Euclid Consortium Redmine.
 
     Uses a language model and vectorstore retriever,
 
-    to find and summarize relevant papers.
+    to find and summarize relevant redmine wikis.
 
     Parameters
     ----------
     llm : BaseLanguageModel
         The language model used to generate answers.
     retriever : VectorStoreRetriever
-        The retriever for accessing publication documents.
+        The retriever for accessing redmine documents.
 
     Returns
     -------
     Tool
-        A callable tool that answers questions based on EC publications.
+        A callable tool that answers questions based on EC redmine.
     """
     prompt = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(
-                "You are the Publications Agent for the Euclid AI Assistant;"
+                "You are the Redmine Agent for the Euclid AI Assistant;"
                 "the AI assistant for the Euclid Space Telescope Mission by"
                 "the Euclid Consortium and European Space Agency.\n"
                 "First look at the CONTEXT below.\n"
@@ -314,10 +314,10 @@ def get_redmine_tool(  # noqa: C901, PLR0915
             )
             metadata_scored_docs.append((score, doc))
             logger.debug(
-                f"[RAG] Bonus score {score:.3f} for"
-                f"{metadata.get('project_path')}"
-                f"(category={metadata.get('category')},"
-                f"year={metadata.get('updated_on')},"
+                f"[RAG] Bonus score {score:.3f} for "
+                f"{metadata.get('project_path')} "
+                f"(category={metadata.get('category')}, "
+                f"year={metadata.get('updated_on')}, "
                 f"hierarchy={metadata.get('hierarchy')})"
             )
 

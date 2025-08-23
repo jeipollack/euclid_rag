@@ -11,7 +11,8 @@ embeddings:
 
 vector_store:
   type: "faiss"
-  index_dir: "faiss_index"
+  redmine_index_dir: "faiss_index"
+  publication_index_dir: "vector_store"
 
 data:
   redmine_json_dir: "/home/gimener/Documents/Euclid/checkOps/check_redmine/tmp/sys/"
