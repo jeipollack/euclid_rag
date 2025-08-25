@@ -37,4 +37,4 @@ EXPOSE 8501
 
 # Run the application when the container launches
 ENV PYTHONPATH=/app/python
-CMD ["streamlit", "run", "python/euclid/rag/app.py"]
+CMD ["streamlit", "run", "--server.port=8501", "python/euclid/rag/app.py"]
