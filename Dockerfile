@@ -37,8 +37,4 @@ EXPOSE 8501
 
 # Run the application when the container launches
 ENV PYTHONPATH=/app/python
-<<<<<<< HEAD
 CMD ["streamlit", "run", "--server.port=8501", "python/euclid/rag/app.py"]
-=======
-CMD ["streamlit", "run", "python/euclid/rag/app.py"]
->>>>>>> d0ef2ef (Moved healthcheck to docker compose, simplified entry point logic and removed uneeded copy)
