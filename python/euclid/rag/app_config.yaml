@@ -2,6 +2,7 @@ llm:
   # Available models at https://ollama.com/library
   model: "mistral:latest"
   temperature: 0
+  base_url: "http://ollama:11434"
 
 embeddings:
   class: "E5MpsEmbedder"

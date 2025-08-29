@@ -1,8 +1,7 @@
 .github
 .venv
 .tox
-README*
-*.md
+CHANGELOG.md
 *.log
 __pycache__
 *.pyc
@@ -14,6 +13,6 @@ docs*
 htmlcov
 tests
 *.yaml
-*.md
 ruff-shared.toml
 .coverage
+faiss_index

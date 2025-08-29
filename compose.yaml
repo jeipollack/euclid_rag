@@ -1,0 +1,33 @@
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile_ollama
+    volumes:
+      -  "ollama:/root/.ollama"
+    ports:
+    - "11435:11434"
+    healthcheck:
+      test: "curl -f http://localhost:11434/api/tags"
+      start_period: 1m
+      interval: 10s
+      timeout: 5s
+      retries: 2
+
+  euclid:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - "./faiss_index:/app/python/euclid/rag/faiss_index"
+      - "venv:/app/.venv"
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+volumes:
+  ollama:
+  venv:
+
