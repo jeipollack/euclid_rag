@@ -31,11 +31,11 @@ logger = logging.getLogger(__name__)
 
 
 class EuclidDPDDIngestor:
-    """Downloads and ingests DPDD data into the vectorstore."""
+    """Downloads and ingests DPDD data into the vector store."""
 
     def __init__(
         self,
-        vectorstore_dir: Path,
+        vector_store_dir: Path,
         dpdd_config_path: Path,
     ) -> None:
         """
@@ -43,15 +43,15 @@ class EuclidDPDDIngestor:
 
         Parameters
         ----------
-        vectorstore_dir : Path
-            Directory where the vectorstore index will be stored.
+        vector_store_dir : Path
+            Directory where the vector store index will be stored.
         dpdd_config_path : Path
             Path to the DPDD ingestion YAML configuration file.
         """
-        self._vectorstore_dir = vectorstore_dir
+        self._vector_store_dir = vector_store_dir
         self._embedder = Embedder()
-        self._vectorstore_dir.mkdir(parents=True, exist_ok=True)
-        self._vectorstore = self._load_vectorstore()
+        self._vector_store_dir.mkdir(parents=True, exist_ok=True)
+        self._vector_store = self._load_vector_store()
         # Load configuration for DPDD ingestion
         cfg = load_config(dpdd_config_path)
 
@@ -63,33 +63,35 @@ class EuclidDPDDIngestor:
         self.scrape_all = cfg.get("scrape_all", True)
         self.topics_number_limit = cfg.get("topics_number_limit", 0)
 
-    def _load_vectorstore(self) -> FAISS | None:
-        """Load the FAISS vectorstore from the index directory."""
+    def _load_vector_store(self) -> FAISS | None:
+        """Load the FAISS vector store from the index directory."""
         if (
-            self._vectorstore_dir.exists()
-            and (self._vectorstore_dir / "index.faiss").exists()
+            self._vector_store_dir.exists()
+            and (self._vector_store_dir / "index.faiss").exists()
         ):
             try:
                 return FAISS.load_local(
-                    str(self._vectorstore_dir),
+                    str(self._vector_store_dir),
                     self._embedder,
                     allow_dangerous_deserialization=True,
                 )
             except Exception as e:
-                logger.warning("Failed to load vectorstore, rebuilding: %s", e)
+                logger.warning(
+                    "Failed to load vector store, rebuilding: %s", e
+                )
 
         return None
 
     def ingest_new_data(self) -> None:
-        """Ingest new data into the vectorstore.
+        """Ingest new data into the vector store.
 
         This method fetches DPDD entries, processes them, and adds them to the
-        vectorstore, avoiding duplicates based on the 'source' metadata field.
+        vector store, avoiding duplicates based on the 'source' metadata field.
 
         Raises
         ------
         RuntimeError
-            If the vectorstore directory is missing or cannot be created.
+            If the vector store directory is missing or cannot be created.
 
         Returns
         -------
@@ -100,10 +102,10 @@ class EuclidDPDDIngestor:
 
         # Get list of already ingested paper filenames
         existing_sources: set[str] = set()
-        if self._vectorstore is not None:
-            # Extract metadata 'source' from vectorstore's docs
+        if self._vector_store is not None:
+            # Extract metadata 'source' from vector store's docs
             try:
-                docstore = self._vectorstore.docstore
+                docstore = self._vector_store.docstore
                 if hasattr(docstore, "_dict"):
                     # If docstore is a dict-like object
                     existing_sources = {
@@ -129,14 +131,14 @@ class EuclidDPDDIngestor:
             docs = [Document(page_content=text, metadata=metadata)]
             chunks = splitter.split_documents(docs)
 
-            if self._vectorstore is None:
-                self._vectorstore = FAISS.from_documents(
+            if self._vector_store is None:
+                self._vector_store = FAISS.from_documents(
                     chunks, self._embedder
                 )
             else:
-                self._vectorstore.add_documents(chunks)
+                self._vector_store.add_documents(chunks)
 
-            self._vectorstore.save_local(str(self._vectorstore_dir))
+            self._vector_store.save_local(str(self._vector_store_dir))
 
     def _get_all_topics_for_baseurl(self) -> list[dict[str, str]]:
         """Get all topics for the base URL.
@@ -444,7 +446,7 @@ def run_dpdd_ingestion(config: dict) -> None:
     Raises
     ------
     RuntimeError
-        If the vectorstore directory is missing or cannot be created.
+        If the vector store directory is missing or cannot be created.
 
     Returns
     -------
@@ -454,7 +456,7 @@ def run_dpdd_ingestion(config: dict) -> None:
     index_dir = Path(config["vector_store"]["index_dir"])
     config_dir = Path(config["data"]["dpdd"]["config"])
     ingestor = EuclidDPDDIngestor(
-        vectorstore_dir=index_dir, dpdd_config_path=config_dir
+        vector_store_dir=index_dir, dpdd_config_path=config_dir
     )
     ingestor.ingest_new_data()
 
