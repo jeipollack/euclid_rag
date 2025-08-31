@@ -8,8 +8,8 @@ This script downloads the **Euclid Science Ground Segment Data Product Descripti
 - Downloads DPDD pages from the Euclid website.
 - Extracts subtopics and sections, skipping banned sections.
 - Splits text into chunks using `langchain.text_splitter.RecursiveCharacterTextSplitter`.
-- Stores chunks in a FAISS vectorstore for semantic search.
-- Prevents duplicate ingestion by checking existing sources in the vectorstore.
+- Stores chunks in a FAISS vector store for semantic search.
+- Prevents duplicate ingestion by checking existing sources in the vector store.
 
 
 ## Requirements
@@ -94,7 +94,7 @@ Optional arguments:
 
 ## Output
 
-- Vectorstore saved in the directory specified by vector_store.index_dir.
+- Vector store saved in the directory specified by vector_store.index_dir.
 - FAISS index can be loaded later for semantic search in the Euclid RAG system.
 
 
