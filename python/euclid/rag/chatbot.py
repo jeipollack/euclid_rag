@@ -34,9 +34,7 @@ from pathlib import Path
 
 import streamlit as st
 from langchain.agents import Tool
-from langchain_community.chat_message_histories import (
-    StreamlitChatMessageHistory,
-)
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_community.vectorstores import FAISS
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseLanguageModel
@@ -51,20 +49,30 @@ from .retrievers.redmine_tool import get_redmine_tool
 from .streamlit_callback import get_streamlit_cb
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 @st.cache_resource(ttl="1h")
 def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
     """
-    Build and cache a FAISS based retriever for Euclid publications.
+    Build and cache a FAISS-based retriever for Euclid knowledge sources.
+
+    Parameters
+    ----------
+    config : dict
+        Embedding model configuration.
+    index_dir : str
+        Path to the directory containing the FAISS index.
 
     Returns
     -------
     VectorStoreRetriever
         Retriever with ``search_type="similarity"`` and *k*=6.
+
+    Raises
+    ------
+    RuntimeError
+        If the FAISS index cannot be found or loaded.
     """
     logger.info(f"Configuring retriever for index_dir: '{index_dir}'")
     embedder = Embedder(
@@ -74,22 +82,13 @@ def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
     logger.debug(f"Creating path to {index_dir}")
     index_path = Path(index_dir)
     try:
-        logger.info(
-            f"Attempting to load vector store from: {index_path.resolve()}"
-        )
-        vectorstore = FAISS.load_local(
-            str(index_path), embedder, allow_dangerous_deserialization=True
-        )
-        logger.info(
-            f"Successfully loaded vector store from: {index_path.resolve()}"
-        )
-        logger.info(
-            f"Loaded FAISS store with {vectorstore.index.ntotal} vectors."
-        )
+        logger.info(f"Attempting to load vector store from: {index_path.resolve()}")
+        vectorstore = FAISS.load_local(str(index_path), embedder, allow_dangerous_deserialization=True)
+        logger.info(f"Successfully loaded vector store from: {index_path.resolve()}")
+        logger.info(f"Loaded FAISS store with {vectorstore.index.ntotal} vectors.")
     except FileNotFoundError as err:
         raise RuntimeError(
-            f"Vectorstore missing at {index_path}. Please run ingestion "
-            "before launching the app."
+            f"Vectorstore missing at {index_path}. Please run ingestion before launching the app."
         ) from err
 
     return vectorstore.as_retriever(
@@ -124,19 +123,11 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
         Dictionary of tools ready for routing.
     """
     logger.info("Building RAG tools...")
-    redmine_retriever = configure_retriever(
-        config, config["vector_store"]["redmine_index_dir"]
-    )
-    logger.info(
-        f"Redmine vector store: {config['vector_store']['redmine_index_dir']}"
-    )
+    redmine_retriever = configure_retriever(config, config["vector_store"]["redmine_index_dir"])
+    logger.info(f"Redmine vector store: {config['vector_store']['redmine_index_dir']}")
 
-    publication_retriever = configure_retriever(
-        config, config["vector_store"]["publication_index_dir"]
-    )
-    logger.info(
-        f"Pub. vector store: {config['vector_store']['publication_index_dir']}"
-    )
+    publication_retriever = configure_retriever(config, config["vector_store"]["publication_index_dir"])
+    logger.info(f"Pub. vector store: {config['vector_store']['publication_index_dir']}")
     tools = {
         "redmine": get_redmine_tool(llm, redmine_retriever),
         "publications": get_publication_tool(llm, publication_retriever),
@@ -204,9 +195,7 @@ def handle_user_input(
     }
 
     for msg in msgs.messages:
-        st.chat_message(
-            avatars[msg.type], avatar=avatar_images[msg.type]
-        ).markdown(msg.content)
+        st.chat_message(avatars[msg.type], avatar=avatar_images[msg.type]).markdown(msg.content)
 
     if user_query := st.chat_input(
         placeholder="Message Euclid AI",
