@@ -98,7 +98,7 @@ version-file = "python/euclid/_version.py"
 packages = ["python/euclid"]
 
 [tool.black]
-line-length = 79
+line-length = 120
 target-version = ["py312"]
 
 [tool.coverage.run]
