@@ -25,7 +25,7 @@
 
 """
 Streamlit chatbot interface for the Euclid AI Assistant.
-Uses an existing FAISS vectorstore and E5 embeddings for retrieval.
+Uses an existing FAISS vector store and E5 embeddings for retrieval.
 """
 
 import logging
@@ -75,13 +75,13 @@ def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
     index_path = Path(index_dir)
     try:
         logger.info(
-            f"Attempting to load vectorstore from: {index_path.resolve()}"
+            f"Attempting to load vector store from: {index_path.resolve()}"
         )
         vectorstore = FAISS.load_local(
             str(index_path), embedder, allow_dangerous_deserialization=True
         )
         logger.info(
-            f"Successfully loaded vectorstore from: {index_path.resolve()}"
+            f"Successfully loaded vector store from: {index_path.resolve()}"
         )
         logger.info(
             f"Loaded FAISS store with {vectorstore.index.ntotal} vectors."
@@ -128,14 +128,14 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
         config, config["vector_store"]["redmine_index_dir"]
     )
     logger.info(
-        f"Redmine VectorStore: {config['vector_store']['redmine_index_dir']}"
+        f"Redmine vector store: {config['vector_store']['redmine_index_dir']}"
     )
 
     publication_retriever = configure_retriever(
         config, config["vector_store"]["publication_index_dir"]
     )
     logger.info(
-        f"Publ. VectorStore: {config['vector_store']['publication_index_dir']}"
+        f"Pub. vector store: {config['vector_store']['publication_index_dir']}"
     )
     tools = {
         "redmine": get_redmine_tool(llm, redmine_retriever),

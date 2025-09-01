@@ -1,5 +1,5 @@
 """
-Module providing a utility class for cleaningand preparing
+Module providing a utility class for cleaning and preparing
 Redmine-exported data.
 """
 
