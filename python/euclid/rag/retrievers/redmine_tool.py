@@ -197,7 +197,7 @@ def get_redmine_tool(  # noqa: C901, PLR0915
     """
     Return a tool that answers questions using Euclid Consortium Redmine.
 
-    Uses a language model and vectorstore retriever,
+    Uses a language model and vector store retriever,
 
     to find and summarize relevant redmine wikis.
 
@@ -417,5 +417,5 @@ def get_redmine_tool(  # noqa: C901, PLR0915
     return Tool(
         name="euclid_redmine_tool",
         func=run,
-        description="Answer questions using Euclid consortium redmine.",
+        description="Answer questions using Euclid Consortium Redmine.",
     )
