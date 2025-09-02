@@ -85,15 +85,11 @@ class SemanticSimilarityDeduplicator:
         if self.vectorstore is None or self.vectorstore.index is None:
             return False
 
-        results = self.vectorstore.similarity_search_with_score(
-            text, k=self.k_candidates
-        )
+        results = self.vectorstore.similarity_search_with_score(text, k=self.k_candidates)
         if not results:
             return False
 
-        top_docs = [
-            doc for doc, score in results if score >= self.similarity_threshold
-        ]
+        top_docs = [doc for doc, score in results if score >= self.similarity_threshold]
         if not top_docs:
             return False
 
