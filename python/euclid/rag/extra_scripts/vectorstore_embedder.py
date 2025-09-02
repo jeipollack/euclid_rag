@@ -183,15 +183,14 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
     return docs
 
 
-def load_or_create_vectorstore(
+def load_or_create_index(
     index_dir: Path,
     embedder: Embeddings,
     pdf_paths: None | list[Path] = None,
     json_paths: None | list[Path] = None,
 ) -> FAISS:
     """
-    Load a FAISS vector store from disk,
-    or create it from PDF and JSON documents.
+    Load an existing FAISS index, or build one from given documents.
 
     Parameters
     ----------
@@ -199,15 +198,13 @@ def load_or_create_vectorstore(
         Directory where the FAISS index is stored (or will be created).
     embedder : Embeddings
         Embedding model implementing the LangChain Embeddings interface.
-    pdf_paths : List[Path], optional
-        List of PDF paths to load and embed.
-    json_paths : List[Path], optional
-        List of JSON paths to load and embed.
+    pdf_paths, json_paths : list[Path], optional
+        Lists of input documents to embed.
 
     Returns
     -------
     FAISS
-        The FAISS vector store.
+        A ready-to-use FAISS vectorstore.
     """
     if pdf_paths is None:
         pdf_paths = []
