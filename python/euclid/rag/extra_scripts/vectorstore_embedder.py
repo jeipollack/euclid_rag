@@ -3,11 +3,11 @@
 # See <https://www.gnu.org/licenses/>.
 
 """
-Embedding and vectorstore management utilities for Euclid document ingestion.
+Embedding and vector store management utilities for Euclid document ingestion.
 
 This module provides:
 - An E5 embedding class with support for MPS/CUDA/CPU.
-- A function to load or create a FAISS vectorstore from PDFs.
+- A function to load or create a FAISS vector store from PDFs.
 """
 
 import json
@@ -177,9 +177,7 @@ def load_json_documents(json_paths: list[Path]) -> list[Document]:
                     content = item.get("content", "")
                     metadata = item.get("metadata", {})
                     if content.strip():
-                        docs.append(
-                            Document(page_content=content, metadata=metadata)
-                        )
+                        docs.append(Document(page_content=content, metadata=metadata))
         except Exception as e:
             logger.warning(f"Failed to load JSON '{json_path}': {e}")
     return docs
@@ -192,7 +190,7 @@ def load_or_create_vectorstore(
     json_paths: None | list[Path] = None,
 ) -> FAISS:
     """
-    Load a FAISS vectorstore from disk,
+    Load a FAISS vector store from disk,
     or create it from PDF and JSON documents.
 
     Parameters
@@ -209,7 +207,7 @@ def load_or_create_vectorstore(
     Returns
     -------
     FAISS
-        The FAISS vectorstore.
+        The FAISS vector store.
     """
     if pdf_paths is None:
         pdf_paths = []
@@ -219,13 +217,9 @@ def load_or_create_vectorstore(
 
     docs = load_pdf_documents(pdf_paths) + load_json_documents(json_paths)
     if not docs:
-        raise ValueError(
-            "No documents found (PDFs and JSONs are empty or invalid)."
-        )
+        raise ValueError("No documents found (PDFs and JSONs are empty or invalid).")
 
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800, chunk_overlap=100
-    )
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
     chunks = splitter.split_documents(docs)
 
     index_file = index_dir / "index.faiss"
@@ -237,9 +231,7 @@ def load_or_create_vectorstore(
                 allow_dangerous_deserialization=True,
             )
         except Exception as exc:
-            raise RuntimeError(
-                "Failed to load existing FAISS vectorstore."
-            ) from exc
+            raise RuntimeError("Failed to load existing FAISS vector store.") from exc
 
         if chunks:
             vectorstore.add_documents(chunks)
