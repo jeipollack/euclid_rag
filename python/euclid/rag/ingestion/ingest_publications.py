@@ -22,7 +22,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
 from euclid.rag.extra_scripts.deduplication import HashDeduplicator, SemanticSimilarityDeduplicator
-from euclid.rag.extra_scripts.vectorstore_embedder import Embedder, load_or_create_vectorstore
+from euclid.rag.extra_scripts.vectorstore_embedder import Embedder, load_or_create_index
 from euclid.rag.utils.config import load_config
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ class EuclidBibIngestor:
             pdf_paths = list(self._temp_dir.glob("*.pdf"))
             if pdf_paths:
                 logger.info("Creating new vector store from PDFs in %s", self._temp_dir)
-                return load_or_create_vectorstore(self._index_dir, self._embedder, pdf_paths)
+                return load_or_create_index(self._index_dir, self._embedder, pdf_paths)
         return None
 
     def ingest_new_papers(self) -> None:
