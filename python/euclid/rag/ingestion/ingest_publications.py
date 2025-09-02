@@ -37,8 +37,8 @@ DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
 
 
 class EuclidBibIngestor:
-    """Downloads and ingests new papers from the Euclid
-    BibTeX file into the vector store.
+    """Downloads and updates the vector store from the Euclid
+    BibTeX file.
     """
 
     def __init__(
@@ -76,9 +76,9 @@ class EuclidBibIngestor:
                 return load_or_create_index(self._index_dir, self._embedder, pdf_paths)
         return None
 
-    def ingest_new_papers(self) -> None:
-        """Ingests new papers into the vector store."""
-        logger.info("Starting ingestion of new papers.")
+    def update_from_bibtex(self) -> None:
+        """Update the vector store from BibTeX."""
+        logger.info("Starting update from BibTeX.")
         dedup_filter_hash = HashDeduplicator()
 
         bib_entries = self._fetch_bibtex_entries()
@@ -98,7 +98,7 @@ class EuclidBibIngestor:
 
             chunks = self._load_and_split_pdf(filepath)
 
-            # Init of vectorstore after first chunks are available
+            # Init of vector store after first chunks are available
             if self._vectorstore is None:
                 logger.info("Creating new vector store from first paper.")
                 self._vectorstore = FAISS.from_documents(chunks, self._embedder)
@@ -128,9 +128,9 @@ class EuclidBibIngestor:
             filepath.unlink(missing_ok=True)
 
         if self._vectorstore is None:
-            logger.warning("No valid papers were ingested,vector store was not created.")
-            raise RuntimeError("No valid papers were ingested,vector store was not created.")
-        logger.info("Ingestion of new papers complete.")
+            logger.warning("No valid documents were ingested, vector store was not created.")
+            raise RuntimeError("No valid documents were ingested, vector store was not created.")
+        logger.info("Update from BibTeX complete.")
 
     def _reload_vectorstore(self) -> None:
         if self._vectorstore is not None:
@@ -325,7 +325,7 @@ def run_bibtex_ingestion(config: dict) -> None:
         temp_dir=temp_dir,
         data_config=data_config,
     )
-    ingestor.ingest_new_papers()
+    ingestor.update_from_bibtex()
     logger.info("BibTeX ingestion process finished.")
 
 

@@ -40,14 +40,12 @@ def extract_acronyms(text: str) -> set[str]:
     return set(re.findall(r"\b[A-Z]{2,6}\b", text))
 
 
-def match_acronyms(
-    question: str, acronym_dict: dict[str, str]
-) -> dict[str, str]:
+def match_acronyms(text: str, acronym_dict: dict[str, str]) -> dict[str, str]:
     """
     Match acronyms between a string and a dictionary of acronyms.
 
     Args:
-        question (str): The string containing acronyms.
+        text (str): The string containing acronyms.
         acronym_dict (dict[str, str]): A dictionary mapping acronyms (keys)
             to their definitions (values).
 
@@ -55,7 +53,7 @@ def match_acronyms(
     -------
         dict[str]: A susbset of acronym_dict
     """
-    acronyms = extract_acronyms(question)
+    acronyms = extract_acronyms(text)
     return {ac: acronym_dict[ac] for ac in acronyms if ac in acronym_dict}
 
 
