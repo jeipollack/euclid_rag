@@ -3,7 +3,7 @@
 # See <https://www.gnu.org/licenses/>.
 
 """
-Ingest publications into a FAISS vectorstore from the official EC BibTeX.
+Ingest publications into a FAISS vector store from the official EC BibTeX.
 Each paper is embedded immediately after download and deleted afterward.
 """
 
@@ -21,20 +21,12 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-from euclid.rag.extra_scripts.deduplication import (
-    HashDeduplicator,
-    SemanticSimilarityDeduplicator,
-)
-from euclid.rag.extra_scripts.vectorstore_embedder import (
-    Embedder,
-    load_or_create_vectorstore,
-)
+from euclid.rag.extra_scripts.deduplication import HashDeduplicator, SemanticSimilarityDeduplicator
+from euclid.rag.extra_scripts.vectorstore_embedder import Embedder, load_or_create_vectorstore
 from euclid.rag.utils.config import load_config
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
     "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
@@ -46,7 +38,7 @@ DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
 
 class EuclidBibIngestor:
     """Downloads and ingests new papers from the Euclid
-    BibTeX file into the vectorstore.
+    BibTeX file into the vector store.
     """
 
     def __init__(
@@ -58,26 +50,20 @@ class EuclidBibIngestor:
         """Initiate the ingestor."""
         self._index_dir = index_dir
         self._temp_dir = temp_dir
-        self._model_name = data_config.get(
-            "embedding_model_name", "intfloat/e5-small-v2"
-        )
+        self._model_name = data_config.get("embedding_model_name", "intfloat/e5-small-v2")
         self._batch_size = data_config.get("embedding_batch_size", 16)
         self._bib_url = data_config.get("bibtex_url")
         self._arxiv_pdf_url = data_config.get("arxiv_pdf_base_url")
-        self._embedder = Embedder(
-            model_name=self._model_name, batch_size=self._batch_size
-        )
+        self._embedder = Embedder(model_name=self._model_name, batch_size=self._batch_size)
         self._index_dir.mkdir(parents=True, exist_ok=True)
         self._temp_dir.mkdir(parents=True, exist_ok=True)
         self._vectorstore = self._load_vectorstore()
         self._data_config = data_config
 
     def _load_vectorstore(self) -> FAISS | None:
-        """Load the FAISS vectorstore if it exists."""
+        """Load the FAISS vector store if it exists."""
         if (self._index_dir / "index.faiss").exists():
-            logger.info(
-                "Loading existing vectorstore from %s", self._index_dir
-            )
+            logger.info("Loading existing vector store from %s", self._index_dir)
             return FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -86,25 +72,19 @@ class EuclidBibIngestor:
         else:
             pdf_paths = list(self._temp_dir.glob("*.pdf"))
             if pdf_paths:
-                logger.info(
-                    "Creating new vectorstore from PDFs in %s", self._temp_dir
-                )
-                return load_or_create_vectorstore(
-                    self._index_dir, self._embedder, pdf_paths
-                )
+                logger.info("Creating new vector store from PDFs in %s", self._temp_dir)
+                return load_or_create_vectorstore(self._index_dir, self._embedder, pdf_paths)
         return None
 
     def ingest_new_papers(self) -> None:
-        """Ingests new papers into the vectorstore."""
+        """Ingests new papers into the vector store."""
         logger.info("Starting ingestion of new papers.")
         dedup_filter_hash = HashDeduplicator()
 
         bib_entries = self._fetch_bibtex_entries()
         logger.info("Fetched %d BibTeX entries.", len(bib_entries))
         existing_sources = self._get_existing_sources()
-        logger.info(
-            "Found %d existing sources in vectorstore.", len(existing_sources)
-        )
+        logger.info("Found %d existing sources in vector store.", len(existing_sources))
 
         for entry in bib_entries:
             if not self._should_process(entry, existing_sources):
@@ -120,22 +100,16 @@ class EuclidBibIngestor:
 
             # Init of vectorstore after first chunks are available
             if self._vectorstore is None:
-                logger.info("Creating new vectorstore from first paper.")
-                self._vectorstore = FAISS.from_documents(
-                    chunks, self._embedder
-                )
+                logger.info("Creating new vector store from first paper.")
+                self._vectorstore = FAISS.from_documents(chunks, self._embedder)
                 self._vectorstore.save_local(str(self._index_dir))
                 self._reload_vectorstore()
 
             dedup_filter_semantic = SemanticSimilarityDeduplicator(
                 vectorstore=self._vectorstore,
                 reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
-                similarity_threshold=float(
-                    DEDUPLICATION_CONFIG["similarity_threshold"]
-                ),
-                rerank_threshold=float(
-                    DEDUPLICATION_CONFIG["rerank_threshold"]
-                ),
+                similarity_threshold=float(DEDUPLICATION_CONFIG["similarity_threshold"]),
+                rerank_threshold=float(DEDUPLICATION_CONFIG["rerank_threshold"]),
                 k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
             )
 
@@ -154,17 +128,13 @@ class EuclidBibIngestor:
             filepath.unlink(missing_ok=True)
 
         if self._vectorstore is None:
-            logger.warning(
-                "No valid papers were ingested,vectorstore was not created."
-            )
-            raise RuntimeError(
-                "No valid papers were ingested,vectorstore was not created."
-            )
+            logger.warning("No valid papers were ingested,vector store was not created.")
+            raise RuntimeError("No valid papers were ingested,vector store was not created.")
         logger.info("Ingestion of new papers complete.")
 
     def _reload_vectorstore(self) -> None:
         if self._vectorstore is not None:
-            logger.info("Reloading vectorstore from %s", self._index_dir)
+            logger.info("Reloading vector store from %s", self._index_dir)
             self._vectorstore = FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -172,7 +142,7 @@ class EuclidBibIngestor:
             )
 
     def _get_existing_sources(self) -> set[str]:
-        """Return set of existing 'source' values from the vectorstore."""
+        """Return set of existing 'source' values from the vector store."""
         existing_sources: set[str] = set()
         if self._vectorstore is not None:
             store = self._vectorstore.docstore
@@ -180,9 +150,7 @@ class EuclidBibIngestor:
                 docs: Any = store.search(doc_id)
                 if not isinstance(docs, list):
                     continue
-                docs_list: list[Document] = [
-                    d for d in docs if isinstance(d, Document)
-                ]
+                docs_list: list[Document] = [d for d in docs if isinstance(d, Document)]
                 for doc in docs_list:
                     source = doc.metadata.get("source")
                     if isinstance(source, str):
@@ -193,9 +161,7 @@ class EuclidBibIngestor:
         arxiv_id = entry.get("eprint")
         title = entry.get("title")
         if not arxiv_id or not title:
-            logger.debug(
-                "Skipping entry due to missing arxiv_id or title: %s", entry
-            )
+            logger.debug("Skipping entry due to missing arxiv_id or title: %s", entry)
             return False
         filename = self._format_filename(arxiv_id, title)
         if filename in existing_sources:
@@ -240,13 +206,11 @@ class EuclidBibIngestor:
                 }
             )
             filtered_chunks.append(chunk)
-        logger.info(
-            f"Filtered {len(chunks)} chunks, {len(filtered_chunks)} remaining."
-        )
+        logger.info(f"Filtered {len(chunks)} chunks, {len(filtered_chunks)} remaining.")
         return filtered_chunks
 
     def _add_to_vectorstore(self, chunks: list[Document]) -> None:
-        logger.info("Adding %d chunks to vectorstore.", len(chunks))
+        logger.info("Adding %d chunks to vector store.", len(chunks))
         if self._vectorstore is None:
             self._vectorstore = FAISS.from_documents(chunks, self._embedder)
         else:
@@ -260,7 +224,7 @@ class EuclidBibIngestor:
 
     def _log_sampled_chunks(self, filename: str) -> None:
         """Log (or inspect) up to 3 chunks for a given file from the
-        vectorstore.
+        vector store.
         """
         if self._vectorstore is None:
             return
@@ -277,9 +241,7 @@ class EuclidBibIngestor:
             if not isinstance(docs, list):
                 continue
 
-            docs_list: list[Document] = [
-                d for d in docs if isinstance(d, Document)
-            ]
+            docs_list: list[Document] = [d for d in docs if isinstance(d, Document)]
             for doc in docs_list:
                 source = doc.metadata.get("source")
                 if isinstance(source, str) and source == filename:
@@ -369,9 +331,7 @@ def run_bibtex_ingestion(config: dict) -> None:
 
 def main() -> None:
     """Run the ingestion script."""
-    parser = argparse.ArgumentParser(
-        description="Ingest publications from the Euclid BibTeX file."
-    )
+    parser = argparse.ArgumentParser(description="Ingest publications from the Euclid BibTeX file.")
     parser.add_argument(
         "-c",
         "--config",
