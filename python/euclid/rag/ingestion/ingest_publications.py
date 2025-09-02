@@ -77,7 +77,7 @@ class EuclidBibIngestor:
         return None
 
     def update_from_bibtex(self) -> None:
-        """Update the vector store from BibTeX."""
+        """Fetch new BibTeX entries and update the vector store."""
         logger.info("Starting update from BibTeX.")
         dedup_filter_hash = HashDeduplicator()
 
