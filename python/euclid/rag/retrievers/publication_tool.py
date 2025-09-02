@@ -13,11 +13,7 @@ import torch
 from langchain.agents import Tool
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import MessagesPlaceholder
@@ -25,15 +21,10 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStoreRetriever
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from euclid.rag.extra_scripts.deduplication import (
-    HashDeduplicator,
-    SemanticSimilarityDeduplicator,
-)
+from euclid.rag.extra_scripts.deduplication import HashDeduplicator, SemanticSimilarityDeduplicator
 
 _tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
-_model = AutoModelForSequenceClassification.from_pretrained(
-    "BAAI/bge-reranker-base"
-)
+_model = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
 
 BONUS_WEIGHTS = {
     "keywords": 0.5,
@@ -68,18 +59,11 @@ def semantic_rerank(query: str, docs: list) -> list:
         The input documents sorted by descending relevance to the query.
     """
     pairs = [(query, doc.page_content) for doc in docs]
-    inputs = _tokenizer(
-        pairs, padding=True, truncation=True, return_tensors="pt"
-    )
+    inputs = _tokenizer(pairs, padding=True, truncation=True, return_tensors="pt")
     with torch.no_grad():
         logits = _model(**inputs).logits.squeeze()
     scores = logits.tolist() if isinstance(logits, torch.Tensor) else logits
-    return [
-        doc
-        for _, doc in sorted(
-            zip(scores, docs, strict=False), key=lambda x: -x[0]
-        )
-    ]
+    return [doc for _, doc in sorted(zip(scores, docs, strict=False), key=lambda x: -x[0])]
 
 
 punctuation_strip = str.maketrans("", "", string.punctuation)
@@ -101,11 +85,7 @@ def tokenize(text: str) -> set[str]:
     set of str
         Set of cleaned, lowercase tokens at least 3 characters long.
     """
-    return {
-        w
-        for w in text.lower().translate(punctuation_strip).split()
-        if len(w) > 2
-    }
+    return {w for w in text.lower().translate(punctuation_strip).split() if len(w) > 2}
 
 
 def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
@@ -128,16 +108,10 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
     """
     if not field:
         return 0.0
-    return weight * sum(
-        1
-        for w in field.replace(",", " ").split()
-        if w.lower().translate(punctuation_strip) in q
-    )
+    return weight * sum(1 for w in field.replace(",", " ").split() if w.lower().translate(punctuation_strip) in q)
 
 
-def get_publication_tool(
-    llm: BaseLanguageModel, retriever: VectorStoreRetriever
-) -> Tool:
+def get_publication_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) -> Tool:
     """
     Return a tool that answers questions using Euclid Consortium publications.
 
@@ -222,9 +196,7 @@ def get_publication_tool(
                     metadata.get("keywords"),
                     BONUS_WEIGHTS["keywords"],
                 )
-                + bonus_overlap(
-                    query_tokens, metadata.get("title"), BONUS_WEIGHTS["title"]
-                )
+                + bonus_overlap(query_tokens, metadata.get("title"), BONUS_WEIGHTS["title"])
                 + bonus_overlap(
                     query_tokens,
                     metadata.get("authors"),
@@ -239,15 +211,8 @@ def get_publication_tool(
             metadata_scored_docs.append((score, doc))
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
-        top_scored_docs = [
-            d
-            for _, d in metadata_scored_docs[
-                : TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
-            ]
-        ]
-        return semantic_rerank(query, top_scored_docs)[
-            : TOP_K_FOR_METADATA_SCORING["top_reranked_k"]
-        ]
+        top_scored_docs = [d for _, d in metadata_scored_docs[: TOP_K_FOR_METADATA_SCORING["top_metadata_k"]]]
+        return semantic_rerank(query, top_scored_docs)[: TOP_K_FOR_METADATA_SCORING["top_reranked_k"]]
 
     class _Retriever(BaseRetriever):
         """

@@ -30,9 +30,7 @@ def test_filter_valid_entries(cleaner: RedmineCleaner) -> None:
         ("Not a header", None),
     ],
 )
-def test_convert_headers(
-    cleaner: RedmineCleaner, line: str, expected: str | None
-) -> None:
+def test_convert_headers(cleaner: RedmineCleaner, line: str, expected: str | None) -> None:
     """Test Redmine header to Markdown conversion."""
     assert cleaner.convert_redmine_headers(line) == expected
 
@@ -45,9 +43,7 @@ def test_convert_headers(
         ("No list", None),
     ],
 )
-def test_convert_lists(
-    cleaner: RedmineCleaner, line: str, expected: str | None
-) -> None:
+def test_convert_lists(cleaner: RedmineCleaner, line: str, expected: str | None) -> None:
     """Test Redmine list to Markdown conversion."""
     assert cleaner.convert_redmine_lists(line) == expected
 

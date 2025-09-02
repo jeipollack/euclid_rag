@@ -33,10 +33,7 @@ from typing import Any, TypeVar
 import streamlit as st
 from langchain_core.callbacks.base import BaseCallbackHandler
 from streamlit.delta_generator import DeltaGenerator
-from streamlit.runtime.scriptrunner import (
-    add_script_run_ctx,
-    get_script_run_ctx,
-)
+from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
 
 # Define a function to create a callback handler
@@ -82,9 +79,7 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
             self.run_id_ignore_token = None
             self.instance_id = os.urandom(4).hex()
 
-        def on_llm_start(
-            self, serialized: dict, prompts: list, **kwargs: Any
-        ) -> None:
+        def on_llm_start(self, serialized: dict, prompts: list, **kwargs: Any) -> None:
             """Trigger when the language model starts generating tokens."""
             # Workaround to prevent showing the rephrased question as output
             if prompts[0].startswith("Human"):
@@ -124,9 +119,7 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
             Callable[..., fn_return_type]: The decorated function
             that includes the Streamlit context setup.
         """
-        ctx = (
-            get_script_run_ctx()
-        )  # Retrieve the current Streamlit script execution context
+        ctx = get_script_run_ctx()  # Retrieve the current Streamlit script execution context
 
         def wrapper(*args: Any, **kwargs: Any) -> fn_return_type:
             """
@@ -140,12 +133,8 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
             -------
                 fn_return_type: The result from the original function.
             """
-            add_script_run_ctx(
-                ctx=ctx
-            )  # Add the Streamlit context to the current execution
-            return fn(
-                *args, **kwargs
-            )  # Call the original function with its arguments
+            add_script_run_ctx(ctx=ctx)  # Add the Streamlit context to the current execution
+            return fn(*args, **kwargs)  # Call the original function with its arguments
 
         return wrapper
 
@@ -154,13 +143,9 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
     st_cb = StreamHandler(parent_container)
 
     # Iterate over all methods of the StreamHandler instance
-    for method_name, method_func in inspect.getmembers(
-        st_cb, predicate=inspect.ismethod
-    ):
+    for method_name, method_func in inspect.getmembers(st_cb, predicate=inspect.ismethod):
         if method_name.startswith("on_"):  # Identify callback methods
-            setattr(
-                st_cb, method_name, add_streamlit_context(method_func)
-            )  # Wrap and replace the method
+            setattr(st_cb, method_name, add_streamlit_context(method_func))  # Wrap and replace the method
 
     # Return the fully configured StreamHandler instance with
     # the context-aware callback methods

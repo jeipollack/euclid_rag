@@ -26,9 +26,7 @@ app that interacts with the chatbot.
 """
 
 import streamlit as st
-from langchain_community.chat_message_histories import (
-    StreamlitChatMessageHistory,
-)
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 
 from euclid import STATIC_DIR
 
@@ -56,8 +54,7 @@ def setup_landing_page() -> None:
                 unsafe_allow_html=True,
             )
             st.markdown(
-                "<h4 class='h2-landing-page'>I am the "
-                "Euclid AI Assistant.</h4>",
+                "<h4 class='h2-landing-page'>I am the Euclid AI Assistant.</h4>",
                 unsafe_allow_html=True,
             )
         with col3:
@@ -74,9 +71,6 @@ def setup_header_and_footer(msgs: StreamlitChatMessageHistory) -> None:
 
     st.button(":material/edit_square:", on_click=clear_text)
     st.markdown(
-        (
-            "<footer class='footer-fixed'>Euclid AI Assistant aims for "
-            "accuracy, but can make mistakes.</footer>"
-        ),
+        ("<footer class='footer-fixed'>Euclid AI Assistant aims for accuracy, but can make mistakes.</footer>"),
         unsafe_allow_html=True,
     )
