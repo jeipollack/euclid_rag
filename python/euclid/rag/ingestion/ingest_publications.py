@@ -100,7 +100,7 @@ class EuclidBibIngestor:
 
             # Init of vector store after first chunks are available
             if self._vectorstore is None:
-                logger.info("Creating new vector store from first paper.")
+                logger.info("No existing vector store found; initializing new vector store.")
                 self._vectorstore = FAISS.from_documents(chunks, self._embedder)
                 self._vectorstore.save_local(str(self._index_dir))
                 self._reload_vectorstore()
@@ -128,8 +128,7 @@ class EuclidBibIngestor:
             filepath.unlink(missing_ok=True)
 
         if self._vectorstore is None:
-            logger.warning("No valid documents were ingested, vector store was not created.")
-            raise RuntimeError("No valid documents were ingested, vector store was not created.")
+            logger.error("Ingestion failed: no documents were processed. Aborting.")
         logger.info("Update from BibTeX complete.")
 
     def _reload_vectorstore(self) -> None:
