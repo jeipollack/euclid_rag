@@ -17,11 +17,7 @@ import torch
 from langchain.agents import Tool
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import MessagesPlaceholder
@@ -29,10 +25,7 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStoreRetriever
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from euclid.rag.extra_scripts.deduplication import (
-    HashDeduplicator,
-    SemanticSimilarityDeduplicator,
-)
+from euclid.rag.extra_scripts.deduplication import HashDeduplicator, SemanticSimilarityDeduplicator
 from euclid.rag.utils.acronym_handler import expand_acronyms_in_query
 
 acronym_path = Path(__file__).parent.parent / "utils" / "acronyms.json"
@@ -41,14 +34,10 @@ with acronym_path.open(encoding="utf-8") as f:
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 _tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
-_model = AutoModelForSequenceClassification.from_pretrained(
-    "BAAI/bge-reranker-base"
-)
+_model = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
 
 BONUS_WEIGHTS = {
     "pages": 0.5,
@@ -83,18 +72,11 @@ def semantic_rerank(query: str, docs: list) -> list:
         The input documents sorted by descending relevance to the query.
     """
     pairs = [(query, doc.page_content) for doc in docs]
-    inputs = _tokenizer(
-        pairs, padding=True, truncation=True, return_tensors="pt"
-    )
+    inputs = _tokenizer(pairs, padding=True, truncation=True, return_tensors="pt")
     with torch.no_grad():
         logits = _model(**inputs).logits.squeeze()
     scores = logits.tolist() if isinstance(logits, torch.Tensor) else logits
-    return [
-        doc
-        for _, doc in sorted(
-            zip(scores, docs, strict=False), key=lambda x: -x[0]
-        )
-    ]
+    return [doc for _, doc in sorted(zip(scores, docs, strict=False), key=lambda x: -x[0])]
 
 
 punctuation_strip = str.maketrans("", "", string.punctuation)
@@ -116,11 +98,7 @@ def tokenize(text: str) -> set[str]:
     set of str
         Set of cleaned, lowercase tokens at least 3 characters long.
     """
-    return {
-        w
-        for w in text.lower().translate(punctuation_strip).split()
-        if len(w) > 2
-    }
+    return {w for w in text.lower().translate(punctuation_strip).split() if len(w) > 2}
 
 
 def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
@@ -146,11 +124,7 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
 
     cleaned_field = field.replace(",", " ").replace("_", " ").replace("-", " ")
 
-    return weight * sum(
-        1
-        for w in cleaned_field.split()
-        if w.lower().translate(punctuation_strip) in q
-    )
+    return weight * sum(1 for w in cleaned_field.split() if w.lower().translate(punctuation_strip) in q)
 
 
 def bonus_recency(
@@ -268,9 +242,7 @@ def get_redmine_tool(  # noqa: C901, PLR0915
         initial_results = retriever.vectorstore.similarity_search_with_score(
             query, k=TOP_K_FOR_METADATA_SCORING["similarity_k"]
         )
-        logger.info(
-            f"[RAG] Retrieved {len(initial_results)} documents from FAISS."
-        )
+        logger.info(f"[RAG] Retrieved {len(initial_results)} documents from FAISS.")
 
         for doc, score in initial_results:
             text = doc.page_content
@@ -283,11 +255,7 @@ def get_redmine_tool(  # noqa: C901, PLR0915
             filtered_docs.append(doc)
             filtered_scores.append(score)
         logger.info(f"[RAG] {len(filtered_docs)} documents remaining.")
-        logger.info(
-            f"[RAG] Top corresponding scores: {
-                [round(s, 3) for s in filtered_scores[:5]]
-            }"
-        )
+        logger.info(f"[RAG] Top corresponding scores: {[round(s, 3) for s in filtered_scores[:5]]}")
 
         query_tokens = tokenize(query)
         metadata_scored_docs = []
@@ -323,21 +291,10 @@ def get_redmine_tool(  # noqa: C901, PLR0915
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
         logger.info("[RAG] Metadata scoring completed.")
-        logger.info(
-            f"[RAG] Top metadata scores: {
-                [round(s, 3) for s, _ in metadata_scored_docs[:5]]
-            }"
-        )
+        logger.info(f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in metadata_scored_docs[:5]]}")
 
-        top_scored_docs = [
-            d
-            for _, d in metadata_scored_docs[
-                : TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
-            ]
-        ]
-        logger.info(
-            f"[RAG] {len(top_scored_docs)} documents kept for reranking."
-        )
+        top_scored_docs = [d for _, d in metadata_scored_docs[: TOP_K_FOR_METADATA_SCORING["top_metadata_k"]]]
+        logger.info(f"[RAG] {len(top_scored_docs)} documents kept for reranking.")
 
         reranked = semantic_rerank(query, top_scored_docs)
         logger.info(f"[RAG] Final reranked document count: {len(reranked)}")
@@ -408,9 +365,7 @@ def get_redmine_tool(  # noqa: C901, PLR0915
         if lines:
             answer += "\n\n**Sources**\n\n" + "\n\n".join(lines)
 
-        logger.info(
-            f"[RAG] Returning final answer with {len(res['context'])} sources."
-        )
+        logger.info(f"[RAG] Returning final answer with {len(res['context'])} sources.")
 
         return answer
 

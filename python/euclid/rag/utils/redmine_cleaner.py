@@ -13,9 +13,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 class RedmineCleaner:
@@ -33,9 +31,7 @@ class RedmineCleaner:
         """
         self.max_chunk_length = max_chunk_length
 
-    def filter_valid_entries(
-        self, data: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+    def filter_valid_entries(self, data: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Keep only entries whose metadata status is not 'NOK'.
 
@@ -46,15 +42,8 @@ class RedmineCleaner:
         -------
             A filtered list of entries with acceptable statuses.
         """
-        filtered_entries = [
-            entry
-            for entry in data
-            if entry.get("metadata", {}).get("status") != "NOK"
-        ]
-        logger.info(
-            f"[ING] {len(filtered_entries)} from {len(data)} entries "
-            "kept after filtering"
-        )
+        filtered_entries = [entry for entry in data if entry.get("metadata", {}).get("status") != "NOK"]
+        logger.info(f"[ING] {len(filtered_entries)} from {len(data)} entries kept after filtering")
         return filtered_entries
 
     def convert_redmine_headers(self, line: str) -> str | None:
@@ -152,10 +141,7 @@ class RedmineCleaner:
             table_lines.append(lines[i])
             i += 1
         # Split each row into cells, strip spaces
-        rows = [
-            [cell.strip() for cell in re.split(r"\|", line)[1:-1]]
-            for line in table_lines
-        ]
+        rows = [[cell.strip() for cell in re.split(r"\|", line)[1:-1]] for line in table_lines]
         # Build Markdown table
         # Header row is the first row, underline row is required
         header = rows[0]
@@ -173,9 +159,7 @@ class RedmineCleaner:
         code blocks, and line breaks.
         """
         lines = text.splitlines()
-        lines = self.convert_redmine_code_blocks(
-            lines
-        )  # convert <pre> blocks to triple-backtick code blocks
+        lines = self.convert_redmine_code_blocks(lines)  # convert <pre> blocks to triple-backtick code blocks
         md_lines = []
         i = 0
 
@@ -239,12 +223,8 @@ class RedmineCleaner:
         """
         meta = metadata.copy()
         try:
-            meta["created_on"] = datetime.strptime(
-                meta["created_on"], "%Y-%m-%d %H:%M"
-            ).replace(tzinfo=UTC)
-            meta["updated_on"] = datetime.strptime(
-                meta["updated_on"], "%Y-%m-%d %H:%M"
-            ).replace(tzinfo=UTC)
+            meta["created_on"] = datetime.strptime(meta["created_on"], "%Y-%m-%d %H:%M").replace(tzinfo=UTC)
+            meta["updated_on"] = datetime.strptime(meta["updated_on"], "%Y-%m-%d %H:%M").replace(tzinfo=UTC)
             meta["hierarchy"] = f"{meta['project_path']} > {meta['page_name']}"
         except Exception:
             logger.exception("Failed to parse metadata timestamps")
@@ -292,9 +272,7 @@ class RedmineCleaner:
         base = entry["metadata"].get("hierarchy", "")
         return f"[{base}] {chunk}"
 
-    def prepare_for_ingestion(
-        self, raw_data: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+    def prepare_for_ingestion(self, raw_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Full pipeline: filter, clean, split and enrich Redmine data.
 
@@ -320,9 +298,7 @@ class RedmineCleaner:
                             **metadata,
                             "chunk_index": i,
                             "page_name": metadata.get("page_name", ""),
-                            "hierarchy": (
-                                f"{metadata.get('hierarchy', '')} > {i}"
-                            ),
+                            "hierarchy": (f"{metadata.get('hierarchy', '')} > {i}"),
                         },
                     }
                 )
