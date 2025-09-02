@@ -122,7 +122,9 @@ def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
     dict of str, Tool
         Dictionary of tools ready for routing.
     """
-    logger.info("Building RAG tools...")
+    logger.info("CACHE MISS - Building RAG tools from scratch...")
+    logger.info(f"Model: {llm.model if hasattr(llm, 'model') else 'unknown'}")
+    logger.info(f"Config keys: {list(config.keys())}")
     redmine_retriever = configure_retriever(config, config["vector_store"]["redmine_index_dir"])
     logger.info(f"Redmine vector store: {config['vector_store']['redmine_index_dir']}")
 
