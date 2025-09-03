@@ -14,8 +14,16 @@ vector_store:
   redmine_index_dir: "redmine_vector_store"
   publication_index_dir: "publications_vector_store"
 
-data:
+json_data:
   redmine_json_dir: "/home/gimener/Documents/Euclid/checkOps/check_redmine/tmp/sys/"
+  chunk_size: 800
+  deduplication_key_fields:
+    - "project_id"
+    - "page_name"
+    - "updated_on"
+  json_root_key: pages
+
+pdf_data:
   bibtex_url: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
   arxiv_pdf_base_url: "https://arxiv.org/pdf/"
   chunk_size: 800
