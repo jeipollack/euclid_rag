@@ -317,7 +317,7 @@ def run_bibtex_ingestion(config: dict) -> None:
     logger.info("[INGEST] Starting BibTeX ingestion process.")
     index_dir = Path(config["vector_store"]["publication_index_dir"]).resolve()
     temp_dir = Path("tmp").resolve()
-    data_config = config.get("data", {})
+    data_config = config.get("pdf_data", {})
 
     ingestor = EuclidBibIngestor(
         index_dir=index_dir,
