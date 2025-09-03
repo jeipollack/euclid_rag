@@ -70,7 +70,7 @@ class JSONIngestor:
                 self._embedder,
                 allow_dangerous_deserialization=True,
             )
-        logger.info("[INGEST] No existing vector store found, starting fresh.")
+        logger.info("[INGEST] No existing vector store found at %s. Initializing a new one.", self._index_dir)
         return None
 
     @staticmethod
