@@ -1,9 +1,10 @@
-"""Module to ingest JSON-exported Redmine pages into a FAISS vector store."""
+"""Module to ingest JSON-exported pages into a FAISS vector store."""
 
 # Copyright (C) 2025 Euclid Science Ground Segment
 # Licensed under the GNU LGPL v3.0.
 # See <https://www.gnu.org/licenses/>.
 
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -29,26 +30,38 @@ DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
 }
 
 
-class EuclidJSONIngestor:
-    """Ingest JSON-exported Redmine pages into a FAISS vector store."""
+class JSONIngestor:
+    """
+    Ingest JSON-exported pages into a FAISS vector store.
+    JSON structure should be as follows:
+    {
+    "content": "Full text of the page...",
+    "metadata": {
+        "field1": "",
+        "field2": "",
+        ...
+        }
+    },...
+    """
 
-    def __init__(self, index_dir: Path, json_dir: Path, data_config: dict) -> None:
+    def __init__(self, index_dir: Path, json_dir: Path, cleaner: RedmineCleaner, data_config: dict) -> None:
         self._index_dir = index_dir
         self._json_dir = json_dir
         self._model_name = data_config.get("embedding_model_name", "intfloat/e5-small-v2")
         self._batch_size = data_config.get("embedding_batch_size", 16)
+        self._key_fields = data_config.get("deduplication_key_fields", ["hierarchy", "title"])
+        self._source = data_config.get("source", "redmine")
         self._embedder = Embedder(model_name=self._model_name, batch_size=self._batch_size)
         self._vectorstore = self._load_vectorstore()
         self._data_config = data_config
-        self._cleaner = RedmineCleaner(max_chunk_length=self._data_config.get("chunk_size", 800))
+        self._cleaner = cleaner
         logger.info(
-            "[INGEST] EuclidJSONIngestor initialized with "
-            f"model={self._model_name} "
-            f"index_dir={self._index_dir}, "
-            f"json_dir={self._json_dir}"
+            "[INGEST] JSONIngestor initialized"
+            f"(model={self._model_name}, index_dir={self._index_dir}, json_dir={self._json_dir})"
         )
 
     def _load_vectorstore(self) -> FAISS | None:
+        """Load an existing FAISS vector store from the specified index directory."""
         index_file = self._index_dir / "index.faiss"
         if index_file.exists():
             logger.info(f"[INGEST] Loading existing FAISS index from {self._index_dir}")
@@ -60,8 +73,35 @@ class EuclidJSONIngestor:
         logger.info("[INGEST] No existing vector store found, starting fresh.")
         return None
 
-    def ingest_redmine_pages(self) -> None:
-        logger.info("[INGEST] Starting ingestion of Redmine pages...")
+    @staticmethod
+    def _page_source_key(meta: dict[str, Any], content: str, key_fields: list[str]) -> str:
+        """Compute a unique key to identify a chunk, using specific metadata fields and content."""
+        key_parts = [str(meta.get(field, "")).strip() for field in key_fields]
+        content_digest = hashlib.md5(content.encode("utf-8")).hexdigest()  # noqa: S324 - hash is not for security
+        key_parts.append(content_digest)
+        return "::".join(key_parts)
+
+    def _get_existing_source_keys(self) -> set[str]:
+        """Retrieve existing source keys from the vector store to avoid re-ingestion."""
+        keys: set[str] = set()
+        if self._vectorstore is None:
+            return keys
+
+        store = self._vectorstore.docstore
+        for doc_id in self._vectorstore.index_to_docstore_id.values():
+            docs = store.search(doc_id)
+            if not isinstance(docs, list):
+                continue
+            for doc in docs:
+                if isinstance(doc, Document):
+                    k = doc.metadata.get("source_key")
+                    if k:
+                        keys.add(k)
+        return keys
+
+    def ingest_json_files(self) -> None:
+        """Ingest documents from JSON files into the FAISS vector store."""
+        logger.info("[INGEST] Starting ingestion of JSON contents...")
 
         dedup_filter_hash = HashDeduplicator()
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
@@ -72,94 +112,72 @@ class EuclidJSONIngestor:
             k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
         )
 
-        existing_sources = self._get_existing_sources()
-        logger.info(f"[INGEST] Loaded {len(existing_sources)} existing sources.")
+        existing_keys = self._get_existing_source_keys()
+        logger.info(f"[INGEST] Loaded {len(existing_keys)} existing source keys.")
 
         for json_path in self._json_dir.glob("*.json"):
             try:
                 with json_path.open(encoding="utf-8") as f:
                     data = json.load(f)
-            except json.JSONDecodeError:
-                logger.exception(f"[INGEST] Decoding error for {json_path}")
+            except (json.JSONDecodeError, OSError):
+                logger.exception(f"[INGEST] Failed to read/parse {json_path}")
                 continue
 
-            pages = data if isinstance(data, list) else data.get("pages", [])
-            prepared_docs = self._cleaner.prepare_for_ingestion(pages)
+            if not isinstance(data, list):
+                raise TypeError(f"JSON file {json_path} does not contain a list of pages.")
+
+            prepared_docs = self._cleaner.prepare_for_ingestion(data)
 
             for entry in prepared_docs:
-                metadata: dict[str, Any] = entry.get("metadata", {})
-                page_id = str(metadata.get("project_id") or "unknown").strip()
+                metadata: dict[str, Any] = entry.get("metadata", {}) or {}
+                content = entry.get("content", "") or ""
 
-                if not page_id:
-                    logger.warning("[INGEST] Skipping page without valid ID or title")
+                # Skip empty or already ingested contents
+                if not content.strip():
+                    logger.debug("[INGEST] Empty content, skipping chunk.")
                     continue
-
-                if page_id in existing_sources:
-                    logger.debug(f"[INGEST] Page {page_id} already ingested, skipping.")
+                source_key = JSONIngestor._page_source_key(meta=metadata, content=content, key_fields=self._key_fields)
+                if source_key in existing_keys:
+                    logger.debug(f"[INGEST] Already ingested, skipping. key={source_key}")
                     continue
-
-                doc = Document(
-                    page_content=entry.get("content", ""),
-                    metadata={**metadata, "source": "Redmine"},
-                )
-
-                if dedup_filter_hash.filter(doc.page_content):
+                if dedup_filter_hash.filter(content):
                     logger.debug("[INGEST] Chunk filtered by hash deduplication.")
                     continue
-
-                if self._vectorstore and dedup_filter_semantic.filter(doc.page_content):
+                if self._vectorstore and dedup_filter_semantic.filter(content):
                     logger.debug("[INGEST] Chunk filtered by semantic deduplication.")
                     continue
 
+                doc = Document(
+                    page_content=content,
+                    metadata={**metadata, "source": self._source, "source_key": source_key},
+                )
                 if self._vectorstore is None:
                     self._vectorstore = FAISS.from_documents([doc], self._embedder)
+                    dedup_filter_semantic.vectorstore = self._vectorstore
                 else:
                     self._vectorstore.add_documents([doc])
 
                 self._vectorstore.save_local(str(self._index_dir))
-                self._vectorstore = FAISS.load_local(
-                    str(self._index_dir),
-                    self._embedder,
-                    allow_dangerous_deserialization=True,
-                )
+                existing_keys.add(source_key)
+                logger.info(f"[INGEST] Ingested page: {source_key}")
 
-                logger.info(f"[INGEST] Ingested page: {metadata.get('hierarchy')}")
-
-        logger.info("[INGEST] Redmine ingestion completed.")
-
-    def _get_existing_sources(self) -> set[str]:
-        existing_sources: set[str] = set()
-        if self._vectorstore is not None:
-            store = self._vectorstore.docstore
-            for doc_id in self._vectorstore.index_to_docstore_id.values():
-                raw_result: Any = store.search(doc_id)
-                if not isinstance(raw_result, list):
-                    continue
-                for doc in raw_result:
-                    if isinstance(doc, Document):
-                        source = doc.metadata.get("source")
-                        if source:
-                            existing_sources.add(source)
-        return existing_sources
+        logger.info("[INGEST] Ingestion completed.")
 
 
 def run_redmine_ingestion(config: dict) -> None:
-    """Run the Redmine JSON ingestion script."""
+    """Run the ingestion process for Redmine pages using the provided configuration."""
     index_dir = Path(config["vector_store"]["redmine_index_dir"]).resolve()
-    json_dir = Path(config["data"]["redmine_json_dir"]).resolve()
-    data_config = config.get("data", {})
-
-    ingestor = EuclidJSONIngestor(
+    json_dir = Path(config["json_data"]["redmine_json_dir"]).resolve()
+    data_config = config.get("json_data", {})
+    ingestor = JSONIngestor(
         index_dir=index_dir,
         json_dir=json_dir,
+        cleaner=RedmineCleaner(max_chunk_length=data_config.get("chunk_size", 800)),
         data_config=data_config,
     )
-    ingestor.ingest_redmine_pages()
+    ingestor.ingest_json_files()
 
 
 if __name__ == "__main__":
-    """
-    Manual ingestion entrypoint for Redmine pages.
-    """
     config = load_config(Path("python/euclid/rag/app_config.yaml"))
     run_redmine_ingestion(config)
