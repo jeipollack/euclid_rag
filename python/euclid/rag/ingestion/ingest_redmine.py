@@ -42,7 +42,7 @@ class EuclidJSONIngestor:
         self._data_config = data_config
         self._cleaner = RedmineCleaner(max_chunk_length=self._data_config.get("chunk_size", 800))
         logger.info(
-            "[ING] EuclidJSONIngestor initialized with "
+            "[INGEST] EuclidJSONIngestor initialized with "
             f"model={self._model_name} "
             f"index_dir={self._index_dir}, "
             f"json_dir={self._json_dir}"
@@ -51,17 +51,17 @@ class EuclidJSONIngestor:
     def _load_vectorstore(self) -> FAISS | None:
         index_file = self._index_dir / "index.faiss"
         if index_file.exists():
-            logger.info(f"[ING] Loading existing FAISS index from {self._index_dir}")
+            logger.info(f"[INGEST] Loading existing FAISS index from {self._index_dir}")
             return FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
                 allow_dangerous_deserialization=True,
             )
-        logger.info("[ING] No existing vector store found, starting fresh.")
+        logger.info("[INGEST] No existing vector store found, starting fresh.")
         return None
 
     def ingest_redmine_pages(self) -> None:
-        logger.info("[ING] Starting ingestion of Redmine pages...")
+        logger.info("[INGEST] Starting ingestion of Redmine pages...")
 
         dedup_filter_hash = HashDeduplicator()
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
@@ -73,14 +73,14 @@ class EuclidJSONIngestor:
         )
 
         existing_sources = self._get_existing_sources()
-        logger.info(f"[ING] Loaded {len(existing_sources)} existing sources.")
+        logger.info(f"[INGEST] Loaded {len(existing_sources)} existing sources.")
 
         for json_path in self._json_dir.glob("*.json"):
             try:
                 with json_path.open(encoding="utf-8") as f:
                     data = json.load(f)
             except json.JSONDecodeError:
-                logger.exception(f"[ING] Decoding error for {json_path}")
+                logger.exception(f"[INGEST] Decoding error for {json_path}")
                 continue
 
             pages = data if isinstance(data, list) else data.get("pages", [])
@@ -91,11 +91,11 @@ class EuclidJSONIngestor:
                 page_id = str(metadata.get("project_id") or "unknown").strip()
 
                 if not page_id:
-                    logger.warning("[ING] Skipping page without valid ID or title")
+                    logger.warning("[INGEST] Skipping page without valid ID or title")
                     continue
 
                 if page_id in existing_sources:
-                    logger.debug(f"[ING] Page {page_id} already ingested, skipping.")
+                    logger.debug(f"[INGEST] Page {page_id} already ingested, skipping.")
                     continue
 
                 doc = Document(
@@ -104,11 +104,11 @@ class EuclidJSONIngestor:
                 )
 
                 if dedup_filter_hash.filter(doc.page_content):
-                    logger.debug("[ING] Chunk filtered by hash deduplication.")
+                    logger.debug("[INGEST] Chunk filtered by hash deduplication.")
                     continue
 
                 if self._vectorstore and dedup_filter_semantic.filter(doc.page_content):
-                    logger.debug("[ING] Chunk filtered by semantic deduplication.")
+                    logger.debug("[INGEST] Chunk filtered by semantic deduplication.")
                     continue
 
                 if self._vectorstore is None:
@@ -123,9 +123,9 @@ class EuclidJSONIngestor:
                     allow_dangerous_deserialization=True,
                 )
 
-                logger.info(f"[ING] Ingested page: {metadata.get('hierarchy')}")
+                logger.info(f"[INGEST] Ingested page: {metadata.get('hierarchy')}")
 
-        logger.info("[ING] Redmine ingestion completed.")
+        logger.info("[INGEST] Redmine ingestion completed.")
 
     def _get_existing_sources(self) -> set[str]:
         existing_sources: set[str] = set()
