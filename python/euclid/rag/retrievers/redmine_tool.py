@@ -52,20 +52,6 @@ TOP_K_SCORING = {
 }
 
 
-def rerank_docs_by_scores(unsorted_scores_and_docs: list[tuple]) -> list[tuple]:
-    """
-    Rerank documents based on their scores in descending order.
-
-    Args:
-        unsorted_scores_and_docs: A list of tuples where the first element is the score.
-
-    Returns
-    -------
-        A list of tuples sorted by scores in descending order.
-    """
-    return sorted(unsorted_scores_and_docs, key=lambda x: x[0], reverse=True)
-
-
 def semantic_rerank(query: str, docs: list) -> list:
     """
     Rerank a list of documents based on semantic similarity to a query.
@@ -195,32 +181,26 @@ def bonus_scoring(query: str, docs: list, nb_retained_docs: int = 10) -> list[tu
             f"hierarchy={metadata.get('hierarchy')})"
         )
     logger.info("[RAG] Metadata scoring completed.")
-    metadata_scored_docs = rerank_docs_by_scores(metadata_scored_docs)
-    return [(s, d) for s, d in metadata_scored_docs[:nb_retained_docs]]
+    metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
+    return metadata_scored_docs[:nb_retained_docs]
 
 
-def filter_retrieved(scored_and_docs: list[tuple], vector_store: FAISS) -> list[tuple]:
+def filter_retrieved(
+    scored_and_docs: list[tuple], dedup_hash: HashDeduplicator, dedup_semantic: SemanticSimilarityDeduplicator
+) -> list[tuple]:
     """Filter out exact and semantic duplicates from retrieved documents."""
-    dedup_hash = HashDeduplicator()
-    dedup_semantic = SemanticSimilarityDeduplicator(
-        vectorstore=cast("FAISS", vector_store),
-        reranker_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
-        similarity_threshold=0.8,
-        rerank_threshold=0.85,
-        k_candidates=10,
-    )
     filtered_scores_and_docs = []
     for doc, score in scored_and_docs:
         text = doc.page_content
         if dedup_hash.filter(text):
             logger.debug("[RAG] Hash duplicate removed.")
             continue
-        if dedup_semantic.filter(text):
+        if dedup_semantic and dedup_semantic.filter(text):
             logger.debug("[RAG] Semantic duplicate removed.")
             continue
         filtered_scores_and_docs.append((score, doc))
     logger.info("[RAG] Duplicate filtering completed.")
-    return rerank_docs_by_scores(filtered_scores_and_docs)
+    return sorted(filtered_scores_and_docs, key=lambda x: x[0], reverse=True)
 
 
 def get_redmine_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) -> Tool:
@@ -261,6 +241,15 @@ def get_redmine_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) ->
     )
     doc_chain = create_stuff_documents_chain(llm, prompt)
 
+    dedup_hash = HashDeduplicator()
+    dedup_semantic = SemanticSimilarityDeduplicator(
+        vectorstore=cast("FAISS", retriever.vectorstore),
+        reranker_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
+        similarity_threshold=0.8,
+        rerank_threshold=0.85,
+        k_candidates=10,
+    )
+
     def retrieve(query: str) -> list:
         """
         Retrieve relevant documents for a query using multi-stage ranking.
@@ -286,7 +275,7 @@ def get_redmine_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) ->
         initial_results = retriever.vectorstore.similarity_search_with_score(query, k=TOP_K_SCORING["similarity_k"])
         logger.info(f"[RAG] Retrieved {len(initial_results)} documents from FAISS.")
         # 3. Filter out exact and semantic duplicates
-        filtered_scores_and_docs = filter_retrieved(initial_results, retriever.vectorstore)
+        filtered_scores_and_docs = filter_retrieved(initial_results, dedup_hash, dedup_semantic)
         logger.info(f"[RAG] {len(filtered_scores_and_docs)} documents remaining.")
         logger.info(f"[RAG] Top corresponding scores: {[round(s, 3) for s, _ in filtered_scores_and_docs[:5]]}")
         # 4. Score documents using metadata keyword overlap and recency
