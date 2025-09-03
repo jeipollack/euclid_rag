@@ -86,23 +86,15 @@ class JSONIngestor:
         keys: set[str] = set()
         if self._vectorstore is None:
             return keys
+
         store = self._vectorstore.docstore
         for doc_id in self._vectorstore.index_to_docstore_id.values():
-            try:
-                doc = store.search(doc_id)
-            except Exception:
-                logger.exception(f"[INGEST] Exception occurred while processing document ID {doc_id}")
-                continue
-            if isinstance(doc, Document):
-                k = doc.metadata.get("source_key")
-                if k:
-                    keys.add(k)
-            elif isinstance(doc, list):
-                for d in doc:
-                    if isinstance(d, Document):
-                        k = d.metadata.get("source_key")
-                        if k:
-                            keys.add(k)
+            doc = store.search(doc_id)
+            if not isinstance(doc, Document):
+                raise TypeError(f"Expected a Document from docstore, got {type(doc)}")
+            k = doc.metadata.get("source_key")
+            if k:
+                keys.add(k)
         return keys
 
     def ingest_json_files(self) -> None:
