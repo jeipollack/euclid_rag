@@ -10,7 +10,6 @@ import json
 import logging
 import string
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, cast
 
 import torch
@@ -25,13 +24,13 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStoreRetriever
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+from euclid import STATIC_DIR
 from euclid.rag.extra_scripts.deduplication import HashDeduplicator, SemanticSimilarityDeduplicator
 from euclid.rag.utils.acronym_handler import expand_acronyms_in_query
 
-acronym_path = Path(__file__).parent.parent / "utils" / "acronyms.json"
+acronym_path = STATIC_DIR / "acronyms.json"
 with acronym_path.open(encoding="utf-8") as f:
     ACRONYMS = json.load(f)
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -46,11 +45,25 @@ BONUS_WEIGHTS = {
     "recency": 0.5,
 }
 
-TOP_K_FOR_METADATA_SCORING = {
+TOP_K_SCORING = {
     "similarity_k": 20,
     "top_metadata_k": 10,
     "top_reranked_k": 5,
 }
+
+
+def rerank_docs_by_scores(unsorted_scores_and_docs: list[tuple]) -> list[tuple]:
+    """
+    Rerank documents based on their scores in descending order.
+
+    Args:
+        unsorted_scores_and_docs: A list of tuples where the first element is the score.
+
+    Returns
+    -------
+        A list of tuples sorted by scores in descending order.
+    """
+    return sorted(unsorted_scores_and_docs, key=lambda x: x[0], reverse=True)
 
 
 def semantic_rerank(query: str, docs: list) -> list:
@@ -85,7 +98,6 @@ punctuation_strip = str.maketrans("", "", string.punctuation)
 def tokenize(text: str) -> set[str]:
     """
     Convert text into a set of lowercase tokens with ≥3 characters.
-
     Punctuation is removed before tokenization.
 
     Parameters
@@ -127,11 +139,7 @@ def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
     return weight * sum(1 for w in cleaned_field.split() if w.lower().translate(punctuation_strip) in q)
 
 
-def bonus_recency(
-    updated_on: datetime | None,
-    weight: float = 0.3,
-    half_life: int = 365,
-) -> float:
+def bonus_recency(updated_on: datetime | None, weight: float = 0.3, half_life: int = 365) -> float:
     """
     Compute a bonus based on how recent the update is.
 
@@ -165,14 +173,60 @@ def bonus_recency(
     return decay
 
 
-def get_redmine_tool(  # noqa: C901, PLR0915
-    llm: BaseLanguageModel, retriever: VectorStoreRetriever
-) -> Tool:
+def bonus_scoring(query: str, docs: list, nb_retained_docs: int = 10) -> list[tuple]:
+    """Score documents based on metadata keyword overlap and recency."""
+    query_tokens = tokenize(query)
+    metadata_scored_docs = []
+    for doc in docs:
+        logger.debug(f"[RAG] Scoring doc: {doc.metadata.get('project_path')}")
+        metadata = doc.metadata
+        updated_on = metadata.get("updated_on")
+        score = (
+            bonus_overlap(query_tokens, metadata.get("page_name"), BONUS_WEIGHTS["pages"])
+            + bonus_overlap(query_tokens, str(metadata.get("category")), BONUS_WEIGHTS["category"])
+            + bonus_overlap(query_tokens, str(updated_on.year) if updated_on else None, BONUS_WEIGHTS["year"])
+            + bonus_recency(updated_on, weight=BONUS_WEIGHTS["recency"])
+        )
+        metadata_scored_docs.append((score, doc))
+        logger.debug(
+            f"[RAG] Bonus score {score:.3f} for {metadata.get('project_path')} "
+            f"(category={metadata.get('category')}, "
+            f"year={metadata.get('updated_on')},"
+            f"hierarchy={metadata.get('hierarchy')})"
+        )
+    logger.info("[RAG] Metadata scoring completed.")
+    metadata_scored_docs = rerank_docs_by_scores(metadata_scored_docs)
+    return [(s, d) for s, d in metadata_scored_docs[:nb_retained_docs]]
+
+
+def filter_retrieved(scored_and_docs: list[tuple], vector_store: FAISS) -> list[tuple]:
+    """Filter out exact and semantic duplicates from retrieved documents."""
+    dedup_hash = HashDeduplicator()
+    dedup_semantic = SemanticSimilarityDeduplicator(
+        vectorstore=cast("FAISS", vector_store),
+        reranker_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
+        similarity_threshold=0.8,
+        rerank_threshold=0.85,
+        k_candidates=10,
+    )
+    filtered_scores_and_docs = []
+    for doc, score in scored_and_docs:
+        text = doc.page_content
+        if dedup_hash.filter(text):
+            logger.debug("[RAG] Hash duplicate removed.")
+            continue
+        if dedup_semantic.filter(text):
+            logger.debug("[RAG] Semantic duplicate removed.")
+            continue
+        filtered_scores_and_docs.append((score, doc))
+    logger.info("[RAG] Duplicate filtering completed.")
+    return rerank_docs_by_scores(filtered_scores_and_docs)
+
+
+def get_redmine_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) -> Tool:
     """
     Return a tool that answers questions using Euclid Consortium Redmine.
-
     Uses a language model and vector store retriever,
-
     to find and summarize relevant redmine wikis.
 
     Parameters
@@ -207,115 +261,53 @@ def get_redmine_tool(  # noqa: C901, PLR0915
     )
     doc_chain = create_stuff_documents_chain(llm, prompt)
 
-    dedup_hash = HashDeduplicator()
-
-    dedup_semantic = SemanticSimilarityDeduplicator(
-        vectorstore=cast("FAISS", retriever.vectorstore),
-        reranker_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
-        similarity_threshold=0.8,
-        rerank_threshold=0.85,
-        k_candidates=10,
-    )
-
     def retrieve(query: str) -> list:
         """
         Retrieve relevant documents for a query using multi-stage ranking.
 
         Steps:
-        1. Perform FAISS similarity search.
-        2. Filter out exact and semantic duplicates.
-        3. Score remaining documents using metadata keyword overlap.
-        4. Select top metadata-matching documents for CrossEncoder reranking.
-        5. Return top reranked documents.
+        1. Expand acronyms.
+        2. Perform FAISS similarity search.
+        3. Filter out exact and semantic duplicates.
+        4. Score remaining documents using metadata keyword overlap.
+        5. Select top metadata-matching documents for CrossEncoder reranking.
+        . Return top reranked documents.
 
         Returns
         -------
         list
             Ranked list of the most relevant documents for the query.
         """
+        # 1. Filter and expand acronyms in the query
         logger.info(f"[RAG] Query received: {query}")
-        filtered_docs, filtered_scores = [], []
-
         query = expand_acronyms_in_query(query, ACRONYMS)
         logger.debug(f"[RAG] Expanded query: {query}")
-
-        initial_results = retriever.vectorstore.similarity_search_with_score(
-            query, k=TOP_K_FOR_METADATA_SCORING["similarity_k"]
-        )
+        # 2. Initial FAISS similarity search
+        initial_results = retriever.vectorstore.similarity_search_with_score(query, k=TOP_K_SCORING["similarity_k"])
         logger.info(f"[RAG] Retrieved {len(initial_results)} documents from FAISS.")
-
-        for doc, score in initial_results:
-            text = doc.page_content
-            if dedup_hash.filter(text):
-                logger.debug("[RAG] Hash duplicate removed.")
-                continue
-            if dedup_semantic.filter(text):
-                logger.debug("[RAG] Semantic duplicate removed.")
-                continue
-            filtered_docs.append(doc)
-            filtered_scores.append(score)
-        logger.info(f"[RAG] {len(filtered_docs)} documents remaining.")
-        logger.info(f"[RAG] Top corresponding scores: {[round(s, 3) for s in filtered_scores[:5]]}")
-
-        query_tokens = tokenize(query)
-        metadata_scored_docs = []
-        for doc in filtered_docs:
-            metadata = doc.metadata
-            updated_on = metadata.get("updated_on")
-            score = (
-                bonus_overlap(
-                    query_tokens,
-                    metadata.get("page_name"),
-                    BONUS_WEIGHTS["pages"],
-                )
-                + bonus_overlap(
-                    query_tokens,
-                    str(metadata.get("category")),
-                    BONUS_WEIGHTS["category"],
-                )
-                + bonus_overlap(
-                    query_tokens,
-                    str(updated_on.year) if updated_on else None,
-                    BONUS_WEIGHTS["year"],
-                )
-                + bonus_recency(updated_on, weight=BONUS_WEIGHTS["recency"])
-            )
-            metadata_scored_docs.append((score, doc))
-            logger.debug(
-                f"[RAG] Bonus score {score:.3f} for "
-                f"{metadata.get('project_path')} "
-                f"(category={metadata.get('category')}, "
-                f"year={metadata.get('updated_on')},"
-                f"hierarchy={metadata.get('hierarchy')})"
-            )
-
-        metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
-        logger.info("[RAG] Metadata scoring completed.")
-        logger.info(f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in metadata_scored_docs[:5]]}")
-
-        top_scored_docs = [d for _, d in metadata_scored_docs[: TOP_K_FOR_METADATA_SCORING["top_metadata_k"]]]
-        logger.info(f"[RAG] {len(top_scored_docs)} documents kept for reranking.")
-
-        reranked = semantic_rerank(query, top_scored_docs)
+        # 3. Filter out exact and semantic duplicates
+        filtered_scores_and_docs = filter_retrieved(initial_results, retriever.vectorstore)
+        logger.info(f"[RAG] {len(filtered_scores_and_docs)} documents remaining.")
+        logger.info(f"[RAG] Top corresponding scores: {[round(s, 3) for s, _ in filtered_scores_and_docs[:5]]}")
+        # 4. Score documents using metadata keyword overlap and recency
+        filtered_docs = [d for _, d in filtered_scores_and_docs]
+        top_metadata_scores_docs = bonus_scoring(query, filtered_docs, TOP_K_SCORING["top_metadata_k"])
+        logger.info(f"[RAG] Top metadata scores: {[round(s, 3) for s, _ in top_metadata_scores_docs]}")
+        logger.info(f"[RAG] {len(top_metadata_scores_docs)} documents kept for reranking.")
+        # 5. Rerank top metadata-matching documents using CrossEncoder
+        top_metadata_docs = [d for _, d in top_metadata_scores_docs]
+        reranked = semantic_rerank(query, top_metadata_docs)
         logger.info(f"[RAG] Final reranked document count: {len(reranked)}")
-        return reranked[: TOP_K_FOR_METADATA_SCORING["top_reranked_k"]]
+        return reranked[: TOP_K_SCORING["top_reranked_k"]]
 
     class _Retriever(BaseRetriever):
         """
         A retriever for a custom `retrieve()` function.
-
         This class wraps the custom retrieval logic,
-
         so it can be used in retrieval chains.
         """
 
-        def _get_relevant_documents(
-            self,
-            query: str,
-            *,
-            run_manager: Any = None,
-            **_: Any,
-        ) -> list:
+        def _get_relevant_documents(self, query: str, *, run_manager: Any = None, **_: Any) -> list:
             """
             Retrieve relevant documents for a given query.
 
