@@ -21,7 +21,8 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - "./faiss_index:/app/python/euclid/rag/faiss_index"
+      - "./redmine_vector_store:/app/redmine_vector_store"
+      - "./publications_vector_store:/app/publications_vector_store"
       - "venv:/app/.venv"
     depends_on:
       ollama:
