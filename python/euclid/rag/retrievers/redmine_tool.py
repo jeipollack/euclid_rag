@@ -320,7 +320,7 @@ def get_redmine_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) ->
         initial_results = retriever.vectorstore.similarity_search_with_score(query, k=TOP_K_SCORING["similarity_k"])
         logger.info(f"[RAG] Retrieved {len(initial_results)} documents from FAISS.")
         # 3. Filter out exact and semantic duplicates
-        filtered_scores_docs = helper.filter_retrieved(initial_results)
+        filtered_scores_docs = helper.remove_duplicate_docs(initial_results)
         logger.info(f"[RAG] {len(filtered_scores_docs)} documents remaining.")
         logger.info(
             f"[RAG] Top corresponding scores: {[round(s, LOG_DECIMALS) for s, _ in filtered_scores_docs[:TOP_LOGGED]]}"
