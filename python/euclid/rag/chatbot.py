@@ -41,7 +41,7 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_ollama import OllamaLLM
 
-from euclid import APP_DIR, STATIC_DIR
+from euclid import STATIC_DIR
 
 from .extra_scripts.vectorstore_embedder import Embedder
 from .retrievers.publication_tool import get_publication_tool
