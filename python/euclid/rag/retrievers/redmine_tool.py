@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import string
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any, cast
 
 import torch
@@ -53,6 +53,8 @@ TOP_K_SCORING = {
     "top_reranked_k": 5,
 }
 
+TOP_LOGGED = 5
+
 
 class RedmineRetrieverHelper:
     """Helper class to encapsulate the multi-stage retrieval logic for Redmine."""
@@ -62,7 +64,10 @@ class RedmineRetrieverHelper:
     _model_reranker = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
 
     def __init__(
-        self, query: str, dedup_hash: HashDeduplicator, dedup_semantic: SemanticSimilarityDeduplicator
+        self,
+        query: str,
+        dedup_hash: HashDeduplicator,
+        dedup_semantic: SemanticSimilarityDeduplicator,
     ) -> None:
         """Initialize the scorer with a query."""
         self.query = query
@@ -111,7 +116,12 @@ class RedmineRetrieverHelper:
         )
 
     @staticmethod
-    def _bonus_recency(updated_on: datetime | None, weight: float = 0.3, half_life: int = 365) -> float:
+    def _bonus_recency(
+        updated_on: datetime | None,
+        weight: float = 0.3,
+        half_life: int = 365,
+        decay_base: float = 0.5,
+    ) -> float:
         """
         Compute a bonus based on how recent the update is.
 
@@ -124,6 +134,8 @@ class RedmineRetrieverHelper:
         half_life : int
             The number of days after which the weight is halved.
             If not specified, defaults to 365 days.
+        decay_base : float
+            The base of the exponential decay. Defaults to 0.5 (halving).
 
         Returns
         -------
@@ -134,17 +146,17 @@ class RedmineRetrieverHelper:
             return 0.0
 
         # Always work with UTC-aware datetimes
-        now = datetime.now(timezone.utc)  # noqa: UP017 - datetime.UTC is not compatible with mypy
+        now = datetime.now(UTC)
         if updated_on.tzinfo is None:
             updated_on = updated_on.replace(tzinfo=timezone.utc)  # noqa: UP017
 
-        days_old: float = float((now - updated_on).days)
+        age_in_days: float = float((now - updated_on).days)
 
         # Exponential decay: more recent → higher score
-        decay: float = weight * (0.5 ** (days_old / half_life))
-        return decay
+        recency_score: float = weight * (decay_base ** (age_in_days / half_life))
+        return recency_score
 
-    def score_by_metadata(self, docs: list, nb_retained_docs: int = 10) -> list[tuple]:
+    def score_by_metadata(self, docs: list, top_k_docs: int = 10) -> list[tuple]:
         """Score documents based on metadata keyword overlap and recency."""
         metadata_scored_docs = []
         for doc in docs:
@@ -154,7 +166,10 @@ class RedmineRetrieverHelper:
             score = (
                 self._bonus_overlap(metadata.get("page_name"), BONUS_WEIGHTS["pages"])
                 + self._bonus_overlap(str(metadata.get("category")), BONUS_WEIGHTS["category"])
-                + self._bonus_overlap(str(updated_on.year) if updated_on else None, BONUS_WEIGHTS["year"])
+                + self._bonus_overlap(
+                    str(updated_on.year) if updated_on else None,
+                    BONUS_WEIGHTS["year"],
+                )
                 + self._bonus_recency(updated_on, weight=BONUS_WEIGHTS["recency"])
             )
             metadata_scored_docs.append((score, doc))
@@ -166,7 +181,7 @@ class RedmineRetrieverHelper:
             )
         logger.info("[RAG] Metadata scoring completed.")
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
-        return metadata_scored_docs[:nb_retained_docs]
+        return metadata_scored_docs[:top_k_docs]
 
     def semantic_rerank(self, docs: list) -> list:
         """
@@ -177,7 +192,7 @@ class RedmineRetrieverHelper:
         query : str
             The input query string.
         docs : list
-            A list of (langchain) documents to rerank.
+            A list of (LangChain) documents to rerank.
 
             Each document must have a `page_content` attribute.
 
@@ -193,10 +208,30 @@ class RedmineRetrieverHelper:
         scores = logits.tolist() if isinstance(logits, torch.Tensor) else logits
         return [doc for _, doc in sorted(zip(scores, docs, strict=False), key=lambda x: -x[0])]
 
-    def filter_retrieved(self, scored_and_docs: list[tuple]) -> list[tuple]:
-        """Filter out exact and semantic duplicates from retrieved documents."""
+    def remove_duplicate_docs(self, scored_docs: list[tuple]) -> list[tuple]:
+        """
+        Remove exact and semantic duplicates from retrieved documents.
+
+        Parameters
+        ----------
+        scored_docs : list of tuple
+            A list of (document, score) pairs. Each `document` should have a
+            `.page_content` attribute containing its text.
+
+        Returns
+        -------
+        list of tuple
+            Deduplicated (score, document) pairs, sorted by score in descending order.
+
+        Notes
+        -----
+        - Exact duplicates are removed using `self.dedup_hash`.
+        - Semantic duplicates are removed using `self.dedup_semantic` if enabled.
+        - The input is expected in the form `(document, score)`, while the output
+        is returned in the form `(score, document)` for downstream ranking.
+        """
         filtered_scores_and_docs = []
-        for doc, score in scored_and_docs:
+        for doc, score in scored_docs:
             text = doc.page_content
             if self.dedup_hash.filter(text):
                 logger.debug("[RAG] Hash duplicate removed.")
@@ -206,7 +241,7 @@ class RedmineRetrieverHelper:
                 continue
             filtered_scores_and_docs.append((score, doc))
         logger.info(
-            f"[RAG] {len(scored_and_docs) - len(filtered_scores_and_docs)} duplicates removed, "
+            f"[RAG] {len(scored_docs) - len(filtered_scores_and_docs)} duplicates removed, "
             f"{len(filtered_scores_and_docs)} documents remaining."
         )
         return sorted(filtered_scores_and_docs, key=lambda x: x[0], reverse=True)
@@ -287,7 +322,9 @@ def get_redmine_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) ->
         # 3. Filter out exact and semantic duplicates
         filtered_scores_docs = helper.filter_retrieved(initial_results)
         logger.info(f"[RAG] {len(filtered_scores_docs)} documents remaining.")
-        logger.info(f"[RAG] Top corresponding scores: {[round(s, LOG_DECIMALS) for s, _ in filtered_scores_docs[:5]]}")
+        logger.info(
+            f"[RAG] Top corresponding scores: {[round(s, LOG_DECIMALS) for s, _ in filtered_scores_docs[:TOP_LOGGED]]}"
+        )
         # 4. Score documents using metadata keyword overlap and recency
         filtered_docs = [d for _, d in filtered_scores_docs]
         top_metadata_scores_docs = helper.score_by_metadata(filtered_docs, TOP_K_SCORING["top_metadata_k"])
