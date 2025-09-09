@@ -55,9 +55,7 @@ class EuclidDPDDIngestor:
         # Load configuration for DPDD ingestion
         cfg = load_config(dpdd_config_path)
 
-        self.banned_sections = {
-            name.lower() for name in cfg["banned_sections"]["names"]
-        }
+        self.banned_sections = {name.lower() for name in cfg["banned_sections"]["names"]}
         self.topics = cfg.get("topics", [])
         self.base_url = cfg["base_urls"][0]["base_url"]
         self.scrape_all = cfg.get("scrape_all", True)
@@ -65,10 +63,7 @@ class EuclidDPDDIngestor:
 
     def _load_vector_store(self) -> FAISS | None:
         """Load the FAISS vector store from the index directory."""
-        if (
-            self._vector_store_dir.exists()
-            and (self._vector_store_dir / "index.faiss").exists()
-        ):
+        if self._vector_store_dir.exists() and (self._vector_store_dir / "index.faiss").exists():
             try:
                 return FAISS.load_local(
                     str(self._vector_store_dir),
@@ -76,9 +71,7 @@ class EuclidDPDDIngestor:
                     allow_dangerous_deserialization=True,
                 )
             except Exception as e:
-                logger.warning(
-                    "Failed to load vector store, rebuilding: %s", e
-                )
+                logger.warning("Failed to load vector store, rebuilding: %s", e)
 
         return None
 
@@ -125,16 +118,12 @@ class EuclidDPDDIngestor:
                 )
                 continue
 
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=800, chunk_overlap=100
-            )
+            splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
             docs = [Document(page_content=text, metadata=metadata)]
             chunks = splitter.split_documents(docs)
 
             if self._vector_store is None:
-                self._vector_store = FAISS.from_documents(
-                    chunks, self._embedder
-                )
+                self._vector_store = FAISS.from_documents(chunks, self._embedder)
             else:
                 self._vector_store.add_documents(chunks)
 
@@ -156,9 +145,7 @@ class EuclidDPDDIngestor:
                 response.raise_for_status()  # exception for bad status codes
             except requests.exceptions.HTTPError:
                 if response.status_code == 404:
-                    logger.warning(
-                        "DPDD page not found (404 code) %s", self.base_url
-                    )
+                    logger.warning("DPDD page not found (404 code) %s", self.base_url)
                     return []
                 logger.exception("Failed to fetch DPDD page %s", self.base_url)
                 return []
@@ -169,9 +156,7 @@ class EuclidDPDDIngestor:
             # Find main content div
             main_div = soup.find("div", class_="body", role="main")
             if not isinstance(main_div, Tag):
-                logger.warning(
-                    "Main content div not found for %s", self.base_url
-                )
+                logger.warning("Main content div not found for %s", self.base_url)
                 return results
 
             # Iterate over sections except indices-and-tables
@@ -212,11 +197,7 @@ class EuclidDPDDIngestor:
         metadatas: list[dict[str, str]] = []
 
         # Choose topics to scrape
-        list_of_urls = (
-            self._get_all_topics_for_baseurl()
-            if self.scrape_all
-            else self.topics
-        )
+        list_of_urls = self._get_all_topics_for_baseurl() if self.scrape_all else self.topics
 
         # Apply topics_number_limit (0 = no limit)
         if self.topics_number_limit > 0:
@@ -230,9 +211,7 @@ class EuclidDPDDIngestor:
             if results:
                 for item in results:
                     texts.append(item["content"])
-                    metadatas.append(
-                        {k: v for k, v in item.items() if k != "content"}
-                    )
+                    metadatas.append({k: v for k, v in item.items() if k != "content"})
 
         return texts, metadatas
 
@@ -257,9 +236,7 @@ class EuclidDPDDIngestor:
             subtopic_links = self._extract_subtopic_links(soup)
 
             for link in subtopic_links:
-                subtopic_url, subtopic_text = self._normalize_link(
-                    link, base_url=url
-                )
+                subtopic_url, subtopic_text = self._normalize_link(link, base_url=url)
                 if subtopic_url is None:
                     continue
 
@@ -273,9 +250,7 @@ class EuclidDPDDIngestor:
                         results,
                     )
                 except requests.RequestException as e:
-                    logger.warning(
-                        "Error processing subtopic %s: %s", subtopic_url, e
-                    )
+                    logger.warning("Error processing subtopic %s: %s", subtopic_url, e)
         except requests.RequestException as e:
             logger.warning("Error accessing main page %s: %s", url, e)
         return results
@@ -310,17 +285,9 @@ class EuclidDPDDIngestor:
         list[Tag]
             List of subtopic links found in the soup.
         """
-        return [
-            el
-            for el in soup.find_all(
-                "a", class_="reference internal", href=True
-            )
-            if isinstance(el, Tag)
-        ]
+        return [el for el in soup.find_all("a", class_="reference internal", href=True) if isinstance(el, Tag)]
 
-    def _normalize_link(
-        self, link: Tag, base_url: str
-    ) -> tuple[str | None, str]:
+    def _normalize_link(self, link: Tag, base_url: str) -> tuple[str | None, str]:
         """Normalize a link to ensure it has a valid URL.
 
         Parameters
@@ -348,9 +315,7 @@ class EuclidDPDDIngestor:
             else:
                 return None, text
 
-        if isinstance(href, str) and not href.startswith(
-            ("http://", "https://")
-        ):
+        if isinstance(href, str) and not href.startswith(("http://", "https://")):
             href = urljoin(base_url, href)
         return href, text
 
@@ -420,10 +385,7 @@ class EuclidDPDDIngestor:
             else:
                 section_id_str = str(section_id) if section_id else ""
 
-            if section_id_str:
-                section_url_with_anchor = f"{subtopic_url}#{section_id_str}"
-            else:
-                section_url_with_anchor = subtopic_url
+            section_url_with_anchor = f"{subtopic_url}#{section_id_str}" if section_id_str else subtopic_url
 
             metadata = {
                 "source": section_url_with_anchor,
@@ -453,19 +415,15 @@ def run_dpdd_ingestion(config: dict) -> None:
     None
         This function does not return anything; it performs the ingestion.
     """
-    index_dir = Path(config["vector_store"]["index_dir"])
-    config_dir = Path(config["data"]["dpdd"]["config"])
-    ingestor = EuclidDPDDIngestor(
-        vector_store_dir=index_dir, dpdd_config_path=config_dir
-    )
+    index_dir = Path(config["vector_store"]["public_data_index_dir"])
+    config_dir = Path(config["dpdd_data"]["config"])
+    ingestor = EuclidDPDDIngestor(vector_store_dir=index_dir, dpdd_config_path=config_dir)
     ingestor.ingest_new_data()
 
 
 def main() -> None:
     """Run the ingestion script."""
-    parser = argparse.ArgumentParser(
-        description="Ingest publications from the Euclid BibTeX file."
-    )
+    parser = argparse.ArgumentParser(description="Ingest publications from the Euclid BibTeX file.")
     parser.add_argument(
         "-c",
         "--config",

@@ -34,9 +34,9 @@ from euclid import STATIC_DIR
 def setup_sidebar() -> None:
     """Set up the sidebar for the Streamlit app."""
     st.sidebar.markdown("Select sources to use:")
-    tool_options = ["Redmine", "Publications"]
+    tool_options = ["Redmine", "Public Data"]
     selected_tool = st.sidebar.radio("Sources", tool_options, index=0)
-    st.session_state["selected_tool"] = selected_tool.lower()
+    st.session_state["selected_tool"] = selected_tool.lower().replace(" ", "_")
 
 
 def setup_landing_page() -> None:
