@@ -88,7 +88,7 @@ def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
         logger.info(f"Loaded FAISS store with {vectorstore.index.ntotal} vectors.")
     except FileNotFoundError as err:
         raise RuntimeError(
-            f"Vectorstore missing at {index_path}. Please run ingestion before launching the app."
+            f"Vector store missing at {index_path}. Please run ingestion before launching the app."
         ) from err
 
     return vectorstore.as_retriever(
