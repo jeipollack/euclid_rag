@@ -63,7 +63,10 @@ class EuclidBibIngestor:
     def _load_vectorstore(self) -> FAISS | None:
         """Load the FAISS vector store if it exists."""
         if (self._index_dir / "index.faiss").exists():
-            logger.info("[INGEST] Loading existing vector store from %s", self._index_dir)
+            logger.info(
+                "[INGEST] Loading existing vector store from %s",
+                self._index_dir,
+            )
             return FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -72,7 +75,10 @@ class EuclidBibIngestor:
         else:
             pdf_paths = list(self._temp_dir.glob("*.pdf"))
             if pdf_paths:
-                logger.info("[INGEST] Creating new vector store from PDFs in %s", self._temp_dir)
+                logger.info(
+                    "[INGEST] Creating new vector store from PDFs in %s",
+                    self._temp_dir,
+                )
                 return load_or_create_index(self._index_dir, self._embedder, pdf_paths)
         return None
 
@@ -84,7 +90,10 @@ class EuclidBibIngestor:
         bib_entries = self._fetch_bibtex_entries()
         logger.info("[INGEST] Fetched %d BibTeX entries.", len(bib_entries))
         existing_sources = self._get_existing_sources()
-        logger.info("[INGEST] Found %d existing sources in vector store.", len(existing_sources))
+        logger.info(
+            "[INGEST] Found %d existing sources in vector store.",
+            len(existing_sources),
+        )
 
         for entry in bib_entries:
             if not self._should_process(entry, existing_sources):
@@ -160,7 +169,10 @@ class EuclidBibIngestor:
         arxiv_id = entry.get("eprint")
         title = entry.get("title")
         if not arxiv_id or not title:
-            logger.debug("[INGEST] Skipping entry due to missing arxiv_id or title: %s", entry)
+            logger.debug(
+                "[INGEST] Skipping entry due to missing arxiv_id or title: %s",
+                entry,
+            )
             return False
         filename = self._format_filename(arxiv_id, title)
         if filename in existing_sources:
@@ -315,7 +327,7 @@ class EuclidBibIngestor:
 def run_bibtex_ingestion(config: dict) -> None:
     """Run the bibtex ingestion script."""
     logger.info("[INGEST] Starting BibTeX ingestion process.")
-    index_dir = Path(config["vector_store"]["publication_index_dir"]).resolve()
+    index_dir = Path(config["vector_store"]["public_data_index_dir"]).resolve()
     temp_dir = Path("tmp").resolve()
     data_config = config.get("pdf_data", {})
 

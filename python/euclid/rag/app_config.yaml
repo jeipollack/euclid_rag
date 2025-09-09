@@ -1,8 +1,9 @@
 llm:
   # Available models at https://ollama.com/library
-  model: "granite3.2:2b"
+  model: "granite3.2:latest"
   temperature: 0
   base_url: "http://ollama:11434"
+
 
 embeddings:
   class: "E5MpsEmbedder"
@@ -12,7 +13,7 @@ embeddings:
 vector_store:
   type: "faiss"
   redmine_index_dir: "redmine_vector_store"
-  publication_index_dir: "publications_vector_store"
+  public_data_index_dir: "public_data_vector_store"
 
 json_data:
   redmine_json_dir: "/home/gimener/Documents/Euclid/checkOps/check_redmine/tmp/sys/"
@@ -29,8 +30,8 @@ pdf_data:
   chunk_size: 800
   chunk_overlap: 100
 
-  dpdd:
-    config: "python/euclid/rag/ingestion/config/ingest_dpdd_config.yaml"
+dpdd_data:
+  config: "python/euclid/rag/ingestion/config/ingest_dpdd_config.yaml"
 
 deduplication:
   similarity_threshold: 0.97

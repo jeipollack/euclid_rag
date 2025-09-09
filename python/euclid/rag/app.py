@@ -33,17 +33,11 @@ from pathlib import Path
 
 import streamlit as st
 from dotenv import load_dotenv
-from langchain_community.chat_message_histories import (
-    StreamlitChatMessageHistory,
-)
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 
 from euclid import STATIC_DIR
 from euclid.rag.chatbot import create_euclid_router, handle_user_input
-from euclid.rag.layout import (
-    setup_header_and_footer,
-    setup_landing_page,
-    setup_sidebar,
-)
+from euclid.rag.layout import setup_header_and_footer, setup_landing_page, setup_sidebar
 from euclid.rag.utils.config import load_config
 
 # Load environment variables from .env file

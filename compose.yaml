@@ -22,7 +22,7 @@ services:
       - "8501:8501"
     volumes:
       - "./redmine_vector_store:/app/redmine_vector_store"
-      - "./publications_vector_store:/app/publications_vector_store"
+      - "./public_data_vector_store:/app/public_data_vector_store"
       - "venv:/app/.venv"
     depends_on:
       ollama:

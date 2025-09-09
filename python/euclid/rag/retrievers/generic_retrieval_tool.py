@@ -14,11 +14,7 @@ import torch
 from langchain.agents import Tool
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import MessagesPlaceholder
@@ -26,14 +22,10 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStoreRetriever
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from euclid.rag.extra_scripts.deduplication import (
-    SemanticSimilarityDeduplicator,
-)
+from euclid.rag.extra_scripts.deduplication import SemanticSimilarityDeduplicator
 
 _tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
-_model = AutoModelForSequenceClassification.from_pretrained(
-    "BAAI/bge-reranker-base"
-)
+_model = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
 
 BONUS_WEIGHTS = {
     "keywords": 0.5,
@@ -53,49 +45,31 @@ punctuation_strip = str.maketrans("", "", string.punctuation)
 
 def tokenize(text: str) -> set[str]:
     """Convert text into a set of lowercase tokens ≥3 characters."""
-    return {
-        w
-        for w in text.lower().translate(punctuation_strip).split()
-        if len(w) > 2
-    }
+    return {w for w in text.lower().translate(punctuation_strip).split() if len(w) > 2}
 
 
 def bonus_overlap(q: set[str], field: str | None, weight: float) -> float:
     """Compute weighted count of query tokens in a metadata field."""
     if not field:
         return 0.0
-    return weight * sum(
-        1
-        for w in str(field).replace(",", " ").split()
-        if w.lower().translate(punctuation_strip) in q
-    )
+    return weight * sum(1 for w in str(field).replace(",", " ").split() if w.lower().translate(punctuation_strip) in q)
 
 
 def semantic_rerank(query: str, docs: list) -> list:
     """Rerank a list of documents by semantic similarity to the query."""
     pairs = [(query, doc.page_content) for doc in docs]
-    inputs = _tokenizer(
-        pairs, padding=True, truncation=True, return_tensors="pt"
-    )
+    inputs = _tokenizer(pairs, padding=True, truncation=True, return_tensors="pt")
     with torch.no_grad():
         logits = _model(**inputs).logits.squeeze()
     scores = logits.tolist() if isinstance(logits, torch.Tensor) else logits
-    return [
-        doc
-        for _, doc in sorted(
-            zip(scores, docs, strict=False), key=lambda x: -x[0]
-        )
-    ]
+    return [doc for _, doc in sorted(zip(scores, docs, strict=False), key=lambda x: -x[0])]
 
 
 def format_source(m: dict) -> str:
     """Format a source line based on document metadata."""
     category = m.get("category", "").upper()
     if category == "DPDD":
-        return (
-            f"- **{m.get('subtopic', 'Untitled')}** — "
-            f"{m.get('source', 'Unknown source')}"
-        )
+        return f"- **{m.get('subtopic', 'Untitled')}** — {m.get('source', 'Unknown source')}"
     elif m.get("title"):
         return (
             f"- **{m.get('title', 'Untitled')}** "
@@ -115,9 +89,7 @@ def normalize_url(url: str | None) -> str | None:
     return urlunparse(parsed._replace(fragment="", query=""))
 
 
-def get_generic_retrieval_tool(
-    llm: BaseLanguageModel, retriever: VectorStoreRetriever
-) -> Tool:
+def get_generic_retrieval_tool(llm: BaseLanguageModel, retriever: VectorStoreRetriever) -> Tool:
     """
     Return a generic Euclid retrieval tool that answers questions
     from any document type (publications, DPDD, etc.).
@@ -186,9 +158,7 @@ def get_generic_retrieval_tool(
                     metadata.get("keywords"),
                     BONUS_WEIGHTS["keywords"],
                 )
-                + bonus_overlap(
-                    query_tokens, metadata.get("title"), BONUS_WEIGHTS["title"]
-                )
+                + bonus_overlap(query_tokens, metadata.get("title"), BONUS_WEIGHTS["title"])
                 + bonus_overlap(
                     query_tokens,
                     metadata.get("authors"),
@@ -203,15 +173,8 @@ def get_generic_retrieval_tool(
             metadata_scored_docs.append((score, doc))
 
         metadata_scored_docs.sort(key=lambda x: x[0], reverse=True)
-        top_scored_docs = [
-            d
-            for _, d in metadata_scored_docs[
-                : TOP_K_FOR_METADATA_SCORING["top_metadata_k"]
-            ]
-        ]
-        return semantic_rerank(query, top_scored_docs)[
-            : TOP_K_FOR_METADATA_SCORING["top_reranked_k"]
-        ]
+        top_scored_docs = [d for _, d in metadata_scored_docs[: TOP_K_FOR_METADATA_SCORING["top_metadata_k"]]]
+        return semantic_rerank(query, top_scored_docs)[: TOP_K_FOR_METADATA_SCORING["top_reranked_k"]]
 
     class _Retriever(BaseRetriever):
         def _get_relevant_documents(self, query: str, **_: Any) -> list:
@@ -222,9 +185,7 @@ def get_generic_retrieval_tool(
     def run(question: str, callbacks: list[Any] | None = None) -> str:
         """Return LLM answer plus formatted source list."""
         # Run the chain using the page_content only
-        res = chain.invoke(
-            {"input": question, "chat_history": []}, {"callbacks": callbacks}
-        )
+        res = chain.invoke({"input": question, "chat_history": []}, {"callbacks": callbacks})
 
         # Deduplicate sources
         seen = set()
@@ -236,9 +197,7 @@ def get_generic_retrieval_tool(
             norm_url = normalize_url(raw_url)  # strip fragments/query
 
             # Deduplication key: combine the formatted source text and the URL
-            display_text = (
-                m.get("subtopic") or m.get("title") or m.get("source") or ""
-            ).strip()
+            display_text = (m.get("subtopic") or m.get("title") or m.get("source") or "").strip()
 
             key = (display_text.strip().lower(), norm_url)
 
