@@ -42,23 +42,24 @@ make init
 ```
 ### Build the Vector Store
 Before running the chatbot, you must ingest data and build the vector store.
-The location and type of the vector store are defined in `app_config.yaml`, for example:
+The location and type of the vector store(s) are defined in `app_config.yaml`, for example:
 
 ```
 vector_store:
   type: "faiss"
-  index_dir: "faiss_index"
+  redmine_index_dir: "redmine_vector_store"
+  public_data_index_dir: "public_data_vector_store"
 ```
 
 - type — currently only "faiss" is supported.
-- index_dir — path where the FAISS index files (index.faiss, index.pkl) will be stored.
+- {prefix}_index_dir — path where the FAISS index files (index.faiss, index.pkl) will be stored.
 
 This can be a relative path (within the repo) or an absolute path.
 
 If the vector store is missing, the app will fail to start with:
 
 ```
-RuntimeError: Vectorstore missing. Please run ingestion before launching the app.
+RuntimeError: Vector store missing. Please run ingestion before launching the app.
 ```
 
 ### Run ingestion:
