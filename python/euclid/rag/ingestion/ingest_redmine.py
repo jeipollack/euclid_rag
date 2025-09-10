@@ -14,18 +14,13 @@ from typing import Any
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-from euclid.rag.extra_scripts.deduplication import (
-    HashDeduplicator,
-    SemanticSimilarityDeduplicator,
-)
+from euclid.rag.extra_scripts.deduplication import HashDeduplicator, SemanticSimilarityDeduplicator
 from euclid.rag.extra_scripts.vectorstore_embedder import Embedder
 from euclid.rag.utils.config import load_config
 from euclid.rag.utils.redmine_cleaner import RedmineCleaner
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
@@ -62,17 +57,11 @@ class JSONIngestor:
 
         self._index_dir = index_dir
         self._json_dir = json_dir
-        self._model_name = data_config.get(
-            "embedding_model_name", "intfloat/e5-small-v2"
-        )
+        self._model_name = data_config.get("embedding_model_name", "intfloat/e5-small-v2")
         self._batch_size = data_config.get("embedding_batch_size", 16)
-        self._key_fields = data_config.get(
-            "deduplication_key_fields", ["hierarchy", "title"]
-        )
+        self._key_fields = data_config.get("deduplication_key_fields", ["hierarchy", "title"])
         self._source = data_config.get("source", "redmine")
-        self._embedder = Embedder(
-            model_name=self._model_name, batch_size=self._batch_size
-        )
+        self._embedder = Embedder(model_name=self._model_name, batch_size=self._batch_size)
         self._vectorstore = self._load_vectorstore()
         self._data_config = data_config
         self._cleaner = cleaner
@@ -99,9 +88,7 @@ class JSONIngestor:
         """Load an existing FAISS vector store from the specified index directory."""
         index_file = self._index_dir / "index.faiss"
         if index_file.exists():
-            logger.info(
-                f"[INGEST] Loading existing FAISS index from {self._index_dir}"
-            )
+            logger.info(f"[INGEST] Loading existing FAISS index from {self._index_dir}")
             return FAISS.load_local(
                 str(self._index_dir),
                 self._embedder,
@@ -114,14 +101,12 @@ class JSONIngestor:
         return None
 
     @staticmethod
-    def _page_source_key(
-        meta: dict[str, Any], content: str, key_fields: list[str]
-    ) -> str:
+    def _page_source_key(meta: dict[str, Any], content: str, key_fields: list[str]) -> str:
         """Compute a unique key to identify a chunk, using specific metadata fields and content."""
         key_parts = [str(meta.get(field, "")).strip() for field in key_fields]
-        content_digest = hashlib.md5(
-            content.encode("utf-8")
-        ).hexdigest()  # noqa: S324 - hash is not for security
+        # Compute a hash of the content for deduplication purposes (not for security)
+        content_digest = hashlib.md5(content.encode("utf-8")).hexdigest()  # noqa: S324 - hash is not for security
+
         key_parts.append(content_digest)
         return "::".join(key_parts)
 
@@ -135,9 +120,7 @@ class JSONIngestor:
         for doc_id in self._vectorstore.index_to_docstore_id.values():
             doc = store.search(doc_id)
             if not isinstance(doc, Document):
-                raise TypeError(
-                    f"Expected a Document from docstore, got {type(doc)}"
-                )
+                raise TypeError(f"Expected a Document from docstore, got {type(doc)}")
             k = doc.metadata.get("source_key")
             if k:
                 keys.add(k)
@@ -166,16 +149,12 @@ class JSONIngestor:
             return
 
         if not isinstance(data, list):
-            raise TypeError(
-                f"JSON file {json_path} does not contain a list of pages."
-            )
+            raise TypeError(f"JSON file {json_path} does not contain a list of pages.")
 
         prepared_docs = self._cleaner.prepare_for_ingestion(data)
 
         for entry in prepared_docs:
-            self._ingest_entry(
-                entry, existing_keys, dedup_filter_hash, dedup_filter_semantic
-            )
+            self._ingest_entry(entry, existing_keys, dedup_filter_hash, dedup_filter_semantic)
 
     def _ingest_entry(
         self,
@@ -191,13 +170,9 @@ class JSONIngestor:
             logger.debug("[INGEST] Empty content, skipping chunk.")
             return
 
-        source_key = JSONIngestor._page_source_key(
-            meta=metadata, content=content, key_fields=self._key_fields
-        )
+        source_key = JSONIngestor._page_source_key(meta=metadata, content=content, key_fields=self._key_fields)
         if source_key in existing_keys:
-            logger.debug(
-                f"[INGEST] Already ingested, skipping. key={source_key}"
-            )
+            logger.debug(f"[INGEST] Already ingested, skipping. key={source_key}")
             return
         if dedup_filter_hash.filter(content):
             logger.debug("[INGEST] Chunk filtered by hash deduplication.")
@@ -237,17 +212,13 @@ class JSONIngestor:
         dedup_filter_semantic = SemanticSimilarityDeduplicator(
             vectorstore=self._vectorstore,
             reranker_model=str(DEDUPLICATION_CONFIG["reranker_model"]),
-            similarity_threshold=float(
-                DEDUPLICATION_CONFIG["similarity_threshold"]
-            ),
+            similarity_threshold=float(DEDUPLICATION_CONFIG["similarity_threshold"]),
             rerank_threshold=float(DEDUPLICATION_CONFIG["rerank_threshold"]),
             k_candidates=int(DEDUPLICATION_CONFIG["k_candidates"]),
         )
 
         existing_keys = self._get_existing_source_keys()
-        logger.info(
-            f"[INGEST] Loaded {len(existing_keys)} existing source keys."
-        )
+        logger.info(f"[INGEST] Loaded {len(existing_keys)} existing source keys.")
 
         for json_path in json_files:
             self._ingest_file(
@@ -268,18 +239,15 @@ def run_redmine_ingestion(config: dict) -> None:
     ingestor = JSONIngestor(
         index_dir=index_dir,
         json_dir=json_dir,
-        cleaner=RedmineCleaner(
-            max_chunk_length=data_config.get("chunk_size", 800)
-        ),
+        cleaner=RedmineCleaner(max_chunk_length=data_config.get("chunk_size", 800)),
         data_config=data_config,
     )
     ingestor.ingest_json_files()
 
+
 def main() -> None:
     """Run the ingestion script."""
-    parser = argparse.ArgumentParser(
-        description="Ingest publications from the Euclid BibTeX file."
-    )
+    parser = argparse.ArgumentParser(description="Ingest publications from the Euclid BibTeX file.")
     parser.add_argument(
         "-c",
         "--config",
@@ -291,6 +259,7 @@ def main() -> None:
 
     config = load_config(Path(args.config))
     run_redmine_ingestion(config)
+
 
 if __name__ == "__main__":
     main()
