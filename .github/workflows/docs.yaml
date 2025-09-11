@@ -1,0 +1,61 @@
+name: Docs CI/CD
+
+on:
+  push:
+    branches:
+      - main   # deploy only on main
+  pull_request:  # validate docs on PRs
+
+permissions:
+  contents: write  # needed only for deploy, harmless for PRs
+
+jobs:
+  docs-check:
+    name: Check Docs (build + linkcheck)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        run: pipx install uv
+
+      - name: Install tox
+        run: uv pip install tox
+
+      - name: Build docs
+        run: tox -e docs
+
+      - name: Linkcheck docs
+        run: tox -e docs-linkcheck
+
+  docs-deploy:
+    name: Deploy Docs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        run: pipx install uv
+
+      - name: Install tox
+        run: uv pip install tox
+
+      - name: Build docs
+        run: tox -e docs
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./docs/_build/html
