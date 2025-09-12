@@ -1,61 +1,42 @@
-name: Docs CI/CD
+name: Publish Docs
 
 on:
   push:
     branches:
-      - main   # deploy only on main
-  pull_request:  # validate docs on PRs
+      - main
+  workflow_dispatch: {}
 
-permissions:
-  contents: write  # needed only for deploy, harmless for PRs
+env:
+  PYTHON_VERSION: "3.12"
 
 jobs:
-  docs-check:
-    name: Check Docs (build + linkcheck)
+  docs-build-publish:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install uv
-        run: pipx install uv
-
-      - name: Install tox
-        run: uv pip install tox
-
-      - name: Build docs
-        run: tox -e docs
-
-      - name: Linkcheck docs
-        run: tox -e docs-linkcheck
-
-  docs-deploy:
-    name: Deploy Docs
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          fetch-depth: 0
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        run: pipx install uv
+      - name: Install system deps
+        run: sudo apt-get install -y graphviz
 
-      - name: Install tox
-        run: uv pip install tox
-
-      - name: Build docs
-        run: tox -e docs
+      - name: Run tox
+        uses: lsst-sqre/run-tox@v1
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          tox-envs: "docs"
+          tox-plugins: tox-uv
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./docs/_build/html
+          publish_dir: docs/_build/html
+          publish_branch: gh-pages-test
