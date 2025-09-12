@@ -44,7 +44,7 @@ from euclid.rag.utils.config import load_config
 load_dotenv()
 
 # Load configuration file
-CONFIG = load_config(Path("python/euclid/rag/app_config.yaml"))
+CONFIG = load_config(Path(__file__).parent / "app_config.yaml")
 
 # Set page configuration and design
 icon_path = str(STATIC_DIR / "euclid_cartoon.png")
