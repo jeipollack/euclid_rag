@@ -34,15 +34,28 @@ DEDUPLICATION_CONFIG: dict[str, str | float | int] = {
 class JSONIngestor:
     """
     Ingest JSON-exported pages into a FAISS vector store.
-    JSON structure should be as follows:
-    {
-    "content": "Full text of the page...",
-    "metadata": {
-        "field1": "",
-        "field2": "",
-        ...
+
+    The JSON structure should be as follows::
+
+        {
+            "content": "Full text of the page...",
+            "metadata": {
+                "field1": "",
+                "field2": "",
+                ...
+            }
         }
-    },...
+
+    Parameters
+    ----------
+    index_dir : Path
+        Directory where the FAISS index will be stored.
+    json_dir : Path
+        Directory containing JSON files to ingest.
+    cleaner : RedmineCleaner
+        Text cleaning utility for preprocessing content.
+    data_config : dict
+        Configuration dictionary containing embedding and processing settings.
     """
 
     def __init__(

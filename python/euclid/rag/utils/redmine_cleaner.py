@@ -20,14 +20,21 @@ class RedmineCleaner:
     """
     A utility class for cleaning and preparing Redmine-exported data
     for ingestion in a RAG pipeline.
+
+    Parameters
+    ----------
+    max_chunk_length : int, optional
+        Maximum length for each split content chunk, by default 1000.
     """
 
     def __init__(self, max_chunk_length: int = 1000) -> None:
         """
         Initialize the cleaner with a maximum chunk size (in characters).
 
-        Args:
-            max_chunk_length (int): Max length for each split content chunk.
+        Parameters
+        ----------
+        max_chunk_length : int, optional
+            Max length for each split content chunk, by default 1000.
         """
         self.max_chunk_length = max_chunk_length
 
@@ -35,11 +42,14 @@ class RedmineCleaner:
         """
         Keep only entries whose metadata status is not 'NOK'.
 
-        Args:
-            data: A list of raw Redmine-exported entries.
+        Parameters
+        ----------
+        data : list of dict
+            A list of raw Redmine-exported entries.
 
         Returns
         -------
+        list of dict
             A filtered list of entries with acceptable statuses.
         """
         filtered_entries = [entry for entry in data if entry.get("metadata", {}).get("status") != "NOK"]
@@ -101,8 +111,28 @@ class RedmineCleaner:
 
     def convert_redmine_code_blocks(self, lines: list[str]) -> list[str]:
         """
-        Convert <pre>...</pre> blocks to Markdown code blocks (```).
-        Supports multi-line <pre> sections.
+        Convert HTML pre tags to Markdown code blocks.
+
+        Supports multi-line ``<pre>`` sections by converting them to
+        triple-backtick code blocks for better Markdown compatibility.
+
+        Parameters
+        ----------
+        lines : list of str
+            List of text lines that may contain Redmine-style code blocks.
+
+        Returns
+        -------
+        list of str
+            List of lines with ``<pre>`` tags converted to Markdown code blocks.
+
+        Examples
+        --------
+        >>> cleaner = RedmineCleaner()
+        >>> lines = ["Some text", "<pre>code here</pre>", "more text"]
+        >>> result = cleaner.convert_redmine_code_blocks(lines)
+        >>> print(result)
+        ['Some text', '```', 'code here', '```', 'more text']
         """
         in_code_block = False
         output = []

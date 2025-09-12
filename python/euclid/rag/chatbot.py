@@ -67,7 +67,7 @@ def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
     Returns
     -------
     VectorStoreRetriever
-        Retriever with ``search_type="similarity"`` and *k*=6.
+        Retriever with ``search_type="similarity"`` and ``k=6``.
 
     Raises
     ------

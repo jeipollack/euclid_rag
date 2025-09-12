@@ -229,6 +229,7 @@ class RedmineRetrieverHelper:
         - Semantic duplicates are removed using `self.dedup_semantic` if enabled.
         - The input is expected in the form `(document, score)`, while the output
         is returned in the form `(score, document)` for downstream ranking.
+
         """
         filtered_scores_and_docs = []
         for doc, score in scored_docs:
