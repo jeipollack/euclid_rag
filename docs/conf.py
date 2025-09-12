@@ -46,9 +46,9 @@ html_css_files = []  # add any custom.css here
 # ——————————————————————————————
 html_theme = "pydata_sphinx_theme"
 html_title = project
-html_short_title = project
-html_logo = None
+html_logo = str(static_path / "logo.png")
 html_favicon = None
+
 
 html_theme_options = {
     "external_links": [],
@@ -58,8 +58,8 @@ html_theme_options = {
     "logo": {
         "text": project,
         "alt_text": project,
-        "image_light": "static/logo.png",
-        "image_dark": "static/logo.png",
+        "image_light": str(static_path / "logo.png"),
+        "image_dark": str(static_path / "logo_dark.png"),
         "image_class": "logo",
         "image_style": "default",
     },
