@@ -9,6 +9,18 @@ Python API Reference
 Core Application
 ================
 
+The main chatbot and user interface functionality.
+
+Key Functions
+-------------
+
+The core application provides functions for:
+
+* Configuring retrievers for document search
+* Creating intelligent query routers
+* Handling user input and responses
+* Setting up the Streamlit interface
+
 .. Note:
    The main application module (app.py) is excluded from documentation
    as it contains runtime initialization code for Streamlit.
@@ -28,8 +40,17 @@ Core Application
 Retrieval System
 ================
 
+
+Tools for retrieving and formatting information from document stores.
+
+Overview
+--------
+
+The retrieval system provides specialized tools for querying Euclid mission documents with intelligent source formatting and relevance scoring.
+
 .. automodule:: euclid.rag.retrievers.generic_retrieval_tool
    :members:
+   :undoc-members:
    :show-inheritance:
 
 .. automodule:: euclid.rag.retrievers.publication_tool
@@ -84,3 +105,5 @@ Extra Tools
 .. automodule:: euclid.rag.extra_scripts.vectorstore_embedder
    :members:
    :show-inheritance:
+
+

@@ -12,7 +12,7 @@ with open(docs_path / "_rst_epilog.rst", encoding="utf-8") as f:
 
 # Make sure Sphinx can import your package under python/euclid/rag
 sys.path.insert(0, str(src_path))
-
+sys.path.insert(0, str(src_path / "euclid" / "rag"))
 # ——————————————————————————————
 # Project information
 # ——————————————————————————————
@@ -63,7 +63,14 @@ html_theme_options = {
         "image_class": "logo",
         "image_style": "default",
     },
+    "secondary_sidebar_items": {
+        "**": ["page-toc", "edit-this-page", "sourcelink"],
+    },
+    "show_toc_level": 3,
+    "navigation_with_keys": True,
 }
+
+html_sidebars = {"**": ["sidebar-nav-bs.html", "sidebar-ethical-ads.html"]}
 
 
 # Disable the “Edit on GitHub” button entirely

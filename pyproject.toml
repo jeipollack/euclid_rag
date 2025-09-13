@@ -77,9 +77,10 @@ dev = [
     "mypy",
 ]
 docs = [
-    "documenteer[guide]<2",
+    "sphinx",
+    "sphinx-automodapi",
+    "pydata-sphinx-theme",
     "scriv",
-    "sphinx"
     ]
 [project.urls]
 Source = "https://github.com/jeipollack/euclid_rag"
