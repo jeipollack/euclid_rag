@@ -28,17 +28,8 @@ Features
 Quick Start
 ===========
 
-Basic usage example:
+See the :doc:`User Guide <user-guide/index>` for installation, configuration, ingestion, and usage instructions.
 
-.. code-block:: python
-
-   from euclid.rag import chatbot
-
-   # Configure your retriever
-   retriever = chatbot.configure_retriever()
-
-   # Create the router
-   router = chatbot.create_euclid_router()
 
 Project Links
 =============
