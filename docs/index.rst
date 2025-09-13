@@ -5,7 +5,11 @@
 euclid_rag
 ##########
 
-Euclid RAG LLM Application
+
+Euclid RAG LLM Application for querying and retrieving information from Euclid space mission documents.
+
+Installation
+============
 
 Install euclid_rag from PyPI:
 
@@ -13,13 +17,41 @@ Install euclid_rag from PyPI:
 
    pip install euclid_rag
 
-euclid_rag is developed on GitHub at https://github.com/jeipollack/euclid_rag.
+Features
+========
+
+* **Document Retrieval**: Query vectorstores of Euclid mission documents
+* **Intelligent Routing**: Smart query routing for different document types
+* **LangChain Integration**: Built on LangChain for robust LLM interactions
+* **Streamlit Interface**: User-friendly web interface
+
+Quick Start
+===========
+
+Basic usage example:
+
+.. code-block:: python
+
+   from euclid.rag import chatbot
+
+   # Configure your retriever
+   retriever = chatbot.configure_retriever()
+
+   # Create the router
+   router = chatbot.create_euclid_router()
+
+Project Links
+=============
+
+* **GitHub**: https://github.com/jeipollack/euclid_rag
+* **Documentation**: You're reading it!
+* **Issues**: Report bugs and request features
 
 .. toctree::
    :hidden:
+   :maxdepth: 2
 
    User guide <user-guide/index>
    API <api>
    Change log <changelog>
    Contributing <developer-guide/index>
-
