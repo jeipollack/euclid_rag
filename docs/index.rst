@@ -23,7 +23,7 @@ Features
 ========
 
 * **Document Retrieval**: Query vectorstores of Euclid mission documents
-* **Intelligent Routing**: Smart query routing for different document types
+* **Knowledge Base Selection**: Query either public mission documents or internal Redmine data
 * **LangChain Integration**: Built on LangChain for robust LLM interactions
 * **Streamlit Interface**: User-friendly web interface
 
