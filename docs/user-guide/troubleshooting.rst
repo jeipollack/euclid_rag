@@ -10,24 +10,6 @@ Installation Issues
 Package Installation Failures
 ------------------------------
 
-**Problem**: ``pip install euclid_rag`` fails with dependency errors.
-
-**Solutions**:
-
-.. code-block:: bash
-
-   # Update pip and try again
-   pip install --upgrade pip
-   pip install euclid_rag
-
-   # Install with specific dependency versions
-   pip install euclid_rag --no-deps
-   pip install -r requirements.txt
-
-   # Use conda for complex dependencies
-   conda install -c conda-forge faiss-cpu
-   pip install euclid_rag
-
 **Problem**: Import errors after installation.
 
 **Solutions**:
