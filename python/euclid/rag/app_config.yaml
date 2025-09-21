@@ -33,10 +33,3 @@ pdf_data:
 dpdd_data:
   config: "python/euclid/rag/ingestion/config/ingest_dpdd_config.yaml"
 
-deduplication:
-  similarity_threshold: 0.97
-  rerank_threshold: 0.85
-  reranker_model: "cross-encoder/stsb-roberta-base"
-  k_candidates: 5
-  max_embedding_logs: 3
-  debug_mode: true

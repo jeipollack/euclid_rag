@@ -63,7 +63,6 @@ For local development:
      redmine_json_dir: "./data/redmine_exports/"
      chunk_size: 500  # Smaller for development
 
-   debug_mode: true
 
 Production Configuration
 ------------------------
@@ -91,7 +90,6 @@ For production deployment:
      redmine_json_dir: "/data/redmine_exports/"
      chunk_size: 800
 
-   debug_mode: false
 
 High Performance Configuration
 ------------------------------
@@ -110,9 +108,6 @@ For faster responses:
      model_name: "intfloat/e5-small-v2"  # Faster embedding
      batch_size: 64
 
-   deduplication:
-     similarity_threshold: 0.95  # Less strict
-     k_candidates: 3  # Fewer candidates
 
 DPDD Ingestion Configuration
 ============================
