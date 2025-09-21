@@ -11,11 +11,13 @@ Euclid RAG LLM Application for querying and retrieving information from Euclid s
 Installation
 ============
 
-Install euclid_rag from PyPI:
+Install euclid_rag in development mode:
 
 .. code-block:: bash
 
-   pip install euclid_rag
+   git clone https://github.com/yourusername/euclid_rag.git
+   cd euclid_rag
+   pip install -e .
 
 Features
 ========

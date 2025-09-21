@@ -4,19 +4,6 @@ Installation
 
 Choose the installation method that best fits your needs and environment.
 
-PyPI Installation
-=================
-
-**Recommended for:** Basic usage and getting started quickly.
-
-Install euclid_rag from PyPI:
-
-.. code-block:: bash
-
-   pip install euclid_rag
-
-This installs the package and its dependencies, allowing you to use euclid_rag in your Python environment.
-
 Development Installation
 ========================
 
