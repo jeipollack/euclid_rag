@@ -9,6 +9,8 @@ Scope of contributions
 
 **euclid_rag** is an open-source package. You may contribute to `euclid_rag <https://github.com/jeipollack/euclid_rag>`_ itself, or fork it for your own purposes.
 
+Before contributing, please read our `contributing guidelines <https://github.com/jeipollack/euclid_rag/blob/main/CONTRIBUTING.md>`_ and `code of conduct <https://github.com/jeipollack/euclid_rag/blob/main/CODE_OF_CONDUCT.md>`_.
+
 If you plan to submit improvements or changes, it's a good idea to propose them in a `GitHub issue`_ before investing time in a pull request.
 
 .. _GitHub issue: https://github.com/jeipollack/euclid_rag/issues
