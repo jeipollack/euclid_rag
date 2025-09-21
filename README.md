@@ -14,12 +14,13 @@ This project was initially forked from the [**Rubin Observatory's Rubin RAG syst
 
 ## Installation
 
-Install from PyPI:
+Install euclid_rag in development mode:
 
-```sh
-pip install euclid_rag
 ```
-
+   git clone https://github.com/yourusername/euclid_rag.git
+   cd euclid_rag
+   pip install -e .
+```
 `euclid_rag` is developed by Euclid Consortium Science Ground Segment members at https://github.com/jeipollack/euclid_rag.
 
 ## Features
