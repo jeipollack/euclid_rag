@@ -45,6 +45,87 @@ To use a different configuration file:
    # Or using the long form
    python python/euclid/rag/ingestion/ingest_publications.py --config /path/to/custom_config.yaml
 
+JSON Document Ingestion
+=======================
+
+Ingest documents from JSON files. While commonly used for Redmine wiki exports, this ingestion method works with any JSON document structure.
+
+Basic Usage
+-----------
+
+.. code-block:: bash
+
+   python python/euclid/rag/ingestion/ingest_json.py -c /path/to/custom_config.yaml
+
+   # Or using the long form
+   python python/euclid/rag/ingestion/ingest_json.py --config /path/to/custom_config.yaml
+
+
+This processes JSON files from the directory specified in json_data.redmine_json_dir configuration.
+
+Configuration Requirements
+--------------------------
+
+Ensure your `app_config.yaml` includes:
+
+.. code-block:: yaml
+
+   json_data:
+     redmine_json_dir: "/path/to/json/files"
+     chunk_size: 800
+     json_root_key: pages
+
+JSON File Format
+----------------
+
+The expected JSON structure (example using Redmine export format):
+
+.. code-block:: json
+
+   {
+     "pages": [
+       {
+         "project_id": "project-name",
+         "page_name": "Wiki Page Title",
+         "content": "Page content text...",
+         "updated_on": "2024-01-15T10:30:00Z",
+         "url": "https://redmine.example.com/page",
+         "metadata": {
+           "author": "username",
+           "version": 5
+         }
+       }
+     ]
+   }
+
+Key Features
+------------
+
+**Deduplication**
+  Uses hardcoded key fields to prevent ingesting the same content multiple times
+
+**Content Processing**
+  * Extracts text from JSON structure
+  * Preserves metadata for source attribution
+  * Handles nested JSON structures
+
+**Chunking Strategy**
+  * Respects document boundaries
+  * Maintains context between related sections
+  * Configurable chunk sizes for different content types
+
+Custom JSON Structures
+----------------------
+
+For different JSON document formats, modify the configuration:
+
+.. code-block:: yaml
+
+   json_data:
+     json_root_key: "documents" # Change root key for your JSON structure
+     redmine_json_dir: "/path/to/your/json/files" # Any JSON documents
+
+
 DPDD Ingestion
 ==============
 
