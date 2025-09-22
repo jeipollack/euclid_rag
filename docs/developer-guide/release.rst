@@ -6,11 +6,10 @@ This page provides an overview of how `euclid_rag <https://github.com/jeipollack
 This information is primarily useful for maintainers.
 
 Releases are largely automated through GitHub Actions (see the `ci.yaml`_ workflow file for details).
-When a semantic version tag is pushed to GitHub, ``euclid_rag`` is automatically `released to PyPI`_ (coming soon) with that version.
-Documentation is built and published for each version (see `Euclid RAG Documentation`_.).
+When a semantic version tag is pushed to GitHub, ``euclid_rag`` is automatically released on GitHub with that version.
+Documentation is built and published for each version (see `Euclid RAG Documentation`_).
 
 .. _`Euclid RAG Documentation`: https://github.io/jeipollack/euclid_rag/
-.. _`released to PyPI`: https://pypi.org/
 .. _`ci.yaml`: https://github.com/jeipollack/euclid_rag/blob/main/.github/workflows/ci.yaml
 
 .. _regular-release:
@@ -43,8 +42,9 @@ Create a PR, get it merged, and then proceed to tagging the release.
 
 2. GitHub release and tag
 -------------------------
+Use `GitHub Releases`_ to publish the new version.
 
-Use [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) to publish the new version.
+.. _GitHub Releases: https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
 
 - Tag from the correct branch (usually ``main``).
 - Use semantic versioning like ``X.Y.Z`` (no ``v`` prefix).
@@ -53,7 +53,7 @@ Use [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects
 
 Tags **must** follow :pep:`440`, since version metadata is derived using setuptools_scm_.
 
-Once tagged, the GitHub Actions workflow will publish the package to PyPI and update the documentation site.
+Once tagged, the GitHub Actions workflow will create the release and update the documentation site.
 
 .. _setuptools_scm: https://github.com/pypa/setuptools-scm
 
@@ -85,5 +85,5 @@ Releasing from a release branch
 -------------------------------
 
 Follow the same process as a regular release, but tag from the release branch instead of ``main``.
-``ci.yaml`` will still handle publishing to PyPI and updating the documentation.
+``ci.yaml`` will handle creating the GitHub release and updating the documentation.
 

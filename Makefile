@@ -17,7 +17,7 @@ clean:
 init:
 	pip install --upgrade uv
 	uv pip install --upgrade pre-commit tox tox-uv
-	uv pip install --upgrade -e ".[dev]"
+	uv pip install --upgrade -e ".[dev,docs]"
 	pre-commit install
 	rm -rf .tox
 
@@ -47,3 +47,4 @@ update-deps:
 .PHONY: html
 html:
 	sphinx-build -b html docs _build/html
+.PHONY: pull-models

@@ -10,7 +10,7 @@ keywords = [
 # https://pypi.org/classifiers/
 classifiers = [
     "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPL-3.0)",
+    # "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPL-3.0)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
@@ -21,57 +21,85 @@ classifiers = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "requests==2.32.3",
-    "pinecone==6.0.1",
-    "python-dotenv==1.0.1",
-    "tiktoken==0.9.0",
-    "streamlit==1.43.0",
-    "weaviate-client==4.11.1",
-    "atlassian-python-api==3.41.19",
+    # Core utilities
+    "requests==2.32.4",
+    "python-dotenv==1.1.0",
+    "pyyaml==6.0.2",
+    "numpy>=2.1.0",
+    "types-requests",
+
+
+    # Machine Learning / NLP
+    "torch==2.6.0",
+    "transformers==4.49.0",
+    "scikit-learn==1.7.0",
+    "sentence-transformers==3.3.1",
+
+    # OCR and PDF/image tools
     "pytesseract==0.3.13",
     "pillow==11.1.0",
     "reportlab==4.3.1",
     "svglib==1.5.1",
-    "langchain==0.3.20",
-    "openai==1.65.4",
+
+    # Streamlit frontend
+    "streamlit==1.43.0",
+
+    # LangChain and integrations
+    "langchain==0.3.25",
+    "langchain-core==0.3.64",
+    "langchain-community==0.3.24",
     "langchain-openai==0.3.7",
-    "langchain-weaviate==0.0.4",
-    "langchain-community==0.3.19"
+    "langchain-ollama==0.3.3",
+    "langchain-weaviate>=0.0.5",
+
+    # Embeddings / vector DBs
+    "tiktoken==0.9.0",
+    "faiss-cpu==1.9.0.post1",
+    "weaviate-client==4.11.1",
+    "pinecone==6.0.1",
+
+    # Scientific document tools
+    "bibtexparser==1.4.3",
+    "pymupdf==1.26.3",
+
+    # Atlassian integration
+    "atlassian-python-api==3.41.19"
 ]
+
 dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    # Testing
     "coverage[toml]",
     "pytest",
+    "pytest-cov",
     "pytest-asyncio",
     "mypy",
-    # Documentation
-    "documenteer[guide]<2",
-    "scriv",
 ]
-
+docs = [
+    "sphinx",
+    "sphinx-automodapi",
+    "pydata-sphinx-theme",
+    "scriv",
+    ]
 [project.urls]
 Source = "https://github.com/jeipollack/euclid_rag"
 
 [build-system]
-requires = [
-    "setuptools>=61",
-    "wheel",
-    "setuptools_scm[toml]>=6.2"
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools.packages.find]
-# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
-where = ["python"]
-include = ["euclid"]
+[tool.hatch.build.hooks.vcs]
+version-file = "python/euclid/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/euclid"]
 
 [tool.black]
-line-length = 79
+line-length = 120
 target-version = ["py312"]
 
 [tool.coverage.run]
@@ -80,7 +108,7 @@ branch = true
 source = ["euclid"]
 
 [tool.coverage.paths]
-source = ["python", ".tox/*/site-packages"]
+source = ["python", ".tox/py*/**/site-packages"]
 
 [tool.coverage.report]
 show_missing = true
@@ -95,6 +123,7 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:"
 ]
+fail_under = 0
 
 [tool.mypy]
 disallow_untyped_defs = true
@@ -107,6 +136,11 @@ strict_equality = true
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
 # Uncomment and add the "pydantic.mypy" plugin if using Pydantic. Add the
 # "sqlalchemy.ext.mypy.plugin" if using SQL Alchemy.
 # plugins = []

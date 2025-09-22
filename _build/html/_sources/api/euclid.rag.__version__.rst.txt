@@ -1,0 +1,6 @@
+__version__
+===========
+
+.. currentmodule:: euclid.rag
+
+.. autodata:: __version__

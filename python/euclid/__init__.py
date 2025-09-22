@@ -19,6 +19,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Define and retrieve the version string for the package."""
+
 import pkgutil
 
+try:
+    from ._version import __version__
+except ImportError:
+    __version__ = "unknown"
+
+__all__ = ["__version__"]
+
 __path__ = pkgutil.extend_path(__path__, __name__)
+
+import importlib.resources
+import pathlib
+
+with importlib.resources.path("euclid", "static") as static_path:
+    STATIC_DIR = pathlib.Path(static_path)
+
+with importlib.resources.path("euclid", "rag") as app_path:
+    APP_DIR = pathlib.Path(app_path)

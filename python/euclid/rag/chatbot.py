@@ -19,192 +19,206 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
+# Copyright (C) 2025 Euclid Science Ground Segment
+# Licensed under the GNU LGPL v3.0.
+# See <https://www.gnu.org/licenses/>.
 
-
-"""Set up a Streamlit-based chatbot using Weaviate for vector search and
-GPT-4o-mini for answering user queries.
+"""
+Streamlit chatbot interface for the Euclid AI Assistant.
+Uses an existing FAISS vector store and E5 embeddings for retrieval.
 """
 
-import os
+import logging
+from collections.abc import Callable
+from pathlib import Path
 
 import streamlit as st
-import weaviate
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
-from langchain_community.chat_message_histories import (
-    StreamlitChatMessageHistory,
-)
-from langchain_core.prompts import MessagesPlaceholder
+from langchain.agents import Tool
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
+from langchain_community.vectorstores import FAISS
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.language_models import BaseLanguageModel
 from langchain_core.vectorstores.base import VectorStoreRetriever
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from weaviate.classes.init import Auth
+from langchain_ollama import OllamaLLM
 
-from .custom_weaviate_vector_store import CustomWeaviateVectorStore
+from euclid import STATIC_DIR
+
+from .extra_scripts.vectorstore_embedder import Embedder
+from .retrievers.generic_retrieval_tool import get_generic_retrieval_tool
+from .retrievers.redmine_tool import get_redmine_tool
 from .streamlit_callback import get_streamlit_cb
 
-
-def submit_text() -> None:
-    """Submit the user input."""
-    st.session_state.message_sent = True
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 @st.cache_resource(ttl="1h")
-def configure_retriever() -> VectorStoreRetriever:
-    """Configure the Weaviate retriever."""
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
-    http_host = os.getenv("HTTP_HOST")
-    grpc_host = os.getenv("GRPC_HOST")
+def configure_retriever(config: dict, index_dir: str) -> VectorStoreRetriever:
+    """
+    Build and cache a FAISS-based retriever for Euclid knowledge sources.
 
-    if openai_api_key is None:
-        raise ValueError("OPENAI_API_KEY environment variable is not set")
-    if weaviate_api_key is None:
-        raise ValueError("WEAVIATE_API_KEY environment variable is not set")
-    if http_host is None:
-        raise ValueError("HTTP_HOST environment variable is not set")
-    if grpc_host is None:
-        raise ValueError("GRPC_HOST environment variable is not set")
+    Parameters
+    ----------
+    config : dict
+        Embedding model configuration.
+    index_dir : str
+        Path to the directory containing the FAISS index.
 
-    client = weaviate.connect_to_custom(
-        http_host=http_host,  # Hostname for the HTTP API connection
-        http_port=80,  # Default is 80, WCD uses 443
-        http_secure=False,  # Whether to use https (secure) for HTTP
-        grpc_host=grpc_host,  # Hostname for the gRPC API connection
-        grpc_port=50051,  # Default is 50051, WCD uses 443
-        grpc_secure=False,  # Whether to use a secure channel for gRPC
-        auth_credentials=Auth.api_key(
-            weaviate_api_key
-        ),  # The API key to use for authentication
-        headers={"X-OpenAI-Api-Key": openai_api_key},
-        skip_init_checks=True,
+    Returns
+    -------
+    VectorStoreRetriever
+        Configured Retriever with ``search_type="similarity"`` and ``k=6``.
+
+
+    Raises
+    ------
+    RuntimeError
+        If the FAISS index cannot be found or loaded.
+    """
+    logger.info(f"Configuring retriever for index_dir: '{index_dir}'")
+    embedder = Embedder(
+        model_name=config["embeddings"]["model_name"],
+        batch_size=config["embeddings"]["batch_size"],
     )
+    logger.debug(f"Creating path to {index_dir}")
+    index_path = Path(index_dir)
+    try:
+        logger.info(f"Attempting to load vector store from: {index_path.resolve()}")
+        vectorstore = FAISS.load_local(str(index_path), embedder, allow_dangerous_deserialization=True)
+        logger.info(f"Successfully loaded vector store from: {index_path.resolve()}")
+        logger.info(f"Loaded FAISS store with {vectorstore.index.ntotal} vectors.")
+    except FileNotFoundError as err:
+        raise RuntimeError(
+            f"Vector store missing at {index_path}. Please run ingestion before launching the app."
+        ) from err
 
-    return CustomWeaviateVectorStore(
-        client=client,
-        index_name="LangChain_9787ec4b92d3438a8de3ff04ead7ead6",
-        text_key="text",
-        embedding=OpenAIEmbeddings(),
-        attributes=["source", "source_key"],
-    ).as_retriever(
+    return vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 6, "return_metadata": ["score"]},
     )
 
 
-def create_qa_chain(
-    retriever: VectorStoreRetriever,
-) -> ChatPromptTemplate:
-    """Create a QA chain for the chatbot."""
-    # Setup ChatOpenAI (Language Model)
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
+def submit_text() -> None:
+    """Flag that the user pressed <enter> in
+    the chat box (Streamlit callback).
+    """
+    st.session_state.message_sent = True
 
-    # Define the system message template
-    system_template = """You are Euclid AI Assistant, a helpful assistant
-    within the Euclid Consortium Science Ground Segment.
-    Do your best to answer the questions in as much detail as possible.
-    Do not attempt to provide an answer if you do not know the answer.
-    In your response, do not recommend reading elsewhere.
-    Use the following pieces of context to answer the user's
-    question at the end.
-    ----------------
-    {context}
-    ----------------"""
 
-    # Create a ChatPromptTemplate for the QA conversation
-    qa_prompt = ChatPromptTemplate.from_messages(
-        [
-            SystemMessagePromptTemplate.from_template(system_template),
-            MessagesPlaceholder("chat_history"),
-            HumanMessagePromptTemplate.from_template("Question:```{input}```"),
-        ]
-    )
+@st.cache_resource(hash_funcs={OllamaLLM: lambda _: None})
+def _build_tools(llm: BaseLanguageModel, config: dict) -> dict[str, Tool]:
+    """
+    Assemble all domain-specific RAG tools.
 
-    # Create the QA chain
-    question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-    return create_retrieval_chain(retriever, question_answer_chain)
+    Currently, returns only the publications tool, but additional
+    tools (DPDD, Redmine, etc.) can be appended here.
+
+    Parameters
+    ----------
+    llm : BaseLanguageModel
+        Shared language model used by all tools.
+
+    Returns
+    -------
+    dict of str, Tool
+        Dictionary of tools ready for routing.
+    """
+    logger.info("CACHE MISS - Building RAG tools from scratch...")
+    logger.info(f"Model: {llm.model if hasattr(llm, 'model') else 'unknown'}")
+    logger.info(f"Config keys: {list(config.keys())}")
+    redmine_retriever = configure_retriever(config, config["vector_store"]["redmine_index_dir"])
+    logger.info(f"Redmine vector store: {config['vector_store']['redmine_index_dir']}")
+
+    generic_retriever = configure_retriever(config, config["vector_store"]["public_data_index_dir"])
+    logger.info(f"Public Data Vector Store: {config['vector_store']['public_data_index_dir']}")
+    tools = {
+        "redmine": get_redmine_tool(llm, redmine_retriever),
+        "public_data": get_generic_retrieval_tool(llm, generic_retriever),
+    }
+    logger.info("RAG tools built successfully.")
+    return tools
+
+
+def create_euclid_router(
+    config: dict,
+) -> Callable[[dict, list[BaseCallbackHandler] | None], dict]:
+    """Return Euclid-AI that **always** delegates to at least one sub-agent."""
+    llm = OllamaLLM(**config["llm"])
+    tools = _build_tools(llm, config)
+
+    def router(
+        inputs: dict,
+        callbacks: list[BaseCallbackHandler] | None = None,
+    ) -> dict:
+        """
+        Build a router for Euclid RAG tools.
+
+        Returns
+        -------
+        Callable
+            Callable that takes a query dict and optional callbacks,
+            and returns an answer with context.
+        """
+        selected_tool = st.session_state.get("selected_tool", "redmine")
+        tool = tools[selected_tool]
+        question = inputs["input"]
+        logger.info(f"Routing question to tool '{tool.name}': '{question}'")
+        answer = tool.run(question, callbacks=callbacks)
+        if not answer.lower().startswith("i don't have"):
+            return {"answer": answer, "context": []}
+
+        # Nothing found in any agent
+        logger.warning(f"Tool '{tool.name}' could not find an answer.")
+        return {"answer": "I don't have that information yet.", "context": []}
+
+    return router
 
 
 def handle_user_input(
-    qa_chain: ChatPromptTemplate, msgs: StreamlitChatMessageHistory
+    router: Callable[[dict, list[BaseCallbackHandler] | None], dict],
+    msgs: StreamlitChatMessageHistory,
 ) -> None:
-    """Handle user input and chat history."""
-    # Check if the message history is empty or the user
-    # clicked the "Clear message history" button
+    """
+    Display chat history and handle new user input in Streamlit.
+
+    Parameters
+    ----------
+    router : Callable
+        Callable that routs to correct tools for the response.
+    msgs : StreamlitChatMessageHistory
+        Chat history object for managing messages.
+    """
     if len(msgs.messages) == 0:
         msgs.clear()
 
-    # Define avatars for user and assistant messages
     avatars = {"human": "user", "ai": "assistant"}
     avatar_images = {
-        "human": "../../../static/user_avatar.png",
-        "ai": "../../../static/rubin_telescope.png",
+        "human": STATIC_DIR / "user_avatar.png",
+        "ai": STATIC_DIR / "euclid_cartoon.png",
     }
 
     for msg in msgs.messages:
-        st.chat_message(
-            avatars[msg.type], avatar=avatar_images[msg.type]
-        ).write(msg.content)
+        st.chat_message(avatars[msg.type], avatar=avatar_images[msg.type]).markdown(msg.content)
 
-    # Handle new user input
     if user_query := st.chat_input(
-        placeholder="Message Euclid AI", on_submit=submit_text
+        placeholder="Message Euclid AI",
+        key="euclid_chat_input",
+        on_submit=submit_text,
     ):
         with st.chat_message("user", avatar=avatar_images["human"]):
-            st.write(user_query)
+            st.markdown(user_query)
         msgs.add_user_message(user_query)
 
         with st.chat_message("assistant", avatar=avatar_images["ai"]):
-            stream_handler = get_streamlit_cb(st.empty())
+            placeholder = st.empty()
+            stream_handler = get_streamlit_cb(placeholder)
 
-            filters = [
-                source.lower()
-                for source in st.session_state["required_sources"]
-            ]
-            where_filter = {
-                "operator": "Or",
-                "operands": [
-                    {
-                        "path": ["source_key"],
-                        "operator": "Equal",
-                        "valueText": source,
-                    }
-                    for source in filters
-                ],
-            }
-
-            # Invoke retriever logic
-            result = qa_chain.invoke(
-                {
-                    "input": user_query,
-                    "chat_history": msgs.messages,
-                    "filter": where_filter,
-                },
-                {"callbacks": [stream_handler]},
+            result = router(
+                {"input": user_query, "chat_history": msgs.messages},
+                [stream_handler],
             )
-            msgs.add_ai_message(result["answer"])  # type: ignore[index]
 
-            # Display source documents in an expander
-            with st.expander("See sources"):
-                scores = [
-                    chunk.metadata["score"]
-                    for chunk in result["context"]  # type: ignore[index]
-                ]
+            answer = result["answer"]
+            placeholder.markdown(answer, unsafe_allow_html=False)
 
-                if scores:
-                    max_score = max(scores)
-                    threshold = (
-                        max_score * 0.9
-                    )  # Set threshold to 90% of the highest score
-
-                    for chunk in result["context"]:  # type: ignore[index]
-                        score = chunk.metadata["score"]
-
-                        # Only show sources with scores
-                        # significantly higher (above the threshold)
-                        if score >= threshold:
-                            st.info(f"Source: {chunk.metadata['source']}")
+        msgs.add_ai_message(answer)

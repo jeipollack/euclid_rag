@@ -5,21 +5,46 @@
 euclid_rag
 ##########
 
-Euclid RAG LLM Application
 
-Install euclid_rag from PyPI:
+Euclid RAG LLM Application for querying and retrieving information from Euclid space mission documents.
+
+Installation
+============
+
+Install euclid_rag in development mode:
 
 .. code-block:: bash
 
-   pip install euclid_rag
+   git clone https://github.com/yourusername/euclid_rag.git
+   cd euclid_rag
+   pip install -e .
 
-euclid_rag is developed on GitHub at https://github.com/jeipollack/euclid_rag.
+Features
+========
+
+* **Document Retrieval**: Query vectorstores of Euclid mission documents
+* **Knowledge Base Selection**: Query either public mission documents or internal Redmine data
+* **LangChain Integration**: Built on LangChain for robust LLM interactions
+* **Streamlit Interface**: User-friendly web interface
+
+Quick Start
+===========
+
+See the :doc:`User Guide <user-guide/index>` for installation, configuration, ingestion, and usage instructions.
+
+
+Project Links
+=============
+
+* **GitHub**: https://github.com/jeipollack/euclid_rag
+* **Documentation**: You're reading it!
+* **Issues**: Report bugs and request features
 
 .. toctree::
    :hidden:
+   :maxdepth: 2
 
    User guide <user-guide/index>
    API <api>
    Change log <changelog>
    Contributing <developer-guide/index>
-

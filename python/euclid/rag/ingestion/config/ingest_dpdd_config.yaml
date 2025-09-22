@@ -1,0 +1,54 @@
+# config/base_urls
+base_urls :
+  - type : msp
+    base_url : https://euclid.esac.esa.int/dr/q1/dpdd/
+    version : dm10
+    # optional: if true, scrape full site ignoring topics
+    scrape_all : false
+# config/topics_to_get
+topics:
+  - name: Purpose and Scope
+    link: purpose.html
+  - name: LE1 Data Products
+    link: le1dpd/le1index.html
+  - name: SIM Data Products
+    link: simdpd/simindex.html
+  - name: VIS Data Products
+    link: visdpd/visindex.html
+  # - name: NIR Data Products
+  #   link: nirdpd/nirindex.html
+  # - name: SIR Data Products
+  #   link: sirdpd/sirindex.html
+  # - name: EXT Data Products
+  #   link: extdpd/extindex.html
+  # - name: MER Data Products
+  #   link: merdpd/merindex.html
+  # - name: PHZ Data Products
+  #   link: phzdpd/phzindex.html
+  # - name: SPE Data Products
+  #   link: spedpd/speindex.html
+  # - name: SHE Data Products
+  #   link: shedpd/sheindex.html
+  # - name: LE3 Data Products
+  #   link: le3dpd/le3index.html
+  # - name: DQC Data Products
+  #   link: dqcdpd/dqcindex.html
+  # - name: SOC Data Products
+  #   link: socdpd/socindex.html
+  # - name: IOT Data Products
+  #   link: iotdpd/iotindex.html
+
+# Optional limit of topics to ingest
+# 0 or missing = no limit
+topics_number_limit: 0
+
+# Option to scrape all sections
+# If true, it will ignore the topics and scrape all sections
+scrape_all: true  # or false
+
+# List of banned sections to skip
+banned_sections:
+  names:
+    - Header
+    - Data Header
+  full_links:

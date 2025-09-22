@@ -1,0 +1,43 @@
+name: Publish Docs
+
+on:
+  push:
+    branches:
+      - docs-test
+  workflow_dispatch: {}
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  docs-build-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install system deps
+        run: sudo apt-get install -y graphviz
+
+      - name: Run tox
+        uses: lsst-sqre/run-tox@v1
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          tox-envs: "docs"
+          tox-plugins: tox-uv
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
+          publish_branch: gh-pages-test
+          allow_empty_commit: true

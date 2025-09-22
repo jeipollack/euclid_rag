@@ -14,12 +14,13 @@ This project was initially forked from the [**Rubin Observatory's Rubin RAG syst
 
 ## Installation
 
-Install from PyPI:
+Install euclid_rag in development mode:
 
-```sh
-pip install euclid_rag
 ```
-
+   git clone https://github.com/yourusername/euclid_rag.git
+   cd euclid_rag
+   pip install -e .
+```
 `euclid_rag` is developed by Euclid Consortium Science Ground Segment members at https://github.com/jeipollack/euclid_rag.
 
 ## Features
@@ -33,7 +34,55 @@ The best way to start contributing to rubin_rag is by cloning this repository, c
 ```sh
 git clone https://github.com/jeipollack/euclid_rag
 cd euclid_rag
+
+python3 -m venv .venv
+source .venv/bin/activate
+
 make init
+
+```
+### Build the Vector Store
+Before running the chatbot, you must ingest data and build the vector store.
+The location and type of the vector store(s) are defined in `app_config.yaml`, for example:
+
+```
+vector_store:
+  type: "faiss"
+  redmine_index_dir: "redmine_vector_store"
+  public_data_index_dir: "public_data_vector_store"
+```
+
+- type — currently only "faiss" is supported.
+- {prefix}_index_dir — path where the FAISS index files (index.faiss, index.pkl) will be stored.
+
+This can be a relative path (within the repo) or an absolute path.
+
+If the vector store is missing, the app will fail to start with:
+
+```
+RuntimeError: Vector store missing. Please run ingestion before launching the app.
+```
+
+### Run ingestion:
+```
+python python/euclid/rag/ingestion/ingest_publications.py -c /path/to/config_file
+```
+
+By default, this uses the `python/euclid/rag/app_config.yaml` file in the repository.
+
+To use a different config file, pass the `-c` / `--config` option:
+
+```
+python python/euclid/rag/ingestion/ingest_publications.py -c /path/to/config_file
+```
+
+### Run the chatbot:
+
+Once the vector store has been built, you can launch the chatbot:
+
+```sh
+cd python/euclid
+streamlit run rag/app.py
 ```
 
 You can run tests and build documentation with [tox](https://tox.wiki/en/latest/):

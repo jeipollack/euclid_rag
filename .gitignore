@@ -26,6 +26,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+**/_version.py
+uv.lock
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -118,6 +120,9 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
+# PyCharm project settings
+.idea/
+
 # mkdocs documentation
 /site
 
@@ -128,3 +133,16 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Temporary files
+/tmp/
+
+# macOS stuff
+.DS_Store
+
+# Vector store
+faiss_index/
+
+#vectorstores
+*.faiss
+*.pkl

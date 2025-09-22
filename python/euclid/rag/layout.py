@@ -26,46 +26,35 @@ app that interacts with the chatbot.
 """
 
 import streamlit as st
-from langchain_community.chat_message_histories import (
-    StreamlitChatMessageHistory,
-)
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
+
+from euclid import STATIC_DIR
 
 
 def setup_sidebar() -> None:
     """Set up the sidebar for the Streamlit app."""
-    st.sidebar.markdown("Select sources to search:")
-    st.session_state["required_sources"] = []
-    if st.sidebar.checkbox("Confluence", value=True):
-        st.session_state["required_sources"].append("confluence")
-    if st.sidebar.checkbox("Jira", value=True):
-        st.session_state["required_sources"].append("jira")
-    if st.sidebar.checkbox("LSST Forum Docs", value=True):
-        st.session_state["required_sources"].append("lsstforum")
-    if st.sidebar.checkbox("Local Docs", value=True):
-        st.session_state["required_sources"].append("localdocs")
+    st.sidebar.markdown("Select sources to use:")
+    tool_options = ["Redmine", "Public Data"]
+    selected_tool = st.sidebar.radio("Sources", tool_options, index=0)
+    st.session_state["selected_tool"] = selected_tool.lower().replace(" ", "_")
 
 
 def setup_landing_page() -> None:
     """Set up the landing page for the Streamlit app."""
-    # Display the landing page until the first message is sent
     if not st.session_state.message_sent:
-        # Create three columns to center image
         col1, col2, col3 = st.columns([1, 2, 1])
         with col1:
             st.write(" ")
         with col2:
-            # Add logo (Make sure the logo is in your
-            # working directory or provide the full path)
-            st.image("../../../static/rubin_telescope.png", clamp=True)
+            logo_path = STATIC_DIR / "euclid_cartoon.png"
+            st.image(str(logo_path))
 
-            # Centered title and message
             st.markdown(
                 "<h2 class='h2-landing-page'>Hello!</h2>",
                 unsafe_allow_html=True,
             )
             st.markdown(
-                "<h4 class='h2-landing-page'>I am the "
-                "Rubin AI Assistant.</h4>",
+                "<h4 class='h2-landing-page'>I am the Euclid AI Assistant.</h4>",
                 unsafe_allow_html=True,
             )
         with col3:
@@ -82,9 +71,6 @@ def setup_header_and_footer(msgs: StreamlitChatMessageHistory) -> None:
 
     st.button(":material/edit_square:", on_click=clear_text)
     st.markdown(
-        (
-            "<footer class='footer-fixed'>Rubin AI Assistant aims for "
-            "accuracy, but can make mistakes.</footer>"
-        ),
+        ("<footer class='footer-fixed'>Euclid AI Assistant aims for accuracy, but can make mistakes.</footer>"),
         unsafe_allow_html=True,
     )

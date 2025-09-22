@@ -1,0 +1,34 @@
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile_ollama
+    volumes:
+      -  "ollama:/root/.ollama"
+    ports:
+    - "11435:11434"
+    healthcheck:
+      test: "curl -f http://localhost:11434/api/tags"
+      start_period: 1m
+      interval: 10s
+      timeout: 5s
+      retries: 2
+
+  euclid:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - "./redmine_vector_store:/app/redmine_vector_store"
+      - "./public_data_vector_store:/app/public_data_vector_store"
+      - "venv:/app/.venv"
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+volumes:
+  ollama:
+  venv:
+
