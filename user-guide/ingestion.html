@@ -1,0 +1,865 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Document Ingestion &#8212; euclid_rag</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/ingestion';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Running the Chatbot" href="usage.html" />
+    <link rel="prev" title="Configuration" href="configuration.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="euclid_rag"/>
+    <img src="../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="euclid_rag"/>
+  
+  
+    <p class="title logo__title">euclid_rag</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Change log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer-guide/index.html">
+    Contributing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Change log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer-guide/index.html">
+    Contributing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Document Ingestion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Running the Chatbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Document Ingestion</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="document-ingestion">
+<h1>Document Ingestion<a class="headerlink" href="#document-ingestion" title="Link to this heading">#</a></h1>
+<p>Before using the chatbot, you must ingest documents into the vector store. This process downloads, processes, and indexes documents for semantic search.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> completed</p></li>
+<li><p><a class="reference internal" href="configuration.html"><span class="doc">Configuration</span></a> file set up</p></li>
+<li><p>Internet connection for downloading documents</p></li>
+<li><p>Sufficient disk space for vector stores</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the vector store is missing, the app will fail to start with:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>RuntimeError: Vector store missing. Please run ingestion before launching the app.
+</pre></div>
+</div>
+</div>
+</section>
+<section id="publications-ingestion">
+<h2>Publications Ingestion<a class="headerlink" href="#publications-ingestion" title="Link to this heading">#</a></h2>
+<p>Ingest Euclid collaboration publications from the official BibTeX bibliography.</p>
+<p>The EuclidBibIngestor is specifically designed to process publications from the Euclid collaboration’s official bibliography file, which contains peer-reviewed papers, conference proceedings, and preprints related to the Euclid mission.</p>
+<section id="basic-usage">
+<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>python/euclid/rag/ingestion/ingest_publications.py<span class="w"> </span>--config<span class="w"> </span>path/to/app_config.yaml
+</pre></div>
+</div>
+</section>
+<section id="configuration-requirements">
+<h3>Configuration Requirements<a class="headerlink" href="#configuration-requirements" title="Link to this heading">#</a></h3>
+<p>Ensure your app_config.yaml includes:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">pdf_data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bibtex_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://eceb.astro.uni-bonn.de/public/Euclid.bib&quot;</span>
+<span class="w">  </span><span class="nt">arxiv_pdf_base_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://arxiv.org/pdf/&quot;</span>
+<span class="w">  </span><span class="nt">chunk_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">800</span>
+<span class="w">  </span><span class="nt">chunk_overlap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+</pre></div>
+</div>
+</section>
+<section id="data-source">
+<h3>Data Source<a class="headerlink" href="#data-source" title="Link to this heading">#</a></h3>
+<p>The ingestion process downloads and parses the official Euclid collaboration BibTeX file, which includes:</p>
+<ul class="simple">
+<li><p><strong>Key project papers</strong> - Foundational Euclid mission publications</p></li>
+<li><p><strong>Data release papers</strong> - Documentation for specific data releases (e.g., Q1 Special Issue)</p></li>
+<li><p><strong>Technical papers</strong> - Instrument descriptions, data processing methods</p></li>
+<li><p><strong>Scientific results</strong> - Analysis and findings from Euclid observations</p></li>
+</ul>
+</section>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt><strong>BibTeX Processing</strong></dt><dd><ul class="simple">
+<li><p>Parses official Euclid collaboration bibliography</p></li>
+<li><p>Extracts publication metadata (authors, titles, abstracts)</p></li>
+<li><p>Downloads full-text PDFs from arXiv when available</p></li>
+</ul>
+</dd>
+<dt><strong>Content Extraction</strong></dt><dd><ul class="simple">
+<li><p>Processes PDF content for full-text search</p></li>
+<li><p>Maintains publication metadata for proper attribution</p></li>
+<li><p>Handles various publication formats (journal articles, preprints, conference papers)</p></li>
+</ul>
+</dd>
+<dt><strong>Semantic Deduplication</strong></dt><dd><ul class="simple">
+<li><p>Prevents ingestion of semantically similar content across publications</p></li>
+<li><p>Particularly effective for reducing redundant introductory material</p></li>
+<li><p>Uses similarity thresholds to identify and filter duplicate content sections</p></li>
+</ul>
+</dd>
+<dt><strong>Vector Store Integration</strong></dt><dd><ul class="simple">
+<li><p>Chunks document content for semantic search</p></li>
+<li><p>Configurable chunk sizes and overlap for optimal retrieval</p></li>
+<li><p>Prevents duplicate ingestion of existing publications</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="custom-configuration">
+<h3>Custom Configuration<a class="headerlink" href="#custom-configuration" title="Link to this heading">#</a></h3>
+<p>To use a different configuration file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>python/euclid/rag/ingestion/ingest_publications.py<span class="w"> </span>-c<span class="w"> </span>/path/to/custom_config.yaml
+
+<span class="c1"># Or using the long form</span>
+python<span class="w"> </span>python/euclid/rag/ingestion/ingest_publications.py<span class="w"> </span>--config<span class="w"> </span>/path/to/custom_config.yaml
+</pre></div>
+</div>
+</section>
+</section>
+<section id="json-document-ingestion">
+<h2>JSON Document Ingestion<a class="headerlink" href="#json-document-ingestion" title="Link to this heading">#</a></h2>
+<p>Ingest documents from JSON files. While commonly used for Redmine wiki exports, this ingestion method works with any JSON document structure.</p>
+<section id="id1">
+<h3>Basic Usage<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>python/euclid/rag/ingestion/ingest_json.py<span class="w"> </span>-c<span class="w"> </span>/path/to/custom_config.yaml
+
+<span class="c1"># Or using the long form</span>
+python<span class="w"> </span>python/euclid/rag/ingestion/ingest_json.py<span class="w"> </span>--config<span class="w"> </span>/path/to/custom_config.yaml
+</pre></div>
+</div>
+<p>This processes JSON files from the directory specified in json_data.redmine_json_dir configuration.</p>
+</section>
+<section id="id2">
+<h3>Configuration Requirements<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>Ensure your <cite>app_config.yaml</cite> includes:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">json_data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">redmine_json_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/path/to/json/files&quot;</span>
+<span class="w">  </span><span class="nt">chunk_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">800</span>
+<span class="w">  </span><span class="nt">json_root_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pages</span>
+</pre></div>
+</div>
+</section>
+<section id="json-file-format">
+<h3>JSON File Format<a class="headerlink" href="#json-file-format" title="Link to this heading">#</a></h3>
+<p>The expected JSON structure (example using Redmine export format):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;project_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;project-name&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;page_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Wiki Page Title&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Page content text...&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;updated_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://redmine.example.com/page&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;username&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>Key Features<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt><strong>Deduplication</strong></dt><dd><p>Uses hardcoded key fields to prevent ingesting the same content multiple times</p>
+</dd>
+<dt><strong>Content Processing</strong></dt><dd><ul class="simple">
+<li><p>Extracts text from JSON structure</p></li>
+<li><p>Preserves metadata for source attribution</p></li>
+<li><p>Handles nested JSON structures</p></li>
+</ul>
+</dd>
+<dt><strong>Chunking Strategy</strong></dt><dd><ul class="simple">
+<li><p>Respects document boundaries</p></li>
+<li><p>Maintains context between related sections</p></li>
+<li><p>Configurable chunk sizes for different content types</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="custom-json-structures">
+<h3>Custom JSON Structures<a class="headerlink" href="#custom-json-structures" title="Link to this heading">#</a></h3>
+<p>For different JSON document formats, modify the configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">json_data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">json_root_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;documents&quot;</span><span class="w"> </span><span class="c1"># Change root key for your JSON structure</span>
+<span class="w">  </span><span class="nt">redmine_json_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/path/to/your/json/files&quot;</span><span class="w"> </span><span class="c1"># Any JSON documents</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="dpdd-ingestion">
+<h2>DPDD Ingestion<a class="headerlink" href="#dpdd-ingestion" title="Link to this heading">#</a></h2>
+<p>The DPDD (Data Product Description Document) ingestion downloads and processes Euclid DPDD pages from the official website.</p>
+<section id="id4">
+<h3>Basic Usage<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>python/euclid/rag/ingestion/ingest_dpdd.py<span class="w"> </span>--config<span class="w"> </span>path/to/app_config.yaml
+</pre></div>
+</div>
+</section>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h3>
+<p>The DPDD ingestion process:</p>
+<ul class="simple">
+<li><p><strong>Downloads DPDD pages</strong> from the Euclid website</p></li>
+<li><p><strong>Extracts subtopics and sections</strong>, skipping banned sections</p></li>
+<li><p><strong>Splits text into chunks</strong> using RecursiveCharacterTextSplitter</p></li>
+<li><p><strong>Stores chunks</strong> in a FAISS vector store for semantic search</p></li>
+<li><p><strong>Prevents duplicate ingestion</strong> by checking existing sources</p></li>
+</ul>
+</section>
+<section id="configuration-options">
+<h3>Configuration Options<a class="headerlink" href="#configuration-options" title="Link to this heading">#</a></h3>
+<p>The DPDD ingestion behavior is controlled by the <code class="docutils literal notranslate"><span class="pre">dpdd_ingest_config.yaml</span></code> file:</p>
+<dl>
+<dt><strong>Selective Ingestion</strong></dt><dd><p>Specify particular topics to ingest:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">scrape_all</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">topics</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Purpose and Scope</span>
+<span class="w">    </span><span class="nt">link</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">purpose.html</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LE1 Data Products</span>
+<span class="w">    </span><span class="nt">link</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">le1dpd/le1index.html</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Complete Ingestion</strong></dt><dd><p>Ingest all available content:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">scrape_all</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">topics_number_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># No limit</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Limited Ingestion</strong></dt><dd><p>Limit the number of topics:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">scrape_all</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">topics_number_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># Only first 5 topics</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+</section>
+<section id="ingestion-process-details">
+<h2>Ingestion Process Details<a class="headerlink" href="#ingestion-process-details" title="Link to this heading">#</a></h2>
+<section id="text-processing-pipeline">
+<h3>Text Processing Pipeline<a class="headerlink" href="#text-processing-pipeline" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Document Download</strong>: Fetch content from configured URLs</p></li>
+<li><p><strong>Content Extraction</strong>: Parse HTML and extract relevant text</p></li>
+<li><p><strong>Section Filtering</strong>: Skip banned sections (headers, navigation, etc.)</p></li>
+<li><p><strong>Text Chunking</strong>: Split long documents into manageable chunks</p></li>
+<li><p><strong>Embedding Generation</strong>: Create vector embeddings for each chunk</p></li>
+<li><p><strong>Vector Storage</strong>: Store embeddings in FAISS index</p></li>
+<li><p><strong>Metadata Storage</strong>: Save document metadata for source attribution</p></li>
+</ol>
+</section>
+<section id="chunk-size-and-overlap">
+<h3>Chunk Size and Overlap<a class="headerlink" href="#chunk-size-and-overlap" title="Link to this heading">#</a></h3>
+<p>The system uses <code class="docutils literal notranslate"><span class="pre">RecursiveCharacterTextSplitter</span></code> with optimized settings:</p>
+<ul class="simple">
+<li><p><strong>Chunk size</strong>: Balanced for context and performance</p></li>
+<li><p><strong>Chunk overlap</strong>: Ensures continuity between chunks</p></li>
+<li><p><strong>Separator handling</strong>: Respects document structure (paragraphs, sentences)</p></li>
+</ul>
+</section>
+<section id="duplicate-prevention">
+<h3>Duplicate Prevention<a class="headerlink" href="#duplicate-prevention" title="Link to this heading">#</a></h3>
+<p>The ingestion process automatically:</p>
+<ul class="simple">
+<li><p><strong>Checks existing sources</strong> in the vector store</p></li>
+<li><p><strong>Skips already processed documents</strong> to avoid duplicates</p></li>
+<li><p><strong>Updates metadata</strong> for modified documents</p></li>
+<li><p><strong>Maintains consistency</strong> across ingestion runs</p></li>
+</ul>
+</section>
+</section>
+<section id="monitoring-ingestion-progress">
+<h2>Monitoring Ingestion Progress<a class="headerlink" href="#monitoring-ingestion-progress" title="Link to this heading">#</a></h2>
+<section id="command-line-output">
+<h3>Command Line Output<a class="headerlink" href="#command-line-output" title="Link to this heading">#</a></h3>
+<p>The ingestion scripts provide progress information:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Processing topic: Purpose and Scope
+Extracting sections from: purpose.html
+Skipping banned section: Header
+Creating 15 text chunks
+Storing embeddings in vector store
+✓ Completed: Purpose and Scope (15 chunks)
+</pre></div>
+</div>
+</section>
+<section id="logging">
+<h3>Logging<a class="headerlink" href="#logging" title="Link to this heading">#</a></h3>
+<p>Detailed logs are available for troubleshooting:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable verbose logging</span>
+python<span class="w"> </span>python/euclid/rag/ingestion/ingest_dpdd.py<span class="w"> </span>--config<span class="w"> </span>config.yaml<span class="w"> </span>--verbose
+</pre></div>
+</div>
+</section>
+</section>
+<section id="storage-requirements">
+<h2>Storage Requirements<a class="headerlink" href="#storage-requirements" title="Link to this heading">#</a></h2>
+<p>Estimate disk space needed for your vector stores:</p>
+<dl class="simple">
+<dt><strong>Small Dataset</strong> (&lt; 100 documents)</dt><dd><ul class="simple">
+<li><p>Vector store: ~50-100 MB</p></li>
+<li><p>Metadata: ~10-20 MB</p></li>
+</ul>
+</dd>
+<dt><strong>Medium Dataset</strong> (100-1000 documents)</dt><dd><ul class="simple">
+<li><p>Vector store: ~500 MB - 1 GB</p></li>
+<li><p>Metadata: ~50-100 MB</p></li>
+</ul>
+</dd>
+<dt><strong>Large Dataset</strong> (&gt; 1000 documents)</dt><dd><ul class="simple">
+<li><p>Vector store: &gt; 1 GB</p></li>
+<li><p>Metadata: &gt; 100 MB</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Actual sizes depend on document length, embedding dimensions, and chunk sizes.</p>
+</div>
+</section>
+<section id="batch-processing">
+<h2>Batch Processing<a class="headerlink" href="#batch-processing" title="Link to this heading">#</a></h2>
+<p>For large document collections, consider batch processing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Process publications first</span>
+python<span class="w"> </span>python/euclid/rag/ingestion/ingest_publications.py<span class="w"> </span>-c<span class="w"> </span>config.yaml
+
+<span class="c1"># Then process DPDD documents</span>
+python<span class="w"> </span>python/euclid/rag/ingestion/ingest_dpdd.py<span class="w"> </span>--config<span class="w"> </span>config.yaml
+
+<span class="c1"># Verify vector stores were created</span>
+ls<span class="w"> </span>-la<span class="w"> </span>*_vector_store/
+</pre></div>
+</div>
+</section>
+<section id="ingestion-validation">
+<h2>Ingestion Validation<a class="headerlink" href="#ingestion-validation" title="Link to this heading">#</a></h2>
+<p>After ingestion, verify the vector stores:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check vector store contents</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">euclid.rag</span><span class="w"> </span><span class="kn">import</span> <span class="n">chatbot</span>
+
+<span class="c1"># Load configuration</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;python/euclid/rag/app_config.yaml&quot;</span>
+
+<span class="c1"># Verify vector store files exist</span>
+<span class="n">vector_store_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;redmine_vector_store&quot;</span><span class="p">,</span> <span class="s2">&quot;public_data_vector_store&quot;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">dir_name</span> <span class="ow">in</span> <span class="n">vector_store_dirs</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dir_name</span><span class="p">):</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dir_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">files</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️  Missing: </span><span class="si">{</span><span class="n">dir_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-optimization">
+<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading">#</a></h2>
+<p>For faster ingestion:</p>
+<dl class="simple">
+<dt><strong>Parallel Processing</strong></dt><dd><p>The ingestion scripts support concurrent processing where possible.</p>
+</dd>
+<dt><strong>Network Optimization</strong></dt><dd><p>Use a stable, fast internet connection for downloading documents.</p>
+</dd>
+<dt><strong>Storage Optimization</strong></dt><dd><p>Use SSD storage for better I/O performance during indexing.</p>
+</dd>
+<dt><strong>Memory Management</strong></dt><dd><p>Ensure sufficient RAM for large document processing.</p>
+</dd>
+</dl>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<p>After successful ingestion:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="usage.html"><span class="doc">Running the Chatbot</span></a> - Run the chatbot interface</p></li>
+<li><p><a class="reference internal" href="troubleshooting.html"><span class="doc">Troubleshooting</span></a> - Resolve any ingestion issues</p></li>
+<li><p>Verify that documents are searchable through the interface</p></li>
+</ul>
+<p>Common ingestion issues and solutions are covered in <a class="reference internal" href="troubleshooting.html"><span class="doc">Troubleshooting</span></a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="configuration.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Configuration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="usage.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Running the Chatbot</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#publications-ingestion">Publications Ingestion</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-requirements">Configuration Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-source">Data Source</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-features">Key Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-configuration">Custom Configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#json-document-ingestion">JSON Document Ingestion</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Configuration Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#json-file-format">JSON File Format</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Key Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-json-structures">Custom JSON Structures</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dpdd-ingestion">DPDD Ingestion</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#features">Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-options">Configuration Options</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ingestion-process-details">Ingestion Process Details</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#text-processing-pipeline">Text Processing Pipeline</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chunk-size-and-overlap">Chunk Size and Overlap</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#duplicate-prevention">Duplicate Prevention</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring-ingestion-progress">Monitoring Ingestion Progress</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#command-line-output">Command Line Output</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logging">Logging</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#storage-requirements">Storage Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batch-processing">Batch Processing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ingestion-validation">Ingestion Validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance-optimization">Performance Optimization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user-guide/ingestion.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

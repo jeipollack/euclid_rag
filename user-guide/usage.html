@@ -1,0 +1,867 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Running the Chatbot &#8212; euclid_rag</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/usage';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="Document Ingestion" href="ingestion.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="euclid_rag"/>
+    <img src="../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="euclid_rag"/>
+  
+  
+    <p class="title logo__title">euclid_rag</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Change log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer-guide/index.html">
+    Contributing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Change log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer-guide/index.html">
+    Contributing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ingestion.html">Document Ingestion</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Running the Chatbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Running the Chatbot</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="running-the-chatbot">
+<h1>Running the Chatbot<a class="headerlink" href="#running-the-chatbot" title="Link to this heading">#</a></h1>
+<p>Once you have completed <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>, <a class="reference internal" href="configuration.html"><span class="doc">Configuration</span></a>, and <a class="reference internal" href="ingestion.html"><span class="doc">Document Ingestion</span></a>, you can run the euclid_rag chatbot interface.</p>
+<section id="local-deployment">
+<h2>Local Deployment<a class="headerlink" href="#local-deployment" title="Link to this heading">#</a></h2>
+<section id="standard-streamlit-launch">
+<h3>Standard Streamlit Launch<a class="headerlink" href="#standard-streamlit-launch" title="Link to this heading">#</a></h3>
+<p>For local development and testing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>python/euclid
+streamlit<span class="w"> </span>run<span class="w"> </span>rag/app.py
+</pre></div>
+</div>
+<p>This starts the Streamlit web interface, typically accessible at <code class="docutils literal notranslate"><span class="pre">http://localhost:8501</span></code>.</p>
+</section>
+<section id="custom-port-and-host">
+<h3>Custom Port and Host<a class="headerlink" href="#custom-port-and-host" title="Link to this heading">#</a></h3>
+<p>To run on a different port or host:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>python/euclid
+streamlit<span class="w"> </span>run<span class="w"> </span>rag/app.py<span class="w"> </span>--server.port<span class="w"> </span><span class="m">8080</span><span class="w"> </span>--server.address<span class="w"> </span><span class="m">0</span>.0.0.0
+</pre></div>
+</div>
+</section>
+<section id="production-deployment-options">
+<h3>Production Deployment Options<a class="headerlink" href="#production-deployment-options" title="Link to this heading">#</a></h3>
+<p>For production environments:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># With specific configuration</span>
+streamlit<span class="w"> </span>run<span class="w"> </span>rag/app.py<span class="w"> </span>--server.port<span class="w"> </span><span class="m">80</span><span class="w"> </span>--server.address<span class="w"> </span><span class="m">0</span>.0.0.0
+
+<span class="c1"># With custom config file</span>
+<span class="nv">EUCLID_RAG_CONFIG_PATH</span><span class="o">=</span>/path/to/prod_config.yaml<span class="w"> </span>streamlit<span class="w"> </span>run<span class="w"> </span>rag/app.py
+</pre></div>
+</div>
+</section>
+</section>
+<section id="docker-deployment">
+<h2>Docker Deployment<a class="headerlink" href="#docker-deployment" title="Link to this heading">#</a></h2>
+<p>Container-based deployment with Docker Compose provides isolation and easier management.</p>
+<section id="starting-services">
+<h3>Starting Services<a class="headerlink" href="#starting-services" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start all services</span>
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
+</pre></div>
+</div>
+<p>This launches:</p>
+<ul class="simple">
+<li><p><strong>Streamlit application</strong> - The main web interface</p></li>
+<li><p><strong>Ollama LLM server</strong> - Local language model service</p></li>
+<li><p><strong>Supporting services</strong> - Database, networking, etc.</p></li>
+</ul>
+</section>
+<section id="setting-up-the-llm-model">
+<h3>Setting up the LLM Model<a class="headerlink" href="#setting-up-the-llm-model" title="Link to this heading">#</a></h3>
+<p>After containers are running, pull the desired model:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pull the default model (Mistral)</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>pull<span class="w"> </span>mistral:latest
+
+<span class="c1"># Or pull alternative models</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>pull<span class="w"> </span>llama2:latest
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>pull<span class="w"> </span>codellama:latest
+</pre></div>
+</div>
+</section>
+<section id="available-models">
+<h3>Available Models<a class="headerlink" href="#available-models" title="Link to this heading">#</a></h3>
+<p>Check which models are available:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List available models to pull</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>list
+
+<span class="c1"># Check model details</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>show<span class="w"> </span>mistral:latest
+</pre></div>
+</div>
+</section>
+<section id="docker-benefits">
+<h3>Docker Benefits<a class="headerlink" href="#docker-benefits" title="Link to this heading">#</a></h3>
+<p>The Docker setup provides:</p>
+<ul class="simple">
+<li><p><strong>Isolated environment</strong> with all dependencies</p></li>
+<li><p><strong>Ollama LLM server</strong> running in a separate container</p></li>
+<li><p><strong>Streamlit application</strong> accessible via web browser</p></li>
+<li><p><strong>Automatic service orchestration</strong> with Docker Compose</p></li>
+<li><p><strong>Easy scaling</strong> and deployment management</p></li>
+</ul>
+</section>
+</section>
+<section id="using-the-interface">
+<h2>Using the Interface<a class="headerlink" href="#using-the-interface" title="Link to this heading">#</a></h2>
+<section id="web-interface-features">
+<h3>Web Interface Features<a class="headerlink" href="#web-interface-features" title="Link to this heading">#</a></h3>
+<p>The Streamlit interface provides:</p>
+<dl class="simple">
+<dt><strong>Chat Interface</strong></dt><dd><ul class="simple">
+<li><p>Natural language input for questions</p></li>
+<li><p>Real-time responses from the LLM</p></li>
+<li><p>Conversation history and context</p></li>
+</ul>
+</dd>
+<dt><strong>Document Querying</strong></dt><dd><ul class="simple">
+<li><p>Search across multiple document types</p></li>
+<li><p>Publications, DPDD, and other ingested content</p></li>
+<li><p>Semantic search with vector similarity</p></li>
+</ul>
+</dd>
+<dt><strong>Source Attribution</strong></dt><dd><ul class="simple">
+<li><p>View source documents for each answer</p></li>
+<li><p>Direct links to original content where available</p></li>
+<li><p>Similarity scores from vector search and document ranking scores</p></li>
+</ul>
+</dd>
+<dt><strong>Interactive Elements</strong></dt><dd><ul class="simple">
+<li><p>Configuration adjustments</p></li>
+<li><p>Export conversation history</p></li>
+<li><p>Document ingestion for updating knowledge bases</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="query-examples">
+<h3>Query Examples<a class="headerlink" href="#query-examples" title="Link to this heading">#</a></h3>
+<p>Try these example queries to test your system:</p>
+<dl class="simple">
+<dt><strong>General Questions</strong></dt><dd><ul class="simple">
+<li><p>“What is the purpose of the Euclid mission?”</p></li>
+<li><p>“How are VIS data products structured?”</p></li>
+<li><p>“Explain the LE1 data processing pipeline”</p></li>
+</ul>
+</dd>
+<dt><strong>Technical Queries</strong></dt><dd><ul class="simple">
+<li><p>“What file formats are used for SIM data products?”</p></li>
+<li><p>“How is astrometric calibration performed?”</p></li>
+<li><p>“What are the quality requirements for photometry?”</p></li>
+</ul>
+</dd>
+<dt><strong>Document-Specific</strong></dt><dd><ul class="simple">
+<li><p>“Find information about header keywords”</p></li>
+<li><p>“Show me examples of DPDD data structures”</p></li>
+<li><p>“What are the validation procedures?”</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+<section id="configuration-during-runtime">
+<h2>Configuration During Runtime<a class="headerlink" href="#configuration-during-runtime" title="Link to this heading">#</a></h2>
+<p><strong>Note</strong>: Configuration changes require rebuilding the container since the config file is embedded in the Docker image.</p>
+<p>To change models:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pull new model (if not already available)</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>pull<span class="w"> </span>mistral:7b-instruct
+
+<span class="c1"># Update app_config.yaml</span>
+<span class="c1"># Change: model: &quot;granite3.2:latest&quot;</span>
+<span class="c1"># To:     model: &quot;mistral:7b-instruct&quot;</span>
+
+<span class="c1"># Rebuild and restart the application</span>
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build<span class="w"> </span>euclid
+</pre></div>
+</div>
+<section id="temperature-and-behavior-tuning">
+<h3>Temperature and Behavior Tuning<a class="headerlink" href="#temperature-and-behavior-tuning" title="Link to this heading">#</a></h3>
+<p>Adjust response characteristics in <code class="docutils literal notranslate"><span class="pre">app_config.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">llm</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;granite3.2:latest&quot;</span>
+<span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.2</span><span class="w">  </span><span class="c1"># Adjust between 0.0-1.0</span>
+<span class="w">  </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://ollama:11434&quot;</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><strong>Temperature Effects:</strong></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">0.0</span></code> - Always chooses most likely response (deterministic)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0.1</span></code> - Very consistent, minimal creativity</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0.3</span></code> - Balanced factual accuracy with slight variation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0.7</span></code> - More creative, conversational responses</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1.0</span></code> - Highly creative, unpredictable responses</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="embedding-model-configuration">
+<h3>Embedding Model Configuration<a class="headerlink" href="#embedding-model-configuration" title="Link to this heading">#</a></h3>
+<p>Optimize embedding performance:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">embeddings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;E5MpsEmbedder&quot;</span><span class="w">  </span><span class="c1"># Optimized for Apple Silicon</span>
+<span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;intfloat/e5-large-v2&quot;</span><span class="w">  </span><span class="c1"># Higher accuracy</span>
+<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">  </span><span class="c1"># Adjust based on available memory</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><strong>Embedding Model Options:</strong></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;intfloat/e5-small-v2&quot;</span></code> - Fast, lower memory usage</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;intfloat/e5-base-v2&quot;</span></code> - Balanced performance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;intfloat/e5-large-v2&quot;</span></code> - Best accuracy, higher memory usage</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="environment-variables">
+<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">#</a></h3>
+<p>Override settings without modifying config files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set custom model</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">EUCLID_RAG_LLM_MODEL</span><span class="o">=</span><span class="s2">&quot;mistral:latest&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">EUCLID_RAG_TEMPERATURE</span><span class="o">=</span><span class="s2">&quot;0.3&quot;</span>
+
+<span class="c1"># Set custom vector store path</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">EUCLID_RAG_VECTOR_STORE_PATH</span><span class="o">=</span><span class="s2">&quot;/custom/path&quot;</span>
+
+<span class="c1"># Enable debug mode</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">EUCLID_RAG_DEBUG</span><span class="o">=</span><span class="nb">true</span>
+
+<span class="c1"># Then run the application</span>
+streamlit<span class="w"> </span>run<span class="w"> </span>rag/app.py
+</pre></div>
+</div>
+</section>
+<section id="streamlit-configuration">
+<h3>Streamlit Configuration<a class="headerlink" href="#streamlit-configuration" title="Link to this heading">#</a></h3>
+<p>Create a <code class="docutils literal notranslate"><span class="pre">.streamlit/config.toml</span></code> file for UI customization:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[theme]</span>
+<span class="n">primaryColor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;#1f77b4&quot;</span>
+<span class="n">backgroundColor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span>
+<span class="n">secondaryBackgroundColor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;#f0f2f6&quot;</span>
+<span class="n">textColor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;#262730&quot;</span>
+
+<span class="k">[server]</span>
+<span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8501</span>
+<span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;localhost&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-optimization">
+<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading">#</a></h2>
+<section id="memory-management">
+<h3>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading">#</a></h3>
+<p>For large document collections:</p>
+<ul class="simple">
+<li><p><strong>Monitor memory usage</strong> during queries</p></li>
+<li><p><strong>Restart services periodically</strong> to clear cache</p></li>
+<li><p><strong>Adjust chunk sizes</strong> in configuration if needed</p></li>
+</ul>
+</section>
+<section id="response-time-optimization">
+<h3>Response Time Optimization<a class="headerlink" href="#response-time-optimization" title="Link to this heading">#</a></h3>
+<p>To improve query response times:</p>
+<ul class="simple">
+<li><p><strong>Use SSD storage</strong> for vector stores</p></li>
+<li><p><strong>Increase available RAM</strong> for embedding operations</p></li>
+<li><p><strong>Choose appropriate LLM models</strong> (smaller models = faster responses)</p></li>
+<li><p><strong>Optimize vector store configuration</strong> for your use case</p></li>
+</ul>
+</section>
+</section>
+<section id="monitoring-and-logging">
+<h2>Monitoring and Logging<a class="headerlink" href="#monitoring-and-logging" title="Link to this heading">#</a></h2>
+<section id="application-logs">
+<h3>Application Logs<a class="headerlink" href="#application-logs" title="Link to this heading">#</a></h3>
+<p>View application logs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For local deployment</span>
+tail<span class="w"> </span>-f<span class="w"> </span>logs/euclid_rag.log
+
+<span class="c1"># For Docker deployment</span>
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>euclid_rag
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>ollama
+</pre></div>
+</div>
+</section>
+<section id="performance-metrics">
+<h3>Performance Metrics<a class="headerlink" href="#performance-metrics" title="Link to this heading">#</a></h3>
+<p>Monitor key metrics:</p>
+<ul class="simple">
+<li><p><strong>Query response time</strong></p></li>
+<li><p><strong>Memory usage</strong></p></li>
+<li><p><strong>Vector store size</strong></p></li>
+<li><p><strong>Document retrieval accuracy</strong></p></li>
+</ul>
+</section>
+<section id="health-checks">
+<h3>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading">#</a></h3>
+<p>Verify services are running correctly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check Streamlit is accessible</span>
+curl<span class="w"> </span>http://localhost:8501/healthz
+
+<span class="c1"># Check Ollama service (Docker)</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>euclid_rag-ollama-1<span class="w"> </span>ollama<span class="w"> </span>list
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting-runtime-issues">
+<h2>Troubleshooting Runtime Issues<a class="headerlink" href="#troubleshooting-runtime-issues" title="Link to this heading">#</a></h2>
+<p>Common issues during runtime:</p>
+<dl class="simple">
+<dt><strong>Slow Responses</strong></dt><dd><ul class="simple">
+<li><p>Check available memory and CPU</p></li>
+<li><p>Verify vector store isn’t corrupted</p></li>
+<li><p>Consider using a smaller LLM model</p></li>
+</ul>
+</dd>
+<dt><strong>Connection Errors</strong></dt><dd><ul class="simple">
+<li><p>Ensure all services are running</p></li>
+<li><p>Check firewall and port configurations</p></li>
+<li><p>Verify Docker containers are healthy</p></li>
+</ul>
+</dd>
+<dt><strong>Inaccurate Results</strong></dt><dd><ul class="simple">
+<li><p>Review ingested document quality</p></li>
+<li><p>Adjust similarity thresholds</p></li>
+<li><p>Re-run ingestion if needed</p></li>
+</ul>
+</dd>
+</dl>
+<p>For detailed troubleshooting, see <a class="reference internal" href="troubleshooting.html"><span class="doc">Troubleshooting</span></a>.</p>
+</section>
+<section id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading">#</a></h2>
+<section id="custom-integration">
+<h3>Custom Integration<a class="headerlink" href="#custom-integration" title="Link to this heading">#</a></h3>
+<p>Integrate euclid_rag into your own applications:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">euclid.rag</span><span class="w"> </span><span class="kn">import</span> <span class="n">chatbot</span>
+
+<span class="c1"># Configure retriever</span>
+<span class="n">retriever</span> <span class="o">=</span> <span class="n">chatbot</span><span class="o">.</span><span class="n">configure_retriever</span><span class="p">()</span>
+
+<span class="c1"># Create router with custom callback</span>
+<span class="n">router</span> <span class="o">=</span> <span class="n">chatbot</span><span class="o">.</span><span class="n">create_euclid_router</span><span class="p">(</span><span class="n">callback_handler</span><span class="o">=</span><span class="n">my_callback</span><span class="p">)</span>
+
+<span class="c1"># Process queries programmatically</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">invoke</span><span class="p">({</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;What is Euclid?&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="api-usage">
+<h3>API Usage<a class="headerlink" href="#api-usage" title="Link to this heading">#</a></h3>
+<p>Use the underlying functions directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">euclid.rag.retrievers.generic_retrieval_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_generic_retrieval_tool</span>
+
+<span class="c1"># Get retrieval tool</span>
+<span class="n">tool</span> <span class="o">=</span> <span class="n">get_generic_retrieval_tool</span><span class="p">(</span><span class="n">llm</span><span class="p">,</span> <span class="n">retriever</span><span class="p">)</span>
+
+<span class="c1"># Use for custom applications</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&quot;your question here&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Explore the <a class="reference internal" href="../api.html"><span class="doc">Python API Reference</span></a> for programmatic usage</p></li>
+<li><p>See <a class="reference internal" href="troubleshooting.html"><span class="doc">Troubleshooting</span></a> for common issues</p></li>
+<li><p>Check <a class="reference internal" href="../developer-guide/index.html"><span class="doc">Contributing</span></a> for customization options</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="ingestion.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Document Ingestion</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="troubleshooting.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Troubleshooting</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-deployment">Local Deployment</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#standard-streamlit-launch">Standard Streamlit Launch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-port-and-host">Custom Port and Host</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#production-deployment-options">Production Deployment Options</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#docker-deployment">Docker Deployment</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-services">Starting Services</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-llm-model">Setting up the LLM Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#available-models">Available Models</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#docker-benefits">Docker Benefits</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-interface">Using the Interface</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#web-interface-features">Web Interface Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#query-examples">Query Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-during-runtime">Configuration During Runtime</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#temperature-and-behavior-tuning">Temperature and Behavior Tuning</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#embedding-model-configuration">Embedding Model Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streamlit-configuration">Streamlit Configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance-optimization">Performance Optimization</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-management">Memory Management</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#response-time-optimization">Response Time Optimization</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring-and-logging">Monitoring and Logging</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#application-logs">Application Logs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#performance-metrics">Performance Metrics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#health-checks">Health Checks</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting-runtime-issues">Troubleshooting Runtime Issues</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-usage">Advanced Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-integration">Custom Integration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api-usage">API Usage</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user-guide/usage.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

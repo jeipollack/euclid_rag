@@ -1,0 +1,1525 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Python API Reference &#8212; euclid_rag</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=38b66d78"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Change log" href="changelog.html" />
+    <link rel="prev" title="Troubleshooting" href="user-guide/troubleshooting.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="euclid_rag"/>
+    <img src="_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="euclid_rag"/>
+  
+  
+    <p class="title logo__title">euclid_rag</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user-guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Change log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="developer-guide/index.html">
+    Contributing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user-guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Change log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="developer-guide/index.html">
+    Contributing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Python API Reference</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="python-api-reference">
+<h1>Python API Reference<a class="headerlink" href="#python-api-reference" title="Link to this heading">#</a></h1>
+<section id="core-application">
+<h2>Core Application<a class="headerlink" href="#core-application" title="Link to this heading">#</a></h2>
+<p>The main chatbot and user interface functionality.</p>
+<section id="key-functions">
+<h3>Key Functions<a class="headerlink" href="#key-functions" title="Link to this heading">#</a></h3>
+<p>The core application provides functions for:</p>
+<ul class="simple">
+<li><p>Configuring retrievers for document search</p></li>
+<li><p>Creating intelligent query routers</p></li>
+<li><p>Handling user input and responses</p></li>
+<li><p>Setting up the Streamlit interface</p></li>
+</ul>
+<p id="module-euclid.rag.chatbot">Streamlit chatbot interface for the Euclid AI Assistant.
+Uses an existing FAISS vector store and E5 embeddings for retrieval.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.chatbot.configure_retriever">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.chatbot.</span></span><span class="sig-name descname"><span class="pre">configure_retriever</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VectorStoreRetriever</span></span></span><a class="headerlink" href="#euclid.rag.chatbot.configure_retriever" title="Link to this definition">#</a></dt>
+<dd><p>Build and cache a FAISS-based retriever for Euclid knowledge sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Embedding model configuration.</p></li>
+<li><p><strong>index_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the directory containing the FAISS index.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured Retriever with <code class="docutils literal notranslate"><span class="pre">search_type=&quot;similarity&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">k=6</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>VectorStoreRetriever</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.13)"><strong>RuntimeError</strong></a> – If the FAISS index cannot be found or loaded.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.chatbot.create_euclid_router">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.chatbot.</span></span><span class="sig-name descname"><span class="pre">create_euclid_router</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">BaseCallbackHandler</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.chatbot.create_euclid_router" title="Link to this definition">#</a></dt>
+<dd><p>Return Euclid-AI that <strong>always</strong> delegates to at least one sub-agent.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.chatbot.handle_user_input">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.chatbot.</span></span><span class="sig-name descname"><span class="pre">handle_user_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">BaseCallbackHandler</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">StreamlitChatMessageHistory</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.chatbot.handle_user_input" title="Link to this definition">#</a></dt>
+<dd><p>Display chat history and handle new user input in Streamlit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>router</strong> (<em>Callable</em>) – Callable that routs to correct tools for the response.</p></li>
+<li><p><strong>msgs</strong> (<em>StreamlitChatMessageHistory</em>) – Chat history object for managing messages.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.chatbot.submit_text">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.chatbot.</span></span><span class="sig-name descname"><span class="pre">submit_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.chatbot.submit_text" title="Link to this definition">#</a></dt>
+<dd><p>Flag that the user pressed &lt;enter&gt; in
+the chat box (Streamlit callback).</p>
+</dd></dl>
+
+<p id="module-euclid.rag.layout">Set up the sidebar, landing page, and header/footer for a Streamlit
+app that interacts with the chatbot.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.layout.setup_header_and_footer">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.layout.</span></span><span class="sig-name descname"><span class="pre">setup_header_and_footer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">StreamlitChatMessageHistory</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.layout.setup_header_and_footer" title="Link to this definition">#</a></dt>
+<dd><p>Set up the header and footer for the Streamlit app.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.layout.setup_landing_page">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.layout.</span></span><span class="sig-name descname"><span class="pre">setup_landing_page</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.layout.setup_landing_page" title="Link to this definition">#</a></dt>
+<dd><p>Set up the landing page for the Streamlit app.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.layout.setup_sidebar">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.layout.</span></span><span class="sig-name descname"><span class="pre">setup_sidebar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.layout.setup_sidebar" title="Link to this definition">#</a></dt>
+<dd><p>Set up the sidebar for the Streamlit app.</p>
+</dd></dl>
+
+<p id="module-euclid.rag.streamlit_callback">Create a Streamlit callback handler that dynamically updates a UI
+container with new tokens from a language model.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.streamlit_callback.get_streamlit_cb">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.streamlit_callback.</span></span><span class="sig-name descname"><span class="pre">get_streamlit_cb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_container</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeltaGenerator</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BaseCallbackHandler</span></span></span><a class="headerlink" href="#euclid.rag.streamlit_callback.get_streamlit_cb" title="Link to this definition">#</a></dt>
+<dd><p>Create a Streamlit callback handler that updates the provided
+Streamlit container with new tokens.
+:param parent_container: The Streamlit container
+:type parent_container: DeltaGenerator
+:param where the text will be rendered.:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>BaseCallbackHandler</strong> (<em>An instance of a callback handler</em>)</p></li>
+<li><p><em>configured for Streamlit.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="retrieval-system">
+<h2>Retrieval System<a class="headerlink" href="#retrieval-system" title="Link to this heading">#</a></h2>
+<p>Tools for retrieving and formatting information from document stores.</p>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h3>
+<p>The retrieval system provides specialized tools for querying Euclid mission documents with intelligent source formatting and relevance scoring.</p>
+<p id="module-euclid.rag.retrievers.generic_retrieval_tool">Generic Retriever Tool for querying Euclid-Consortium documents.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.bonus_overlap">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.generic_retrieval_tool.</span></span><span class="sig-name descname"><span class="pre">bonus_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.generic_retrieval_tool.bonus_overlap" title="Link to this definition">#</a></dt>
+<dd><p>Compute weighted count of query tokens in a metadata field.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.format_source">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.generic_retrieval_tool.</span></span><span class="sig-name descname"><span class="pre">format_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.generic_retrieval_tool.format_source" title="Link to this definition">#</a></dt>
+<dd><p>Format a source line based on document metadata.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.get_generic_retrieval_tool">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.generic_retrieval_tool.</span></span><span class="sig-name descname"><span class="pre">get_generic_retrieval_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseLanguageModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retriever</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VectorStoreRetriever</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tool</span></span></span><a class="headerlink" href="#euclid.rag.retrievers.generic_retrieval_tool.get_generic_retrieval_tool" title="Link to this definition">#</a></dt>
+<dd><p>Return a generic Euclid retrieval tool that answers questions
+from any document type (publications, DPDD, etc.).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llm</strong> (<em>BaseLanguageModel</em>) – The language model used to generate answers.</p></li>
+<li><p><strong>retriever</strong> (<em>VectorStoreRetriever</em>) – The retriever for accessing vectorstore documents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A callable tool that answers questions and formats sources
+for all Euclid document types.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.normalize_url">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.generic_retrieval_tool.</span></span><span class="sig-name descname"><span class="pre">normalize_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.generic_retrieval_tool.normalize_url" title="Link to this definition">#</a></dt>
+<dd><p>Remove URL fragments and query parameters for deduplication.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.semantic_rerank">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.generic_retrieval_tool.</span></span><span class="sig-name descname"><span class="pre">semantic_rerank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.generic_retrieval_tool.semantic_rerank" title="Link to this definition">#</a></dt>
+<dd><p>Rerank a list of documents by semantic similarity to the query.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.tokenize">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.generic_retrieval_tool.</span></span><span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.retrievers.generic_retrieval_tool.tokenize" title="Link to this definition">#</a></dt>
+<dd><p>Convert text into a set of lowercase tokens ≥3 characters.</p>
+</dd></dl>
+
+<p id="module-euclid.rag.retrievers.publication_tool">Tool for querying Euclid-Consortium publications and metadata.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.publication_tool.bonus_overlap">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.publication_tool.</span></span><span class="sig-name descname"><span class="pre">bonus_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.publication_tool.bonus_overlap" title="Link to this definition">#</a></dt>
+<dd><p>Compute a weighted count of query tokens found in a metadata field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><em>set</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Query tokens.</p></li>
+<li><p><strong>field</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>None</em>) – Metadata field to search for token matches.</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Weight to multiply the count by.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Weighted token overlap score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.publication_tool.get_publication_tool">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.publication_tool.</span></span><span class="sig-name descname"><span class="pre">get_publication_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseLanguageModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retriever</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VectorStoreRetriever</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tool</span></span></span><a class="headerlink" href="#euclid.rag.retrievers.publication_tool.get_publication_tool" title="Link to this definition">#</a></dt>
+<dd><p>Return a tool that answers questions using Euclid Consortium publications.</p>
+<p>Uses a language model and vectorstore retriever,</p>
+<p>to find and summarize relevant papers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llm</strong> (<em>BaseLanguageModel</em>) – The language model used to generate answers.</p></li>
+<li><p><strong>retriever</strong> (<em>VectorStoreRetriever</em>) – The retriever for accessing publication documents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A callable tool that answers questions based on EC publications.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.publication_tool.semantic_rerank">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.publication_tool.</span></span><span class="sig-name descname"><span class="pre">semantic_rerank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.publication_tool.semantic_rerank" title="Link to this definition">#</a></dt>
+<dd><p>Rerank a list of documents based on semantic similarity to a query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The input query string.</p></li>
+<li><p><strong>docs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – <p>A list of documents to rerank.</p>
+<p>Each document must have a <cite>page_content</cite> attribute.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input documents sorted by descending relevance to the query.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.publication_tool.tokenize">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.publication_tool.</span></span><span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.retrievers.publication_tool.tokenize" title="Link to this definition">#</a></dt>
+<dd><p>Convert text into a set of lowercase tokens with ≥3 characters.</p>
+<p>Punctuation is removed before tokenization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The input text string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set of cleaned, lowercase tokens at least 3 characters long.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)">set</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-euclid.rag.retrievers.redmine_tool">Tool for querying Euclid-Consortium redmine and metadata.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.redmine_tool.</span></span><span class="sig-name descname"><span class="pre">RedmineRetrieverHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dedup_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euclid.rag.extra_scripts.deduplication.HashDeduplicator" title="euclid.rag.extra_scripts.deduplication.HashDeduplicator"><span class="pre">HashDeduplicator</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dedup_semantic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator" title="euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator"><span class="pre">SemanticSimilarityDeduplicator</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Helper class to encapsulate the multi-stage retrieval logic for Redmine.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.remove_duplicate_docs">
+<span class="sig-name descname"><span class="pre">remove_duplicate_docs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scored_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.remove_duplicate_docs" title="Link to this definition">#</a></dt>
+<dd><p>Remove exact and semantic duplicates from retrieved documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scored_docs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – A list of (document, score) pairs. Each <cite>document</cite> should have a
+<cite>.page_content</cite> attribute containing its text.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Deduplicated (score, document) pairs, sorted by score in descending order.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Exact duplicates are removed using <cite>self.dedup_hash</cite>.</p></li>
+<li><p>Semantic duplicates are removed using <cite>self.dedup_semantic</cite> if enabled.</p></li>
+<li><p>The input is expected in the form <cite>(document, score)</cite>, while the output</p></li>
+</ul>
+<p>is returned in the form <cite>(score, document)</cite> for downstream ranking.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.score_by_metadata">
+<span class="sig-name descname"><span class="pre">score_by_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_k_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.score_by_metadata" title="Link to this definition">#</a></dt>
+<dd><p>Score documents based on metadata keyword overlap and recency.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.semantic_rerank">
+<span class="sig-name descname"><span class="pre">semantic_rerank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></span><a class="headerlink" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.semantic_rerank" title="Link to this definition">#</a></dt>
+<dd><p>Rerank a list of documents based on semantic similarity to a query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The input query string.</p></li>
+<li><p><strong>docs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – <p>A list of (LangChain) documents to rerank.</p>
+<p>Each document must have a <cite>page_content</cite> attribute.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input documents sorted by descending relevance to the query.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.retrievers.redmine_tool.get_redmine_tool">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.retrievers.redmine_tool.</span></span><span class="sig-name descname"><span class="pre">get_redmine_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseLanguageModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retriever</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VectorStoreRetriever</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tool</span></span></span><a class="headerlink" href="#euclid.rag.retrievers.redmine_tool.get_redmine_tool" title="Link to this definition">#</a></dt>
+<dd><p>Return a tool that answers questions using Euclid Consortium Redmine.
+Uses a language model and vector store retriever,
+to find and summarize relevant redmine wikis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llm</strong> (<em>BaseLanguageModel</em>) – The language model used to generate answers.</p></li>
+<li><p><strong>retriever</strong> (<em>VectorStoreRetriever</em>) – The retriever for accessing redmine documents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A callable tool that answers questions based on EC redmine.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="module-euclid.rag.ingestion.ingest_dpdd">
+<span id="data-ingestion"></span><h2>Data Ingestion<a class="headerlink" href="#module-euclid.rag.ingestion.ingest_dpdd" title="Link to this heading">#</a></h2>
+<p>Ingest Euclid Science Ground Segment Data Product Description Document (DPDD).</p>
+<p>This script downloads the DPDD from the Euclid website, processes it, and
+ingests the data into a FAISS vectorstore for use in the Euclid RAG system.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_dpdd.EuclidDPDDIngestor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_dpdd.</span></span><span class="sig-name descname"><span class="pre">EuclidDPDDIngestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector_store_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpdd_config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.ingestion.ingest_dpdd.EuclidDPDDIngestor" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Downloads and ingests DPDD data into the vector store.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_dpdd.EuclidDPDDIngestor.ingest_new_data">
+<span class="sig-name descname"><span class="pre">ingest_new_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_dpdd.EuclidDPDDIngestor.ingest_new_data" title="Link to this definition">#</a></dt>
+<dd><p>Ingest new data into the vector store.</p>
+<p>This method fetches DPDD entries, processes them, and adds them to the
+vector store, avoiding duplicates based on the ‘source’ metadata field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.13)"><strong>RuntimeError</strong></a> – If the vector store directory is missing or cannot be created.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>This function does not return anything; it performs the ingestion.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_dpdd.main">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_dpdd.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_dpdd.main" title="Link to this definition">#</a></dt>
+<dd><p>Run the ingestion script.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_dpdd.run_dpdd_ingestion">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_dpdd.</span></span><span class="sig-name descname"><span class="pre">run_dpdd_ingestion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_dpdd.run_dpdd_ingestion" title="Link to this definition">#</a></dt>
+<dd><p>Run the DPDD ingestion process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Configuration dictionary containing paths and settings.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.13)"><strong>RuntimeError</strong></a> – If the vector store directory is missing or cannot be created.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>This function does not return anything; it performs the ingestion.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-euclid.rag.ingestion.ingest_publications">Ingest publications into a FAISS vector store from the official EC BibTeX.
+Each paper is embedded immediately after download and deleted afterward.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_publications.EuclidBibIngestor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_publications.</span></span><span class="sig-name descname"><span class="pre">EuclidBibIngestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.ingestion.ingest_publications.EuclidBibIngestor" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Downloads and updates the vector store from the Euclid
+BibTeX file.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_publications.EuclidBibIngestor.update_from_bibtex">
+<span class="sig-name descname"><span class="pre">update_from_bibtex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_publications.EuclidBibIngestor.update_from_bibtex" title="Link to this definition">#</a></dt>
+<dd><p>Fetch new BibTeX entries and update the vector store.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_publications.main">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_publications.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_publications.main" title="Link to this definition">#</a></dt>
+<dd><p>Run the ingestion script.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_publications.run_bibtex_ingestion">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_publications.</span></span><span class="sig-name descname"><span class="pre">run_bibtex_ingestion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_publications.run_bibtex_ingestion" title="Link to this definition">#</a></dt>
+<dd><p>Run the bibtex ingestion script.</p>
+</dd></dl>
+
+<p id="module-euclid.rag.ingestion.ingest_redmine">Module to ingest JSON-exported pages into a FAISS vector store.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_redmine.JSONIngestor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_redmine.</span></span><span class="sig-name descname"><span class="pre">JSONIngestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cleaner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner" title="euclid.rag.utils.redmine_cleaner.RedmineCleaner"><span class="pre">RedmineCleaner</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.ingestion.ingest_redmine.JSONIngestor" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Ingest JSON-exported pages into a FAISS vector store.</p>
+<p>The JSON structure should be as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Full text of the page...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;field1&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;field2&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index_dir</strong> (<em>Path</em>) – Directory where the FAISS index will be stored.</p></li>
+<li><p><strong>json_dir</strong> (<em>Path</em>) – Directory containing JSON files to ingest.</p></li>
+<li><p><strong>cleaner</strong> (<a class="reference internal" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner" title="euclid.rag.utils.redmine_cleaner.RedmineCleaner"><em>RedmineCleaner</em></a>) – Text cleaning utility for preprocessing content.</p></li>
+<li><p><strong>data_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Configuration dictionary containing embedding and processing settings.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_redmine.JSONIngestor.ingest_json_files">
+<span class="sig-name descname"><span class="pre">ingest_json_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_redmine.JSONIngestor.ingest_json_files" title="Link to this definition">#</a></dt>
+<dd><p>Ingest documents from JSON files into the FAISS vector store.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_redmine.main">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_redmine.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_redmine.main" title="Link to this definition">#</a></dt>
+<dd><p>Run the ingestion script.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.ingestion.ingest_redmine.run_redmine_ingestion">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.ingestion.ingest_redmine.</span></span><span class="sig-name descname"><span class="pre">run_redmine_ingestion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.ingestion.ingest_redmine.run_redmine_ingestion" title="Link to this definition">#</a></dt>
+<dd><p>Run the ingestion process for Redmine pages using the provided configuration.</p>
+</dd></dl>
+
+</section>
+<section id="module-euclid.rag.utils.acronym_handler">
+<span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-euclid.rag.utils.acronym_handler" title="Link to this heading">#</a></h2>
+<p>Module providing functions to load, extract, and expand acronyms
+from a JSON file and within a given text.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.utils.acronym_handler.expand_acronyms_in_query">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.acronym_handler.</span></span><span class="sig-name descname"><span class="pre">expand_acronyms_in_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">acronyms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.acronym_handler.expand_acronyms_in_query" title="Link to this definition">#</a></dt>
+<dd><p>Expand acronyms found in a given query string
+by replacing them with their definitions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The input string containing potential acronyms.
+acronyms (dict): A dictionary mapping acronyms (keys)
+to their definitions (values)
+based on <a class="reference external" href="http://ycopin.pages.euclid-sgs.uk/euclidator/">http://ycopin.pages.euclid-sgs.uk/euclidator/</a> by Y. Copin</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>str</strong> – to include their definitions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The modified query string with acronyms expanded</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;DSS&quot;</span><span class="p">:</span> <span class="s2">&quot;Data Storage System | Distributed Storage System&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expand_acronyms_in_query</span><span class="p">(</span><span class="s2">&quot;What is DSS?&quot;</span><span class="p">,</span> <span class="n">acro</span><span class="p">)</span>
+<span class="go">&#39;What is DSS (Data Storage System | Distributed Storage System)?&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.utils.acronym_handler.extract_acronyms">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.acronym_handler.</span></span><span class="sig-name descname"><span class="pre">extract_acronyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.acronym_handler.extract_acronyms" title="Link to this definition">#</a></dt>
+<dd><p>Extract acronyms from a string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The string containing acronyms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>set[str]</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of the acronyms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.utils.acronym_handler.load_acronyms">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.acronym_handler.</span></span><span class="sig-name descname"><span class="pre">load_acronyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.acronym_handler.load_acronyms" title="Link to this definition">#</a></dt>
+<dd><p>Load acronyms from a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>Path</em>) – The file path to the JSON file containing acronyms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dict[str, str]</strong> – and values are their corresponding definitions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary where keys are acronyms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.utils.acronym_handler.match_acronyms">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.acronym_handler.</span></span><span class="sig-name descname"><span class="pre">match_acronyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">acronym_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.acronym_handler.match_acronyms" title="Link to this definition">#</a></dt>
+<dd><p>Match acronyms between a string and a dictionary of acronyms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The string containing acronyms.</p></li>
+<li><p><strong>acronym_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – A dictionary mapping acronyms (keys)
+to their definitions (values).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dict[str]</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A susbset of acronym_dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-euclid.rag.utils.config">Utility for loading and parsing config files.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.utils.config.load_config">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.config.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.config.load_config" title="Link to this definition">#</a></dt>
+<dd><p>Load YAML configuration from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> (<em>Path</em>) – Path to the config YAML file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed configuration dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-euclid.rag.utils.device">Utility for loading current device type.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.utils.device.get_device">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.device.</span></span><span class="sig-name descname"><span class="pre">get_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">device</span></span></span><a class="headerlink" href="#euclid.rag.utils.device.get_device" title="Link to this definition">#</a></dt>
+<dd><p>Return the torch device to use for embedding.</p>
+<p>Checks for available hardware acceleration in the following order:
+CUDA, MPS, then CPU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The selected device (‘cuda’, ‘mps’, or ‘cpu’).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.device</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-euclid.rag.utils.redmine_cleaner">Module providing a utility class for cleaning and preparing
+Redmine-exported data.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.utils.redmine_cleaner.</span></span><span class="sig-name descname"><span class="pre">RedmineCleaner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_chunk_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A utility class for cleaning and preparing Redmine-exported data
+for ingestion in a RAG pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>max_chunk_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum length for each split content chunk, by default 1000.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_bold_italic">
+<span class="sig-name descname"><span class="pre">convert_redmine_bold_italic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_bold_italic" title="Link to this definition">#</a></dt>
+<dd><p>Convert <em>bold</em> and _italic_ Redmine syntax to Markdown
+<strong>bold</strong> and <em>italic</em>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_code_blocks">
+<span class="sig-name descname"><span class="pre">convert_redmine_code_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_code_blocks" title="Link to this definition">#</a></dt>
+<dd><p>Convert HTML pre tags to Markdown code blocks.</p>
+<p>Supports multi-line <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> sections by converting them to
+triple-backtick code blocks for better Markdown compatibility.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lines</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – List of text lines that may contain Redmine-style code blocks.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of lines with <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> tags converted to Markdown code blocks.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cleaner</span> <span class="o">=</span> <span class="n">RedmineCleaner</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Some text&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;pre&gt;code here&lt;/pre&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;more text&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">convert_redmine_code_blocks</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="go">[&#39;Some text&#39;, &#39;```&#39;, &#39;code here&#39;, &#39;```&#39;, &#39;more text&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_headers">
+<span class="sig-name descname"><span class="pre">convert_redmine_headers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_headers" title="Link to this definition">#</a></dt>
+<dd><p>Convert Redmine headers (h1. to h6.) to Markdown (# to ######).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_images">
+<span class="sig-name descname"><span class="pre">convert_redmine_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_images" title="Link to this definition">#</a></dt>
+<dd><p>Convert Redmine image syntax !image.png! or !image.png|widthxheight!
+to Markdown ![alt](image.png).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_linebreaks">
+<span class="sig-name descname"><span class="pre">convert_redmine_linebreaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_linebreaks" title="Link to this definition">#</a></dt>
+<dd><p>Convert explicit Redmine line breaks  in text to Markdown
+double spaces + newline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_links">
+<span class="sig-name descname"><span class="pre">convert_redmine_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_links" title="Link to this definition">#</a></dt>
+<dd><p>Convert Redmine links “text”:url to Markdown [text](url).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_lists">
+<span class="sig-name descname"><span class="pre">convert_redmine_lists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_lists" title="Link to this definition">#</a></dt>
+<dd><p>Convert Redmine nested lists (<em>, *</em>) to Markdown lists with
+indentation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_table">
+<span class="sig-name descname"><span class="pre">convert_redmine_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_table" title="Link to this definition">#</a></dt>
+<dd><p>Convert Redmine table block lines starting with | to Markdown table.
+Returns tuple (converted_lines, number_of_lines_consumed).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.enrich_with_context">
+<span class="sig-name descname"><span class="pre">enrich_with_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.enrich_with_context" title="Link to this definition">#</a></dt>
+<dd><p>Add page hierarchy information as a context prefix to the content.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entry</strong> – Original Redmine entry.</p></li>
+<li><p><strong>chunk</strong> – A chunk of cleaned text content.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Chunk prefixed with hierarchy context.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.filter_valid_entries">
+<span class="sig-name descname"><span class="pre">filter_valid_entries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.filter_valid_entries" title="Link to this definition">#</a></dt>
+<dd><p>Keep only entries whose metadata status is not ‘NOK’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – A list of raw Redmine-exported entries.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A filtered list of entries with acceptable statuses.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.normalize_metadata">
+<span class="sig-name descname"><span class="pre">normalize_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.normalize_metadata" title="Link to this definition">#</a></dt>
+<dd><p>Clean and normalize metadata fields (e.g., timestamps).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>metadata</strong> – The metadata dictionary from a Redmine page.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>A normalized metadata dictionary.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.prepare_for_ingestion">
+<span class="sig-name descname"><span class="pre">prepare_for_ingestion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.prepare_for_ingestion" title="Link to this definition">#</a></dt>
+<dd><p>Full pipeline: filter, clean, split and enrich Redmine data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>raw_data</strong> – List of Redmine entries (JSON-like).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of prepared documents ready for ingestion.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.redmine_to_markdown">
+<span class="sig-name descname"><span class="pre">redmine_to_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.redmine_to_markdown" title="Link to this definition">#</a></dt>
+<dd><p>Convert a multiline Redmine-formatted text to Markdown,
+handling headers, lists, links, bold/italic, images, tables,
+code blocks, and line breaks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.utils.redmine_cleaner.RedmineCleaner.split_content">
+<span class="sig-name descname"><span class="pre">split_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.split_content" title="Link to this definition">#</a></dt>
+<dd><p>Split long text into smaller chunks based on sentence boundaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>content</strong> – The cleaned full page text.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of shorter text chunks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-euclid.rag.extra_scripts.deduplication">
+<span id="extra-tools"></span><h2>Extra Tools<a class="headerlink" href="#module-euclid.rag.extra_scripts.deduplication" title="Link to this heading">#</a></h2>
+<p>Deduplication filter using hash, FAISS similarity,
+and cross-encoder re-ranking.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.deduplication.ChunkClusterer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.deduplication.</span></span><span class="sig-name descname"><span class="pre">ChunkClusterer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.extra_scripts.deduplication.ChunkClusterer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Cluster embedding vectors and return one representative text per cluster.</p>
+<p>This class uses clustering on embedding vectors to identify
+similar groups of text chunks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>distance_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum cosine distance between elements in a cluster.
+Lower values produce tighter, more conservative clusters.
+Default is 0.1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.deduplication.ChunkClusterer.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embeddings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.deduplication.ChunkClusterer.filter" title="Link to this definition">#</a></dt>
+<dd><p>Filter semantically similar texts using clustering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The input text chunks.</p></li>
+<li><p><strong>embeddings</strong> (<em>np.ndarray</em>) – The embedding vectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One text per cluster.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.deduplication.HashDeduplicator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.deduplication.</span></span><span class="sig-name descname"><span class="pre">HashDeduplicator</span></span><a class="headerlink" href="#euclid.rag.extra_scripts.deduplication.HashDeduplicator" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Deduplicator using SHA256 hashes for exact match detection.</p>
+<p>Tracks seen inputs by their hash and filters out exact duplicates.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.deduplication.HashDeduplicator.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.deduplication.HashDeduplicator.filter" title="Link to this definition">#</a></dt>
+<dd><p>Check if the text has already been seen via hashing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Input text.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the text is a duplicate, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.deduplication.</span></span><span class="sig-name descname"><span class="pre">SemanticSimilarityDeduplicator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vectorstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FAISS</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reranker_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">similarity_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rerank_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Deduplicator using semantic similarity and optional reranking.</p>
+<p>Uses FAISS to find similar texts and CrossEncoder to refine scoring.
+Texts are considered duplicates if both thresholds are exceeded.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator.filter" title="Link to this definition">#</a></dt>
+<dd><p>Check if the text is semantically similar to existing vectors
+based on a similarity and reranking threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Input text.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if semantically duplicate, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-euclid.rag.extra_scripts.vectorstore_embedder">Embedding and vector store management utilities for Euclid document ingestion.</p>
+<p>This module provides:
+- An E5 embedding class with support for MPS/CUDA/CPU.
+- A function to load or create a FAISS vector store from PDFs.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.Embedder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.vectorstore_embedder.</span></span><span class="sig-name descname"><span class="pre">Embedder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'intfloat/e5-small-v2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Embeddings</span></code></p>
+<p>Embeds text into dense vectors using a HuggingFace model.</p>
+<p>Supports MPS, CUDA, or CPU.</p>
+<p>Pooling strategy (CLS or mean) is inferred automatically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – HuggingFace model to use. Default is “intfloat/e5-small-v2”.</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Number of texts per batch. Default is 16.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.Embedder.device">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">device</span></em><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder.device" title="Link to this definition">#</a></dt>
+<dd><p>Return the torch device used by the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.Embedder.embed_documents">
+<span class="sig-name descname"><span class="pre">embed_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder.embed_documents" title="Link to this definition">#</a></dt>
+<dd><p>Embed a list of documents into dense vectors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.Embedder.embed_query">
+<span class="sig-name descname"><span class="pre">embed_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder.embed_query" title="Link to this definition">#</a></dt>
+<dd><p>Embed a single query into a dense vector.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.load_json_documents">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.vectorstore_embedder.</span></span><span class="sig-name descname"><span class="pre">load_json_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Document</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.load_json_documents" title="Link to this definition">#</a></dt>
+<dd><p>Load documents from a list of JSON files.</p>
+<p>Each JSON file should contain a list of dicts
+with at least a “content” field
+and optionally a “metadata” field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>json_paths</strong> (<em>List</em><em>[</em><em>Path</em><em>]</em>) – List of paths to JSON files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of LangChain Document objects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Document]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.load_or_create_index">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.vectorstore_embedder.</span></span><span class="sig-name descname"><span class="pre">load_or_create_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Embeddings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FAISS</span></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.load_or_create_index" title="Link to this definition">#</a></dt>
+<dd><p>Load an existing FAISS index, or build one from given documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index_dir</strong> (<em>Path</em>) – Directory where the FAISS index is stored (or will be created).</p></li>
+<li><p><strong>embedder</strong> (<em>Embeddings</em>) – Embedding model implementing the LangChain Embeddings interface.</p></li>
+<li><p><strong>pdf_paths</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>Path</em><em>]</em><em>, </em><em>optional</em>) – Lists of input documents to embed.</p></li>
+<li><p><strong>json_paths</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>Path</em><em>]</em><em>, </em><em>optional</em>) – Lists of input documents to embed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A ready-to-use FAISS vectorstore.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>FAISS</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euclid.rag.extra_scripts.vectorstore_embedder.load_pdf_documents">
+<span class="sig-prename descclassname"><span class="pre">euclid.rag.extra_scripts.vectorstore_embedder.</span></span><span class="sig-name descname"><span class="pre">load_pdf_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Document</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euclid.rag.extra_scripts.vectorstore_embedder.load_pdf_documents" title="Link to this definition">#</a></dt>
+<dd><p>Load documents from a list of PDF files using PyMuPDF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pdf_paths</strong> (<em>List</em><em>[</em><em>Path</em><em>]</em>) – List of paths to PDF files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of LangChain Document objects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Document]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="user-guide/troubleshooting.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Troubleshooting</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="changelog.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Change log</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-application">Core Application</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-functions">Key Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.chatbot.configure_retriever"><code class="docutils literal notranslate"><span class="pre">configure_retriever()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.chatbot.create_euclid_router"><code class="docutils literal notranslate"><span class="pre">create_euclid_router()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.chatbot.handle_user_input"><code class="docutils literal notranslate"><span class="pre">handle_user_input()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.chatbot.submit_text"><code class="docutils literal notranslate"><span class="pre">submit_text()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.layout.setup_header_and_footer"><code class="docutils literal notranslate"><span class="pre">setup_header_and_footer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.layout.setup_landing_page"><code class="docutils literal notranslate"><span class="pre">setup_landing_page()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.layout.setup_sidebar"><code class="docutils literal notranslate"><span class="pre">setup_sidebar()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.streamlit_callback.get_streamlit_cb"><code class="docutils literal notranslate"><span class="pre">get_streamlit_cb()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retrieval-system">Retrieval System</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.bonus_overlap"><code class="docutils literal notranslate"><span class="pre">bonus_overlap()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.format_source"><code class="docutils literal notranslate"><span class="pre">format_source()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.get_generic_retrieval_tool"><code class="docutils literal notranslate"><span class="pre">get_generic_retrieval_tool()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.normalize_url"><code class="docutils literal notranslate"><span class="pre">normalize_url()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">semantic_rerank()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.tokenize"><code class="docutils literal notranslate"><span class="pre">tokenize()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.bonus_overlap"><code class="docutils literal notranslate"><span class="pre">bonus_overlap()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.get_publication_tool"><code class="docutils literal notranslate"><span class="pre">get_publication_tool()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">semantic_rerank()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.tokenize"><code class="docutils literal notranslate"><span class="pre">tokenize()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.remove_duplicate_docs"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.remove_duplicate_docs()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.score_by_metadata"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.score_by_metadata()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.semantic_rerank()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.get_redmine_tool"><code class="docutils literal notranslate"><span class="pre">get_redmine_tool()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-euclid.rag.ingestion.ingest_dpdd">Data Ingestion</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_dpdd.EuclidDPDDIngestor"><code class="docutils literal notranslate"><span class="pre">EuclidDPDDIngestor</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_dpdd.EuclidDPDDIngestor.ingest_new_data"><code class="docutils literal notranslate"><span class="pre">EuclidDPDDIngestor.ingest_new_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_dpdd.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_dpdd.run_dpdd_ingestion"><code class="docutils literal notranslate"><span class="pre">run_dpdd_ingestion()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_publications.EuclidBibIngestor"><code class="docutils literal notranslate"><span class="pre">EuclidBibIngestor</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_publications.EuclidBibIngestor.update_from_bibtex"><code class="docutils literal notranslate"><span class="pre">EuclidBibIngestor.update_from_bibtex()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_publications.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_publications.run_bibtex_ingestion"><code class="docutils literal notranslate"><span class="pre">run_bibtex_ingestion()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_redmine.JSONIngestor"><code class="docutils literal notranslate"><span class="pre">JSONIngestor</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_redmine.JSONIngestor.ingest_json_files"><code class="docutils literal notranslate"><span class="pre">JSONIngestor.ingest_json_files()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_redmine.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.ingestion.ingest_redmine.run_redmine_ingestion"><code class="docutils literal notranslate"><span class="pre">run_redmine_ingestion()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-euclid.rag.utils.acronym_handler">Utilities</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.acronym_handler.expand_acronyms_in_query"><code class="docutils literal notranslate"><span class="pre">expand_acronyms_in_query()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.acronym_handler.extract_acronyms"><code class="docutils literal notranslate"><span class="pre">extract_acronyms()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.acronym_handler.load_acronyms"><code class="docutils literal notranslate"><span class="pre">load_acronyms()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.acronym_handler.match_acronyms"><code class="docutils literal notranslate"><span class="pre">match_acronyms()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.config.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.device.get_device"><code class="docutils literal notranslate"><span class="pre">get_device()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_bold_italic"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_bold_italic()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_code_blocks"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_code_blocks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_headers"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_headers()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_images"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_images()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_linebreaks"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_linebreaks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_links"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_links()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_lists"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_lists()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.convert_redmine_table"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.convert_redmine_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.enrich_with_context"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.enrich_with_context()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.filter_valid_entries"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.filter_valid_entries()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.normalize_metadata"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.normalize_metadata()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.prepare_for_ingestion"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.prepare_for_ingestion()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.redmine_to_markdown"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.redmine_to_markdown()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.utils.redmine_cleaner.RedmineCleaner.split_content"><code class="docutils literal notranslate"><span class="pre">RedmineCleaner.split_content()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-euclid.rag.extra_scripts.deduplication">Extra Tools</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.deduplication.ChunkClusterer"><code class="docutils literal notranslate"><span class="pre">ChunkClusterer</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.deduplication.ChunkClusterer.filter"><code class="docutils literal notranslate"><span class="pre">ChunkClusterer.filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.deduplication.HashDeduplicator"><code class="docutils literal notranslate"><span class="pre">HashDeduplicator</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.deduplication.HashDeduplicator.filter"><code class="docutils literal notranslate"><span class="pre">HashDeduplicator.filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator"><code class="docutils literal notranslate"><span class="pre">SemanticSimilarityDeduplicator</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.deduplication.SemanticSimilarityDeduplicator.filter"><code class="docutils literal notranslate"><span class="pre">SemanticSimilarityDeduplicator.filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder"><code class="docutils literal notranslate"><span class="pre">Embedder</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder.device"><code class="docutils literal notranslate"><span class="pre">Embedder.device</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder.embed_documents"><code class="docutils literal notranslate"><span class="pre">Embedder.embed_documents()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.Embedder.embed_query"><code class="docutils literal notranslate"><span class="pre">Embedder.embed_query()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.load_json_documents"><code class="docutils literal notranslate"><span class="pre">load_json_documents()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.load_or_create_index"><code class="docutils literal notranslate"><span class="pre">load_or_create_index()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.extra_scripts.vectorstore_embedder.load_pdf_documents"><code class="docutils literal notranslate"><span class="pre">load_pdf_documents()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
