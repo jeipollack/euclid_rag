@@ -1,6 +1,11 @@
 # euclid_rag
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://jeipollack.github.io/euclid_rag/)
+[![Release](https://img.shields.io/github/v/release/jeipollack/euclid_rag?include_prereleases)](https://github.com/jeipollack/euclid_rag/releases)
+[![License](https://img.shields.io/badge/license-LGPL--3.0-blue.svg)](LICENSE)
 
-**Euclid RAG: A Local RAG System for Scientific Research**
+RAG-powered chatbot for querying Euclid mission documents...
+
+## Euclid RAG: A Local RAG System for Scientific Research
 
 Euclid RAG is an open-source Retrieval-Augmented Generation (RAG) system designed to provide **efficient document retrieval and knowledge augmentation** for the Euclid scientific community. The project aims to integrate local Large Language Models (LLMs) with a vector database to **retrieve, process, and generate** relevant scientific information.
 
