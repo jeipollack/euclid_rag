@@ -27,7 +27,7 @@ To run on a different port or host:
 .. code-block:: bash
 
    cd python/euclid
-   streamlit run rag/app.py --port 8080 --server.address 0.0.0.0
+   streamlit run rag/app.py --server.port 8080 --server.address 0.0.0.0
 
 Production Deployment Options
 -----------------------------
@@ -118,14 +118,14 @@ The Streamlit interface provides:
    * Semantic search with vector similarity
 
 **Source Attribution**
-   * View source documents for each answer
-   * Direct links to original content where available
-   * Confidence scores and relevance rankings
+  * View source documents for each answer
+  * Direct links to original content where available
+  * Similarity scores from vector search and document ranking scores
 
 **Interactive Elements**
-   * File upload for additional documents
-   * Configuration adjustments
-   * Export conversation history
+  * Configuration adjustments
+  * Export conversation history
+  * Document ingestion for updating knowledge bases
 
 Query Examples
 --------------
@@ -150,22 +150,24 @@ Try these example queries to test your system:
 Configuration During Runtime
 ============================
 
-LLM Model Switching
---------------------
+**Note**: Configuration changes require rebuilding the container since the config file is embedded in the Docker image.
 
-To change models without rebuilding containers:
+LLM Model Switching
+~~~~~~~~~~~~~~~~~~~
+
+To change models:
 
 .. code-block:: bash
 
-   # Pull new model
+   # Pull new model (if not already available)
    docker exec -it euclid_rag-ollama-1 ollama pull mistral:7b-instruct
 
    # Update app_config.yaml
    # Change: model: "granite3.2:latest"
    # To:     model: "mistral:7b-instruct"
 
-   # Restart the application
-   docker compose restart euclid_rag
+   # Rebuild and restart the application
+   docker compose up -d --build euclid
 
 Temperature and Behavior Tuning
 -------------------------------
