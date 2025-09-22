@@ -70,6 +70,11 @@ Key Features
   * Maintains publication metadata for proper attribution
   * Handles various publication formats (journal articles, preprints, conference papers)
 
+**Semantic Deduplication**
+  * Prevents ingestion of semantically similar content across publications
+  * Particularly effective for reducing redundant introductory material
+  * Uses similarity thresholds to identify and filter duplicate content sections
+
 **Vector Store Integration**
   * Chunks document content for semantic search
   * Configurable chunk sizes and overlap for optimal retrieval
