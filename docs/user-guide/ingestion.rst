@@ -22,16 +22,58 @@ Prerequisites
 Publications Ingestion
 ======================
 
-Ingest publication documents from configured sources:
+
+Ingest Euclid collaboration publications from the official BibTeX bibliography.
+
+The EuclidBibIngestor is specifically designed to process publications from the Euclid collaboration's official bibliography file, which contains peer-reviewed papers, conference proceedings, and preprints related to the Euclid mission.
 
 Basic Usage
 -----------
 
 .. code-block:: bash
 
-   python python/euclid/rag/ingestion/ingest_publications.py
+   python python/euclid/rag/ingestion/ingest_publications.py --config path/to/app_config.yaml
 
-This uses the default configuration file at ``python/euclid/rag/app_config.yaml``.
+Configuration Requirements
+--------------------------
+
+Ensure your app_config.yaml includes:
+
+.. code-block:: yaml
+
+   pdf_data:
+     bibtex_url: "https://eceb.astro.uni-bonn.de/public/Euclid.bib"
+     arxiv_pdf_base_url: "https://arxiv.org/pdf/"
+     chunk_size: 800
+     chunk_overlap: 100
+
+Data Source
+-----------
+
+The ingestion process downloads and parses the official Euclid collaboration BibTeX file, which includes:
+
+* **Key project papers** - Foundational Euclid mission publications
+* **Data release papers** - Documentation for specific data releases (e.g., Q1 Special Issue)
+* **Technical papers** - Instrument descriptions, data processing methods
+* **Scientific results** - Analysis and findings from Euclid observations
+
+Key Features
+------------
+
+**BibTeX Processing**
+  * Parses official Euclid collaboration bibliography
+  * Extracts publication metadata (authors, titles, abstracts)
+  * Downloads full-text PDFs from arXiv when available
+
+**Content Extraction**
+  * Processes PDF content for full-text search
+  * Maintains publication metadata for proper attribution
+  * Handles various publication formats (journal articles, preprints, conference papers)
+
+**Vector Store Integration**
+  * Chunks document content for semantic search
+  * Configurable chunk sizes and overlap for optimal retrieval
+  * Prevents duplicate ingestion of existing publications
 
 Custom Configuration
 --------------------
