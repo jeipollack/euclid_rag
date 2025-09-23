@@ -17,7 +17,6 @@ Key Functions
 The core application provides functions for:
 
 * Configuring retrievers for document search
-* Creating intelligent query routers
 * Handling user input and responses
 * Setting up the Streamlit interface
 
@@ -43,10 +42,16 @@ Retrieval System
 
 Tools for retrieving and formatting information from document stores.
 
+
 Overview
 --------
 
-The retrieval system provides specialized tools for querying Euclid mission documents with intelligent source formatting and relevance scoring.
+The retrieval system provides specialized tools for querying Euclid mission documents. The system retrieves relevant documents from vector stores, ranks them using similarity and metadata scoring, and provides the top-ranked sources as context for response generation.
+
+Source Attribution
+~~~~~~~~~~~~~~~~~~
+
+The chatbot responses include the top-ranked documents that were provided as context to the language model. These sources represent the retrieved, reranked, and deduplicated documents used to generate the response, not necessarily a selection made by the language model itself.
 
 .. automodule:: euclid.rag.retrievers.generic_retrieval_tool
    :members:
