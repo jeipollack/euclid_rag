@@ -9,7 +9,7 @@ Releases are largely automated through GitHub Actions (see the `ci.yaml`_ workfl
 When a semantic version tag is pushed to GitHub, ``euclid_rag`` is automatically released on GitHub with that version.
 Documentation is built and published for each version (see `Euclid RAG Documentation`_).
 
-.. _`Euclid RAG Documentation`: https://github.io/jeipollack/euclid_rag/
+.. _`Euclid RAG Documentation`: https://jeipollack.github.io/euclid_rag/
 .. _`ci.yaml`: https://github.com/jeipollack/euclid_rag/blob/main/.github/workflows/ci.yaml
 
 .. _regular-release:

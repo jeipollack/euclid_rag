@@ -360,7 +360,6 @@
 <p>The core application provides functions for:</p>
 <ul class="simple">
 <li><p>Configuring retrievers for document search</p></li>
-<li><p>Creating intelligent query routers</p></li>
 <li><p>Handling user input and responses</p></li>
 <li><p>Setting up the Streamlit interface</p></li>
 </ul>
@@ -464,7 +463,10 @@ Streamlit container with new tokens.
 <p>Tools for retrieving and formatting information from document stores.</p>
 <section id="overview">
 <h3>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h3>
-<p>The retrieval system provides specialized tools for querying Euclid mission documents with intelligent source formatting and relevance scoring.</p>
+<p>The retrieval system provides specialized tools for querying Euclid mission documents. The system retrieves relevant documents from vector stores, ranks them using similarity and metadata scoring, and provides the top-ranked sources as context for response generation.</p>
+<section id="source-attribution">
+<h4>Source Attribution<a class="headerlink" href="#source-attribution" title="Link to this heading">#</a></h4>
+<p>The chatbot responses include the top-ranked documents that were provided as context to the language model. These sources represent the retrieved, reranked, and deduplicated documents used to generate the response, not necessarily a selection made by the language model itself.</p>
 <p id="module-euclid.rag.retrievers.generic_retrieval_tool">Generic Retriever Tool for querying Euclid-Consortium documents.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="euclid.rag.retrievers.generic_retrieval_tool.bonus_overlap">
@@ -685,6 +687,7 @@ to find and summarize relevant redmine wikis.</p>
 </dl>
 </dd></dl>
 
+</section>
 </section>
 </section>
 <section id="module-euclid.rag.ingestion.ingest_dpdd">
@@ -1371,23 +1374,26 @@ and optionally a “metadata” field.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retrieval-system">Retrieval System</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.bonus_overlap"><code class="docutils literal notranslate"><span class="pre">bonus_overlap()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.format_source"><code class="docutils literal notranslate"><span class="pre">format_source()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.get_generic_retrieval_tool"><code class="docutils literal notranslate"><span class="pre">get_generic_retrieval_tool()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.normalize_url"><code class="docutils literal notranslate"><span class="pre">normalize_url()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">semantic_rerank()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.tokenize"><code class="docutils literal notranslate"><span class="pre">tokenize()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.bonus_overlap"><code class="docutils literal notranslate"><span class="pre">bonus_overlap()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.get_publication_tool"><code class="docutils literal notranslate"><span class="pre">get_publication_tool()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">semantic_rerank()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.tokenize"><code class="docutils literal notranslate"><span class="pre">tokenize()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.remove_duplicate_docs"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.remove_duplicate_docs()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.score_by_metadata"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.score_by_metadata()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.semantic_rerank()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#source-attribution">Source Attribution</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.bonus_overlap"><code class="docutils literal notranslate"><span class="pre">bonus_overlap()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.format_source"><code class="docutils literal notranslate"><span class="pre">format_source()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.get_generic_retrieval_tool"><code class="docutils literal notranslate"><span class="pre">get_generic_retrieval_tool()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.normalize_url"><code class="docutils literal notranslate"><span class="pre">normalize_url()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">semantic_rerank()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.generic_retrieval_tool.tokenize"><code class="docutils literal notranslate"><span class="pre">tokenize()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.bonus_overlap"><code class="docutils literal notranslate"><span class="pre">bonus_overlap()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.get_publication_tool"><code class="docutils literal notranslate"><span class="pre">get_publication_tool()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">semantic_rerank()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.publication_tool.tokenize"><code class="docutils literal notranslate"><span class="pre">tokenize()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.remove_duplicate_docs"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.remove_duplicate_docs()</span></code></a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.score_by_metadata"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.score_by_metadata()</span></code></a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.RedmineRetrieverHelper.semantic_rerank"><code class="docutils literal notranslate"><span class="pre">RedmineRetrieverHelper.semantic_rerank()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.get_redmine_tool"><code class="docutils literal notranslate"><span class="pre">get_redmine_tool()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#euclid.rag.retrievers.redmine_tool.get_redmine_tool"><code class="docutils literal notranslate"><span class="pre">get_redmine_tool()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
